@@ -1,0 +1,71 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby - Control de Asistencia</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Archivo CSS personalizado (si tienes uno) -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <!-- Modal para seleccionar la sede -->
+    <div class="modal fade" id="modalSede" tabindex="-1" aria-labelledby="modalSedeLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSedeLabel">Selecciona la Sede</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="formSede" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="sede" class="form-label">Sede</label>
+                            <select class="form-select" id="sede" name="sede" required>
+                                <option value="" disabled selected>Selecciona una sede</option>
+                                {% for sede in sedes %}
+                                    <option value="{{ sede.id }}">{{ sede.ubicacion }} - {{ sede.ciudad }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Confirmar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="container mt-5">
+        <div class="text-center">
+            <h1>Control de Asistencia</h1>
+            <p class="lead">Bienvenido al Sistema de Control de Asistencia de Personal Administrativo.</p>
+        </div>
+        <div class="text-center mt-4">
+            <!-- Reloj -->
+            <div id="reloj" class="display-4"></div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mostrar el modal al cargar la página
+        const modalSede = new bootstrap.Modal(document.getElementById('modalSede'));
+        modalSede.show();
+
+        // Actualizar el reloj en tiempo real
+        document.addEventListener('DOMContentLoaded', () => {
+            function actualizarReloj() {
+                const now = new Date();
+                const reloj = document.getElementById('reloj');
+                reloj.textContent = now.toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'medium' });
+            }
+            setInterval(actualizarReloj, 1000);
+        });
+    </script>
+</body>
+</html>

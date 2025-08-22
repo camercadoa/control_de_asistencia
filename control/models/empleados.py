@@ -1,43 +1,62 @@
-# Modulos
 from django.db import models
 
-class Empleados(models.Model):
+
+class TipoDocumento(models.Model):
+    id = models.AutoField(primary_key=True)
+    tipo_documento = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tipo_documentos'
+        verbose_name = 'Tipo de Documento'
+        verbose_name_plural = 'Tipos de Documentos'
+
+    def __str__(self):
+        return f"{self.tipo_documento} - {self.descripcion}"
+
+
+class Empleado(models.Model):
+    # Campos obligatorios
+    id = models.AutoField(primary_key=True)
     cargo = models.CharField(max_length=255)
     primer_nombre = models.CharField(max_length=255)
-    segundo_nombre = models.CharField(max_length=255, blank=True, null=True)
     primer_apellido = models.CharField(max_length=255)
-    segundo_apellido = models.CharField(max_length=255, blank=True, null=True)
-    fecha_nacimiento = models.DateField(blank=True, null=True)
-    lugar_nacimiento = models.CharField(max_length=255, blank=True, null=True)
+    fk_tipo_documento = models.ForeignKey(
+        TipoDocumento, on_delete=models.CASCADE)
     numero_documento = models.BigIntegerField(unique=True)
-    fecha_expedicion_documento = models.DateField(blank=True, null=True)
-    lugar_expedicion_documento = models.CharField(max_length=255, blank=True, null=True)
-    sexo = models.CharField(max_length=50, blank=True, null=True)
-    telefono_fijo = models.CharField(max_length=15, blank=True, null=True)
-    celular = models.CharField(max_length=15, blank=True, null=True)
-    correo_personal = models.CharField(max_length=254)
-    estado_civil = models.CharField(max_length=255, blank=True, null=True)
-    direccion_residencia = models.CharField(max_length=255, blank=True, null=True)
-    ciudad_residencia = models.CharField(max_length=255, blank=True, null=True)
-    barrio_residencia = models.CharField(max_length=255, blank=True, null=True)
-    activo = models.BooleanField()
-    fecha_creacion = models.DateTimeField()
-    fecha_modificacion = models.DateTimeField()
-    fk_creado_por = models.ForeignKey('AuthUser', models.DO_NOTHING, blank=True, null=True)
-    fk_modificado_por = models.ForeignKey('AuthUser', models.DO_NOTHING, related_name='empleados_fk_modificado_por_set', blank=True, null=True)
-    fk_rol = models.ForeignKey('Roles', models.DO_NOTHING)
-    fk_tipo_documento = models.ForeignKey('TipoDocumentos', models.DO_NOTHING)
-    url_hoja_de_vida = models.CharField(max_length=200, blank=True, null=True)
-    fk_eps = models.ForeignKey('Eps', models.DO_NOTHING, blank=True, null=True)
-    fk_ultimo_nivel_estudio = models.ForeignKey('NivelesAcademicos', models.DO_NOTHING, blank=True, null=True)
-    fk_afp = models.ForeignKey('Afp', models.DO_NOTHING, blank=True, null=True)
-    fk_arl = models.ForeignKey('Arl', models.DO_NOTHING, blank=True, null=True)
-    fk_caja_compensacion = models.ForeignKey('CajasCompensacion', models.DO_NOTHING, blank=True, null=True)
-    fk_departamento_residencia = models.ForeignKey('Departamentos', models.DO_NOTHING, blank=True, null=True)
-    fk_sede_donde_labora = models.ForeignKey('Sedes', models.DO_NOTHING, blank=True, null=True)
-    fk_estado_revision = models.ForeignKey('EstadoRevision', models.DO_NOTHING, blank=True, null=True)
-    fk_pais_nacimiento = models.ForeignKey('Paises', models.DO_NOTHING, blank=True, null=True)
+    correo_personal = models.EmailField()
+
+# Campos opcionales
+    segundo_nombre = models.CharField(
+        max_length=255, null=True, blank=True)
+    segundo_apellido = models.CharField(
+        max_length=255, null=True, blank=True)
+    # True = Activo - False = Inactivo
+    activo = models.BooleanField(default=False)
 
     class Meta:
         managed = False
         db_table = 'empleados'
+        verbose_name = 'Empleado'
+        verbose_name_plural = 'Empleados'
+
+    def __str__(self):
+        return f"{self.primer_nombre} {self.primer_apellido} - {self.fk_tipo_documento.tipo_documento} {self.numero_documento}"
+
+
+class CorreoInstitucional(models.Model):
+    fk_empleado = models.ForeignKey(
+        Empleado, on_delete=models.CASCADE)
+    correo_institucional = models.EmailField(
+        verbose_name='Correo Institucional')
+
+    class Meta:
+        verbose_name = "Correo Institucional"
+        verbose_name_plural = "Correo Institucionales"
+
+    def __str__(self):
+        return f"{self.fk_empleado.primer_nombre} {self.fk_empleado.primer_apellido} - {self.correo_institucional}"
+
