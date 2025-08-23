@@ -3,8 +3,9 @@ from control import views
 
 urlpatterns = [
 
-    path('app_lobby/', views.app_lobby, name='app_lobby'),
+    # Renderizar páginas
+    path('app_lobby/', views.app_lobby, name='app_lobby'), # Página inicial
 
-    # LOGIN
-    # path('login/',views.iniciar_sesion_form, name="iniciar_sesion_form"),
+    # Funciones AJAX
+    path('app_lobby/guardar_sede/', views.guardar_sede, name='guardar_sede'), # Guardar sede seleccionada
 ]
