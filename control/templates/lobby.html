@@ -8,102 +8,137 @@
     <title>Lobby - Control de Asistencia</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Archivo CSS personalizado (si tienes uno) -->
+    <!-- Archivo CSS personalizado -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        body {
+            background: url("{% static 'images/background.webp' %}") no-repeat center center fixed;
+            background-size: cover;
+        }
+    </style>
 </head>
 <body>
-    <!-- Modal para seleccionar la sede -->
-    <div class="modal fade" id="modalSede" tabindex="-1" aria-labelledby="modalSedeLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalSedeLabel">Selecciona la Sede</h5>
-                </div>
-                <div class="modal-body">
-                    <form id="formSede" method="POST">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <select class="form-select" id="sede" name="sede" required>
-                                <option value="" disabled selected>Selecciona</option>
-                                {% for sede in sedes %}
-                                    <option value="{{ sede.id }}">{{ sede.ubicacion }} - {{ sede.ciudad }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="button" id="confirmarSede" class="btn btn-primary w-100">Confirmar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Contenedor para alertas -->
+    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-3 w-auto px-3"></div>
 
-    <!-- Contenedor principal -->
-    <div class="container mt-5">
-        <div class="text-center">
-            <h1>Control de Asistencia</h1>
-            <p class="lead">Bienvenido al Sistema de Control de Asistencia de Personal Administrativo.</p>
-        </div>
-        <div class="text-center mt-4">
-            <!-- Reloj -->
-            <div id="reloj" class="display-4"></div>
+    <div class="lobby-container">
+        <div class="card-lobby text-center">
+            <h1 class="mb-4">Control de Asistencia</h1>
+            <!-- Formulario de inicio de sesión -->
+            <form id="loginForm" method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="username" placeholder="Usuario" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+                </div>
+                <button id="loginBtn" type="submit" class="btn btn-primary w-75">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Iniciar sesión como sede -->
+            <a href="{% url 'RegistroAsistencia' %}" class="btn btn-outline-secondary w-75">
+                Iniciar sesión como sede
+            </a>
         </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Crear una instancia del modal al cargar la página
-            const modalSedeElement = document.getElementById('modalSede');
-            const modalSede = new bootstrap.Modal(modalSedeElement);
+        // Función para mostrar alertas
+        function showAlert(message, type = "info", timeout = 3000) {
+            const alertContainer = document.getElementById("alert-container");
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `
+                <div class="alert alert-${type} fade show shadow text-center text-nowrap" role="alert">
+                    ${message}
+                </div>
+            `;
+            const alertElement = wrapper.firstElementChild;
+            alertContainer.appendChild(alertElement);
 
-            // Mostrar el modal al cargar la página
-            modalSede.show();
-
-            // Actualizar el reloj en tiempo real
-            function actualizarReloj() {
-                const now = new Date();
-                const reloj = document.getElementById('reloj');
-                reloj.textContent = now.toLocaleString(
-                    'es-CO',
-                    {
-                        dateStyle: 'full',
-                        timeStyle: 'medium'
-                    }
-                );
+            if (timeout) {
+                setTimeout(() => {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alertElement);
+                    bsAlert.close();
+                }, timeout);
             }
-            setInterval(actualizarReloj, 1000);
+        }
 
-            // Enviar la sede seleccionada al servidor mediante AJAX
-            const confirmarSedeBtn = document.getElementById('confirmarSede');
+        const loginForm = document.getElementById("loginForm");
+        const loginBtn = document.getElementById("loginBtn");
 
-            confirmarSedeBtn.addEventListener('click', () => {
-                const sedeSeleccionada = document.getElementById('sede').value;
-                if (!sedeSeleccionada) {
-                    alert('Por favor, selecciona una sede.');
-                    return;
+        loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            // 🔹 Deshabilitar botón y mostrar spinner
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Verificando...
+            `;
+
+            fetch("{% url 'IniciarSesion' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                const status = response.status;
+                let alertType = "secondary";
+                let message = "Operación desconocida";
+
+                if (status === 200) {
+                    alertType = "success";
+                    message = "Inicio exitoso";
+                    setTimeout(() => {
+                        window.location.href = "/dashboard/";
+                    }, 1000);
+                }
+                else if (status === 401) {
+                    alertType = "warning";
+                    message = "Usuario o contraseña incorrecto";
+                }
+                else if (status === 400) {
+                    alertType = "info";
+                    message = "Error en los datos enviados";
+                }
+                else if (status === 405) {
+                    alertType = "info";
+                    message = "Método no permitido";
+                }
+                else if (status >= 500) {
+                    alertType = "danger";
+                    message = "Error en el servidor. Intenta más tarde";
                 }
 
-                fetch("{% url 'guardar_sede' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({ sede: sedeSeleccionada })
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Cerrar el modal si la solicitud fue exitosa
-                        modalSede.hide();
-                    } else {
-                        alert('Hubo un problema al guardar la sede. Intenta nuevamente.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ocurrió un error inesperado.');
-                });
+                showAlert(message, alertType);
+
+                // 🔹 Restaurar botón si no fue exitoso
+                if (status !== 200) {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = "Iniciar Sesión";
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showAlert("Ocurrió un error inesperado.", "danger");
+
+                // 🔹 Restaurar botón en caso de error
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = "Iniciar Sesión";
             });
         });
     </script>

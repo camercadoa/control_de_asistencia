@@ -21,6 +21,6 @@ urlpatterns = [
     # MÓDULO DE ADMINISTRACIÓN
     path('root/', admin.site.urls),
 
-    # SIUC
-    path('control/', include('control.urls')),
+    # Control de Asistencia
+    path('', include('control.urls')),
 ]

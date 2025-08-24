@@ -50,8 +50,7 @@ class Empleado(models.Model):
 class CorreoInstitucional(models.Model):
     fk_empleado = models.ForeignKey(
         Empleado, on_delete=models.CASCADE)
-    correo_institucional = models.EmailField(
-        verbose_name='Correo Institucional')
+    correo_institucional = models.EmailField(verbose_name='Correo Institucional')
 
     class Meta:
         verbose_name = "Correo Institucional"
