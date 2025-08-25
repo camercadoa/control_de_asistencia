@@ -6,7 +6,7 @@ from .sedes import Sede
 class RegistroAsistencia(models.Model):
     fk_empleado = models.ForeignKey(
         Empleado, on_delete=models.CASCADE)
-    description_registro = models.CharField(max_length=20, verbose_name="Descripcion")
+    descripcion_registro = models.CharField(max_length=20, verbose_name="Descripcion")
     fecha_registro = models.DateField("Fecha Registro", auto_now=False, auto_now_add=True)
     hora_registro = models.TimeField("Hora Registro", auto_now=False, auto_now_add=True)
     lugar_registro = models.ForeignKey(

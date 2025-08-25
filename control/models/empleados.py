@@ -27,7 +27,6 @@ class Empleado(models.Model):
     fk_tipo_documento = models.ForeignKey(
         TipoDocumento, on_delete=models.CASCADE)
     numero_documento = models.BigIntegerField(unique=True)
-    correo_personal = models.EmailField()
 
 # Campos opcionales
     segundo_nombre = models.CharField(
@@ -50,9 +49,10 @@ class Empleado(models.Model):
 class CorreoInstitucional(models.Model):
     fk_empleado = models.ForeignKey(
         Empleado, on_delete=models.CASCADE)
-    correo_institucional = models.EmailField(verbose_name='Correo Institucional')
+    correo_institucional = models.EmailField(verbose_name='Correo Institucional', unique= True)
 
     class Meta:
+        db_table = 'correos_institucionales'
         verbose_name = "Correo Institucional"
         verbose_name_plural = "Correo Institucionales"
 
