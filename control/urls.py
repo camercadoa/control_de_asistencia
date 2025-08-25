@@ -11,6 +11,7 @@ urlpatterns = [
     # Funciones AJAX
     path('app-lobby/login/validar-usuario/', views.iniciarSesion, name='IniciarSesion'), # Validar credenciales para el inicio de sesión
     path('registro-asistencia/guardar-sede/', views.guardarSede, name='GuardarSede'), # Guardar sede seleccionada
+    path('registro-asistencia/guardar-registro/', views.guardarRegistro, name='guardarRegistro'),
 
     # Cerrar sesión
     path('cerrar-sesion/', views.cerrarSesion, name='CerrarSesion'),
