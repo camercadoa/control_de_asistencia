@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login
 import json, traceback
 
 @csrf_exempt
-def iniciarSesion(request):
+def IniciarSesion(request):
     try:
         if request.method == "POST":
             data = json.loads(request.body)

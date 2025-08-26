@@ -1,10 +1,11 @@
 import json
 from django.http import JsonResponse
-from control.models.empleados import Empleado
-from control.models.registro_asistencia import RegistroAsistencia
+from control.models import (
+    Empleado, RegistroAsistencia
+)
 from django.utils.timezone import now
 
-def guardarRegistro(request):
+def GuardarRegistro(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         codigo = data.get('codigo')

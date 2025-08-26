@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json, traceback
 
 @csrf_exempt
-def guardarSede(request):
+def GuardarSede(request):
     try:
         if request.method == 'POST':
             data = json.loads(request.body)

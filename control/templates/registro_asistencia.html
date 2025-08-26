@@ -190,13 +190,20 @@
             });
 
             function enviarCodigo(codigo) {
+                // Obtener Fecha y Hora exacta del escaneo del Código
+                const now = new Date();
+                const fechaHoraRegistro = now.toISOString();
+
                 fetch("{% url 'guardarRegistro' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({ codigo })
+                    body: JSON.stringify({
+                        codigo: codigo,
+                        fechaHoraRegistro: fechaHoraRegistro
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {

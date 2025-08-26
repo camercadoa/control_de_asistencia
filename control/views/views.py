@@ -4,15 +4,15 @@ from control.models import (
 )
 
 # * Vista para renderizar la página principal del aplicativo
-def appLobby(request):
+def AppLobby(request):
     return render(
         request,
         'lobby.html'
     )
 
 
-# * Vista para renderizar la página principal del aplicativo
-def registroAsistencia(request):
+# * Vista para renderizar la página de Guardar Registro de Asistencia
+def RegistroAsistencia(request):
     sedes = Sede.objects.exclude(id=5).order_by('id')
     return render(
         request,
@@ -22,8 +22,8 @@ def registroAsistencia(request):
         }
     )
 
-
-def dashboard(request):
+# * Vista para renderizar el dashboard
+def Dashboard(request):
     return render(
         request,
         'dashboard.html'
