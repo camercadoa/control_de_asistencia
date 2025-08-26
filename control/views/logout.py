@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 
 
 @login_required
-def CerrarSesion(request):
+def logoutSesion(request):
     logout(request)
 
-    return redirect('AppLobby')
+    return redirect('appLobbyRender')

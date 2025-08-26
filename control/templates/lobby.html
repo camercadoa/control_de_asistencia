@@ -54,7 +54,7 @@
                 <hr class="my-3">
                 <div class="text-center">
                     <!-- Iniciar sesión como sede -->
-                    <a href="{% url 'RegistroAsistencia' %}" class="text-secondary link-offset-2">
+                    <a href="{% url 'appAssistanceRecordRender' %}" class="text-secondary link-offset-2">
                         Iniciar sesión como sede
                     </a>
                 </div>
@@ -81,7 +81,7 @@
                     // Usar la función global para deshabilitar el botón
                     disableButtonWithSpinner(loginBtn, "Verificando...");
 
-                    fetch("{% url 'IniciarSesion' %}", {
+                    fetch("{% url 'validateAuthentication' %}", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
