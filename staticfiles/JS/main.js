@@ -71,3 +71,39 @@ function iniciarReloj(fechaId, horaId) {
     }
     tick();
 }
+
+function cardInfo(tipo, contenido, icono) {
+    let cardClass = "";
+
+    switch (tipo) {
+        case "success":
+            cardClass = "bg-success-subtle border border-success-subtle text-success-emphasis";
+            icono = icono || '<i class="bi bi-check-circle-fill fs-1"></i>';
+            break;
+        case "warning":
+            cardClass = "bg-warning-subtle border border-warning-subtle text-warning-emphasis";
+            icono = icono || '<i class="bi bi-exclamation-triangle-fill fs-1"></i>';
+            break;
+        case "error":
+            cardClass = "bg-danger-subtle border border-danger-subtle text-danger-emphasis";
+            icono = icono || '<i class="bi bi-x-circle-fill fs-1"></i>';
+            break;
+        default:
+            cardClass = "bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis";
+            icono = icono || '<i class="bi bi-info-circle-fill fs-1"></i>';
+            break;
+    }
+
+    return `
+        <div class="card ${cardClass} shadow-sm h-75 w-75">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1 text-center">
+                    ${contenido}
+                </div>
+                <div class="ms-4">
+                    ${icono}
+                </div>
+            </div>
+        </div>
+    `;
+}

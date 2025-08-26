@@ -13,13 +13,9 @@ def appLobbyRender(request):
 
 # * Vista para renderizar la página de Guardar Registro de Asistencia
 def appAssistanceRecordRender(request):
-    sedes = Sede.objects.exclude(id=5).order_by('id')
     return render(
         request,
-        'registro_asistencia.html',
-        {
-            'sedes': sedes
-        }
+        'registro_asistencia.html'
     )
 
 # * Vista para renderizar el dashboard

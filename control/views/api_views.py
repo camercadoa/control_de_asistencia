@@ -6,11 +6,11 @@ from control.api import *
 
 # Sedes API
 class SedeListCreateView(ListCreateAPIView):
-    queryset = Sede.objects.all()
+    queryset = Sede.objects.exclude(id=5).order_by('id')
     serializer_class = SedeSerializer
 
 class SedeDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Sede.objects.all()
+    queryset = Sede.objects.exclude(id=5).order_by('id')
     serializer_class = SedeSerializer
 
 # Empleados API
