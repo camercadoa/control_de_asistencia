@@ -37,8 +37,8 @@
         <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3"></div>
 
         <div class="lobby-container">
-            <div class="card-lobby text-center">
-                <h1 class="mb-4">Control de Asistencia</h1>
+            <div class="card-lobby text-center bg-secondary-subtle">
+                <h1 class="mb-4 text-secondary-emphasis">Control de Asistencia</h1>
                 <!-- Formulario de inicio de sesión -->
                 <form id="loginForm" method="POST">
                     {% csrf_token %}
@@ -46,17 +46,17 @@
                         <input type="text" class="form-control" id="username" placeholder="Usuario" required>
                     </div>
                     <div class="mb-3">
-                        <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+                        <input type="password" class="form-control" id="password" placeholder="Contraseña" autocomplete="off" required>
                     </div>
-                    <button id="loginBtn" type="submit" class="btn text-primary-emphasis bg-primary-subtle border-primary-subtle w-75">
+                    <button id="loginBtn" type="submit" class="btn btn-animation text-success-emphasis bg-success-subtle border-success-subtle w-75">
                         Iniciar Sesión
                     </button>
                 </form>
                 <hr class="my-3">
                 <div class="text-center">
                     <!-- Iniciar sesión como sede -->
-                    <a href="{% url 'appAssistanceRecordRender' %}" class="text-secondary link-offset-2">
-                        Iniciar sesión como sede
+                    <a href="{% url 'appAssistanceRecordRender' %}" class="btn btn-animation btn-link text-secondary-emphasis link-offset-2">
+                        Ingresar como sede
                     </a>
                 </div>
             </div>

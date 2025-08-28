@@ -142,17 +142,9 @@ def saveRecord(request):
         serializer = RegistroAsistenciaSerializer(registro)
         payload = serializer.data
 
-        # 👀 Imprimir en logs técnicos (no visible al usuario final)
-        print(
-            f"[DEBUG] Registro preparado -> Empleado: {empleado.numero_documento}, "
-            f"Nombre: {empleado.primer_nombre} {empleado.primer_apellido}, "
-            f"Descripción: {descripcion}, "
-            f"Fecha: {payload["fecha"]}, "
-            f"Hora: {payload["hora"]}, "
-        )
-
         empleado_info = {
-            'nombre_completo': f"{empleado.primer_nombre.upper()} {empleado.primer_apellido.upper()}",
+            'nombre_completo': f"{empleado.primer_nombre.upper()} {empleado.segundo_nombre.upper() or ''} "
+                f"{empleado.primer_apellido.upper()} {empleado.segundo_apellido.upper() or ''} ",
             'cargo': empleado.cargo.upper(),
             "fecha_registro": payload["fecha"],
             "hora_registro": payload["hora"],

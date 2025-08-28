@@ -16,7 +16,6 @@ body {background-color: #f5f3f4;}
     justify-content: center;
 }
 .card-lobby {
-    background: rgba(250, 250, 250, 0.97);
     border-radius: 1rem;
     padding: 2rem;
     max-width: 25rem;

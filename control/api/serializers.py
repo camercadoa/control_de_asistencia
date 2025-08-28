@@ -26,7 +26,7 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
         return localtime(obj.fecha_hora_registro).strftime("%d/%m/%Y")
 
     def get_hora(self, obj):
-        return localtime(obj.fecha_hora_registro).strftime("%H:%M:%S %p")
+        return localtime(obj.fecha_hora_registro).strftime("%I:%M:%S %p")
 
 class CorreoInstitucionalSerializer(serializers.ModelSerializer):
     class Meta:

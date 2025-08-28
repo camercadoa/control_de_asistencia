@@ -40,7 +40,7 @@
     <div class="modal fade" id="modalSede" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="modalSedeLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header text-primary-emphasis bg-primary-subtle">
+                <div class="modal-header text-secondary-emphasis bg-secondary-subtle">
                     <h5 class="modal-title" id="modalSedeLabel">Ubicación</h5>
                 </div>
                 <div class="modal-body text-center">
@@ -54,13 +54,13 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="button" id="confirmarSede" class="btn btn-animation text-primary-emphasis bg-primary-subtle border border-primary-subtle w-75">
+                        <button type="button" id="confirmarSede" class="btn btn-animation text-success-emphasis bg-success-subtle border-success-subtle w-50">
                             Confirmar
                         </button>
                     </form>
-                    <hr class="my-3">
-                    <div class="text-center">
-                        <a href="{% url 'appLobbyRender' %}" class="text-secondary link-offset-2">
+                    <hr class="mt-4">
+                    <div class="text-center m-0 p-0">
+                        <a href="{% url 'appLobbyRender' %}" class="btn btn-animation btn-link text-secondary-emphasis link-offset-2">
                             Ingresar al Dashboard
                         </a>
                     </div>
@@ -222,28 +222,28 @@
                             const empleado = payload.empleado;
                             const contenido = `
                                 <p class="mb-1 fw-bold fs-3">${empleado.nombre_completo}</p>
-                                <p class="mb-1 fs-5">${empleado.cargo}</p>
-                                <p class="mb-0 fs-4">${empleado.fecha_registro} ${empleado.hora_registro}</p>
+                                <p class="mb-1 fs-5">${empleado.cargo}</p><br>
+                                <p class="mb-0 fs-3">${empleado.hora_registro}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("success", contenido);
                         },
                         onWarning: (payload, message) => {
                             const contenido = `
-                                <p class="mb-1 fw-bold fs-3">Atención</p>
+                                <p class="mb-1 fw-bold fs-3">Atención</p><br>
                                 <p class="mb-0 fs-5">${message}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("warning", contenido);
                         },
                         onError: (payload, message) => {
                             const contenido = `
-                                <p class="mb-1 fw-bold fs-3">Error</p>
+                                <p class="mb-1 fw-bold fs-3">Error</p><br>
                                 <p class="mb-0 fs-5">${message}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
                         },
                         onInfo: (payload, message) => {
                             const contenido = `
-                                <p class="mb-1 fw-bold fs-3">Información</p>
+                                <p class="mb-1 fw-bold fs-3">Información</p><br>
                                 <p class="mb-0 fs-5">${message}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("info", contenido);

@@ -1,7 +1,5 @@
-import traceback, logging
+import traceback
 from django.http import JsonResponse
-
-logger = logging.getLogger(__name__)
 
 
 def build_response(status: str, user_message: str, data: dict = None, code: int = 200, log_message: str = None, exc: Exception = None):
@@ -14,14 +12,6 @@ def build_response(status: str, user_message: str, data: dict = None, code: int 
     # @     code -> Estado HTTP de la respuesta del servidor
     # @     exc -> excepción capturada (si existe, imprime stacktrace)
     # @ }
-
-    # Logging técnico
-    if log_message or exc:
-        tech_message = log_message or user_message
-        if exc:
-            logger.error(f"{tech_message}\n{traceback.format_exc()}")
-        else:
-            logger.warning(tech_message)
 
     # Respuesta para el usuario
     response = {
