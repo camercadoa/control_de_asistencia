@@ -1,3 +1,32 @@
+// Mapear status de backend a clases de Bootstrap
+function mapStatusToBootstrap(status) {
+    switch (status) {
+        case "success": return "success";
+        case "error": return "danger";
+        case "warning": return "warning";
+        case "info": return "info";
+        default: return "secondary";
+    }
+}
+
+// Procesar respuesta estandarizada del backend
+function handleBackendResponse(data, { onSuccess = null, onWarning = null, onError = null, showAlertMsg = true } = {}) {
+    const { status, message, data: payload } = data;
+    const type = mapStatusToBootstrap(status);
+
+    if (showAlertMsg) {
+        showAlert(message, type);
+    }
+
+    if (status === "success" && onSuccess) {
+        onSuccess(payload, message);
+    } else if (status === "warning" && onWarning) {
+        onWarning(payload, message);
+    } else if (status === "error" && onError) {
+        onError(payload, message);
+    }
+}
+
 // Mostrar alertas
 function showAlert(message, type = "info", timeout = 3000) {
     const alertContainer = document.getElementById("alert-container");
@@ -88,15 +117,22 @@ function cardInfo(tipo, contenido, icono) {
             cardClass = "bg-danger-subtle border border-danger-subtle text-danger-emphasis";
             icono = icono || '<i class="bi bi-x-circle-fill fs-1"></i>';
             break;
+        case "info":
+            cardClass = "bg-info-subtle border border-info-subtle text-info-emphasis";
+            icono = icono || '<i class="bi bi-info-circle-fill fs-1"></i>';
+            break;
         default:
             cardClass = "bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis";
-            icono = icono || '<i class="bi bi-info-circle-fill fs-1"></i>';
+            icono = icono || '<i class="bi bi-dot fs-1"></i>';
             break;
     }
 
-    return `
-        <div class="card ${cardClass} shadow-sm h-75 w-75">
-            <div class="card-body d-flex justify-content-between align-items-center">
+    const cardId = `card-${Date.now()}`;
+
+    // Creamos el HTML
+    const html = `
+        <div id="${cardId}" class="card ${cardClass} shadow-lg rounded-4 fade show h-100 w-100 m-5">
+            <div class="card-body d-flex justify-content-between align-items-center px-4 py-3">
                 <div class="flex-grow-1 text-center">
                     ${contenido}
                 </div>
@@ -106,4 +142,16 @@ function cardInfo(tipo, contenido, icono) {
             </div>
         </div>
     `;
+
+    setTimeout(() => {
+        const el = document.getElementById(cardId);
+        if (el) {
+            el.classList.remove("show"); // quita el "show" → inicia fade out
+            el.addEventListener("transitionend", () => {
+                el.remove(); // lo elimina del DOM al terminar animación
+            }, { once: true });
+        }
+    }, 8000); // 8 segundos en pantalla
+
+    return html;
 }

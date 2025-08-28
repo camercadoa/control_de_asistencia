@@ -1,7 +1,5 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from control.models import (
-    Sede
-)
 
 # * Vista para renderizar la página principal del aplicativo
 def appLobbyRender(request):
@@ -19,6 +17,7 @@ def appAssistanceRecordRender(request):
     )
 
 # * Vista para renderizar el dashboard
+@login_required
 def appDashboardRender(request):
     return render(
         request,

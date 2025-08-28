@@ -13,11 +13,24 @@
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     </head>
     <body>
-        welcome
+        <div class="side-panel flex-column p-3 vh-100 col-md-2">
+            <ul class="nav flex-column">
+                <!-- Opción visible para todos los grupos -->
+                <li class="nav-item my-1">
+                    <a href="{% url 'appDashboardRender' %}" class="lh-sm d-flex gap-2 nav-link align-items-center">
+                        <i class="bi bi-house-door-fill"></i>Inicio
+                    </a>
+                </li>
+        </div>
+        <div class="d-flex">
+            <!-- Contenido principal -->
+            <div class="main-container d-flex {% block container_class%} justify-content-center align-items-center{% endblock %} flex-grow-1 col-md-10 overflow-auto">
 
-        <a href="{% url 'logoutSesion' %}" class="text-decoration-none">
-            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
-        </a>
+                {% block content %}
+                welcome
+                {% endblock %}
+            </div>
+        </div>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

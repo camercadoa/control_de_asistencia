@@ -54,7 +54,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="button" id="confirmarSede" class="btn btn-animation text-success-emphasis bg-success-subtle border border-success-subtle w-75">
+                        <button type="button" id="confirmarSede" class="btn btn-animation text-primary-emphasis bg-primary-subtle border border-primary-subtle w-75">
                             Confirmar
                         </button>
                     </form>
@@ -157,36 +157,21 @@
                     },
                     body: JSON.stringify({ sede: sedeSeleccionada })
                 })
-                .then(response => {
-                    const status = response.status;
-                    let alertType = "secondary";
-                    let message = "Operación desconocida";
-
-                    if (status === 200) {
-                        alertType = "success";
-                        message = "Sede guardada correctamente";
-                        modalSede.hide();
-
-                        // Mostrar la sede seleccionada en el span
-                        const sedeText = sedeSelect.options[sedeSelect.selectedIndex].textContent;
-                        sedeSeleccionadaSpan.textContent = `${sedeText}`;
-                    } else if (status === 400) {
-                        alertType = "warning";
-                        message = "No se envió una sede válida";
-                        sedeSelect.classList.add("is-invalid");
-                    } else if (status === 405) {
-                        alertType = "info";
-                        message = "Método no permitido";
-                    } else if (status >= 500) {
-                        alertType = "danger";
-                        message = "Error en el servidor. Intenta más tarde o contacte a Soporte";
-                    }
-
-                    showAlert(message, alertType);
-                    if (status !== 200) enableButton(confirmarSedeBtn, originalText);
+                .then(response => response.json())
+                .then(data => {
+                    handleBackendResponse(data, {
+                        onSuccess: (payload) => {
+                            modalSede.hide();
+                            const sedeText = sedeSelect.options[sedeSelect.selectedIndex].textContent;
+                            sedeSeleccionadaSpan.textContent = sedeText;
+                        },
+                        onWarning: () => sedeSelect.classList.add("is-invalid"),
+                        onError: () => enableButton(confirmarSedeBtn, originalText),
+                        showAlertMsg: true
+                    });
+                    enableButton(confirmarSedeBtn, originalText);
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     showAlert("Ocurrió un error inesperado", "danger");
                     enableButton(confirmarSedeBtn, originalText);
                 });
@@ -220,10 +205,6 @@
             });
 
             function enviarCodigo(codigo) {
-                // Obtener Fecha y Hora exacta del escaneo del Código
-                const now = new Date();
-                const fechaHoraRegistro = now.toISOString();
-
                 fetch("{% url 'saveRecord' %}", {
                     method: 'POST',
                     headers: {
@@ -231,27 +212,44 @@
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
                     body: JSON.stringify({
-                        codigo: codigo,
-                        fechaHoraRegistro: fechaHoraRegistro
+                        codigo: codigo
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        const empleado = data.empleado;
-                        const contenido = `
-                            <p class="mb-1 fw-bold fs-2">${empleado.nombre_completo}</p>
-                            <p class="mb-1 fs-4">${empleado.cargo}</p>
-                            <p class="mb-0 fs-3">${empleado.hora_registro}</p>
-                        `;
-                        empleadoInfoContainer.innerHTML = cardInfo("success", contenido);
-                    } else if (data.warning) {
-                        const contenido = `<p class="mb-0">${data.warning}</p>`;
-                        empleadoInfoContainer.innerHTML = cardInfo("warning", contenido);
-                    } else {
-                        const contenido = `<p class="mb-0">${data.error}</p>`;
-                        empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
-                    }
+                    handleBackendResponse(data, {
+                        onSuccess: (payload) => {
+                            const empleado = payload.empleado;
+                            const contenido = `
+                                <p class="mb-1 fw-bold fs-3">${empleado.nombre_completo}</p>
+                                <p class="mb-1 fs-5">${empleado.cargo}</p>
+                                <p class="mb-0 fs-4">${empleado.fecha_registro} ${empleado.hora_registro}</p>
+                            `;
+                            empleadoInfoContainer.innerHTML = cardInfo("success", contenido);
+                        },
+                        onWarning: (payload, message) => {
+                            const contenido = `
+                                <p class="mb-1 fw-bold fs-3">Atención</p>
+                                <p class="mb-0 fs-5">${message}</p>
+                            `;
+                            empleadoInfoContainer.innerHTML = cardInfo("warning", contenido);
+                        },
+                        onError: (payload, message) => {
+                            const contenido = `
+                                <p class="mb-1 fw-bold fs-3">Error</p>
+                                <p class="mb-0 fs-5">${message}</p>
+                            `;
+                            empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
+                        },
+                        onInfo: (payload, message) => {
+                            const contenido = `
+                                <p class="mb-1 fw-bold fs-3">Información</p>
+                                <p class="mb-0 fs-5">${message}</p>
+                            `;
+                            empleadoInfoContainer.innerHTML = cardInfo("info", contenido);
+                        },
+                        showAlertMsg: false
+                    });
                 })
                 .catch(error => {
                     console.error("Error:", error);
