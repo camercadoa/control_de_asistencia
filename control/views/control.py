@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from control.models import (
     Empleado, Sede, RegistroAsistencia
 )
-from control.views import success, error, warning
+from .utilities import success, error, warning, info
 from control.api import RegistroAsistenciaSerializer
 
 
@@ -75,7 +75,7 @@ def saveRecord(request):
             )
 
         codigo = data.get('codigo')
-        descripcion = "Prueba"
+        descripcion = "Ingreso"
         sede_id = request.session.get('sede_id')
 
         if not sede_id:
@@ -148,6 +148,7 @@ def saveRecord(request):
             'cargo': empleado.cargo.upper(),
             "fecha_registro": payload["fecha"],
             "hora_registro": payload["hora"],
+            "descripcion_registro": descripcion
         }
 
         return success(

@@ -1,5 +1,9 @@
-import traceback
+import logging
 from django.http import JsonResponse
+
+# Configuración del logging (puedes ajustarlo a tus necesidades)
+logging.basicConfig(level=logging.DEBUG,
+                    format=' %(levelname)s - %(message)s')
 
 
 def build_response(status: str, user_message: str, data: dict = None, code: int = 200, log_message: str = None, exc: Exception = None):
@@ -13,6 +17,18 @@ def build_response(status: str, user_message: str, data: dict = None, code: int 
     # @     exc -> excepción capturada (si existe, imprime stacktrace)
     # @ }
 
+    # Si hay log_message, se registra en los logs según estatus
+    if log_message and status == 'info':
+        logging.info(f"Log message: {log_message}")
+    elif log_message and status == 'success':
+        logging.info(f"Log message: {log_message}")
+    elif log_message and status == 'warning':
+        logging.warning(f"Log message: {log_message}")
+    elif log_message and status == 'error':
+        logging.error(f"Log message: {log_message}")
+        if exc:
+            logging.exception(f'Excepción: {str(exc)}')
+
     # Respuesta para el usuario
     response = {
         "status": status,
@@ -25,7 +41,6 @@ def build_response(status: str, user_message: str, data: dict = None, code: int 
 
 
 def success(user_message: str, data: dict = None, log_message: str = None, code: int = 200):
-    # * Respuesta para operaciones exitosas.
     return build_response(
         status="success",
         user_message=user_message,
@@ -36,7 +51,6 @@ def success(user_message: str, data: dict = None, log_message: str = None, code:
 
 
 def error(user_message: str, code: int = 500, log_message: str = None, exc: Exception = None):
-    # * Respuesta para errores graves o excepciones.
     return build_response(
         status="error",
         user_message=user_message,
@@ -47,7 +61,6 @@ def error(user_message: str, code: int = 500, log_message: str = None, exc: Exce
 
 
 def warning(user_message: str, code: int = 400, log_message: str = None):
-    # * Respuesta para advertencias o validaciones incumplidas.
     return build_response(
         status="warning",
         user_message=user_message,
@@ -57,7 +70,6 @@ def warning(user_message: str, code: int = 400, log_message: str = None):
 
 
 def info(user_message: str, data: dict = None, code: int = 200, log_message: str = None):
-    # * Respuesta para información general o mensajes neutrales.
     return build_response(
         status="info",
         user_message=user_message,
@@ -65,7 +77,3 @@ def info(user_message: str, data: dict = None, code: int = 200, log_message: str
         code=code,
         log_message=log_message
     )
-
-
-def obtenerInfoUserRequest(request):
-    pass

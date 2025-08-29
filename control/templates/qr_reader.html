@@ -34,7 +34,7 @@
 </head>
 <body>
     <!-- Contenedor para alertas -->
-    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3"></div>
+    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3 py-0"></div>
 
     <!-- Modal para seleccionar la sede -->
     <div class="modal fade" id="modalSede" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="modalSedeLabel" aria-hidden="true">
@@ -43,24 +43,33 @@
                 <div class="modal-header text-secondary-emphasis bg-secondary-subtle">
                     <h5 class="modal-title" id="modalSedeLabel">Ubicación</h5>
                 </div>
-                <div class="modal-body text-center">
+                <div class="modal-body text-center text-secondary-emphasis">
+                    <!-- Formulario para seleccionar la sede de los registros -->
                     <form id="formSede" method="POST">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <select class="form-select" id="sede" name="sede" required>
+                            <select class="form-select focus-ring focus-ring-secondary border" id="sede" name="sede" required>
                                 <option value="" disabled selected>Selecciona</option>
                                 {% for sede in sedes %}
                                     <option value="{{ sede.id }}">{{ sede.ubicacion }} - {{ sede.ciudad }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="button" id="confirmarSede" class="btn btn-animation text-success-emphasis bg-success-subtle border-success-subtle w-50">
+                        <button type="button" id="confirmarSede" class="btn btn-animation bg-secondary text-light w-50">
                             Confirmar
                         </button>
                     </form>
-                    <hr class="mt-4">
-                    <div class="text-center m-0 p-0">
-                        <a href="{% url 'appLobbyRender' %}" class="btn btn-animation btn-link text-secondary-emphasis link-offset-2">
+
+                    <!-- Separador -->
+                    <div class="d-flex align-items-center mt-2">
+                        <hr class="flex-grow-1 border-secondary">
+                        <span class="px-2 text-secondary small">o</span>
+                        <hr class="flex-grow-1 border-secondary">
+                    </div>
+
+                    <!-- Ir al formulario de inicio de sesión -->
+                    <div class="text-center">
+                        <a href="{% url 'appLobbyRender' %}" class="text-secondary-emphasis link-offset-2 link-offset-3-hover link-underline-secondary link-underline-opacity-0 link-underline-opacity-75-hover small">
                             Ingresar al Dashboard
                         </a>
                     </div>
@@ -84,7 +93,7 @@
                     <div id="empleadoInfo" class="my-4 text-center w-100 flex-grow-1 d-flex align-items-center justify-content-center"></div>
 
                     <!-- Contenedor para mostrar la sede seleccionada -->
-                    <span id="sedeSeleccionada" class="lead mt-auto mb-4"></span>
+                    <span id="sedeSeleccionada" class="mt-auto mb-4"></span>
                 </div>
             </div>
         </div>
@@ -105,6 +114,9 @@
             const sedeSelect = document.getElementById('sede');
             const sedeSeleccionadaSpan = document.getElementById('sedeSeleccionada');
 
+            // Usar helper para limpiar invalid al escribir/cambiar
+            attachClearOnInput(sedeSelect);
+
             // Función para cargar las sedes desde la API
             function cargarSedes() {
                 fetch('/api/sedes/')
@@ -115,7 +127,6 @@
                         return response.json();
                     })
                     .then(data => {
-                        // Limpiar el select antes de agregar las opciones
                         sedeSelect.innerHTML = '<option value="" disabled selected>Selecciona</option>';
                         data.forEach(sede => {
                             const option = document.createElement('option');
@@ -130,20 +141,17 @@
                     });
             }
 
-            cargarSedes(); // Llamar a la función para cargar las sedes al cargar la página
+            cargarSedes();
 
             const confirmarSedeBtn = document.getElementById('confirmarSede');
             const originalText = confirmarSedeBtn.innerHTML;
 
-            sedeSelect.addEventListener('change', () => sedeSelect.classList.remove("is-invalid"));
-
             confirmarSedeBtn.addEventListener('click', () => {
                 const sedeSeleccionada = sedeSelect.value;
-                sedeSelect.classList.remove("is-invalid");
+                clearInvalid(sedeSelect); // limpiar estado previo
 
                 if (!sedeSeleccionada) {
-                    sedeSelect.classList.add("is-invalid");
-                    showAlert("Seleccione una sede antes de continuar", "warning");
+                    markInvalid(sedeSelect, "Seleccione una sede antes de continuar");
                     return;
                 }
 
@@ -160,12 +168,17 @@
                 .then(response => response.json())
                 .then(data => {
                     handleBackendResponse(data, {
-                        onSuccess: (payload) => {
+                        onSuccess: () => {
                             modalSede.hide();
                             const sedeText = sedeSelect.options[sedeSelect.selectedIndex].textContent;
-                            sedeSeleccionadaSpan.textContent = sedeText;
+                            sedeSeleccionadaSpan.innerHTML = `
+                                <span class="lead">${sedeText}</span><br>
+                                <a class="btn btn-sm btn-animation btn-link text-secondary-emphasis link-offset-2">Cerrar Sesión</a>
+                            `;
                         },
-                        onWarning: () => sedeSelect.classList.add("is-invalid"),
+                        onWarning: () => {
+                            markInvalid(sedeSelect, "Seleccione una sede válida");
+                        },
                         onError: () => enableButton(confirmarSedeBtn, originalText),
                         showAlertMsg: true
                     });
@@ -179,14 +192,11 @@
 
             // === Captura de lectura del Código ===
             const empleadoInfoContainer = document.getElementById('empleadoInfo');
-
             let buffer = "";
             let lastTime = Date.now();
 
             document.addEventListener("keydown", (e) => {
                 const now = Date.now();
-
-                // Reiniciar si el tiempo entre teclas es muy largo (tecleo humano)
                 if (now - lastTime > 100) {
                     buffer = "";
                 }
@@ -195,7 +205,6 @@
                 if (e.key === "Enter") {
                     const codigo = buffer.trim();
                     buffer = "";
-
                     if (codigo) {
                         enviarCodigo(codigo);
                     }
@@ -211,9 +220,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({
-                        codigo: codigo
-                    })
+                    body: JSON.stringify({ codigo })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -222,28 +229,29 @@
                             const empleado = payload.empleado;
                             const contenido = `
                                 <p class="mb-1 fw-bold fs-3">${empleado.nombre_completo}</p>
-                                <p class="mb-1 fs-5">${empleado.cargo}</p><br>
-                                <p class="mb-0 fs-3">${empleado.hora_registro}</p>
+                                <p class="mb-1 fs-5">${empleado.cargo}</p><br><br>
+                                <p class="mb-1 fs-4">Hora ${empleado.descripcion_registro}</p>
+                                <p class="mb-0 display-3">${empleado.hora_registro}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("success", contenido);
                         },
                         onWarning: (payload, message) => {
                             const contenido = `
-                                <p class="mb-1 fw-bold fs-3">Atención</p><br>
+                                <p class="mb-1 fw-bold fs-3">Atención</p><br><br>
                                 <p class="mb-0 fs-5">${message}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("warning", contenido);
                         },
                         onError: (payload, message) => {
                             const contenido = `
-                                <p class="mb-1 fw-bold fs-3">Error</p><br>
+                                <p class="mb-1 fw-bold fs-3">Error</p><br><br>
                                 <p class="mb-0 fs-5">${message}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
                         },
                         onInfo: (payload, message) => {
                             const contenido = `
-                                <p class="mb-1 fw-bold fs-3">Información</p><br>
+                                <p class="mb-1 fw-bold fs-3">Información</p><br><br>
                                 <p class="mb-0 fs-5">${message}</p>
                             `;
                             empleadoInfoContainer.innerHTML = cardInfo("info", contenido);
@@ -259,5 +267,6 @@
             }
         });
     </script>
+
 </body>
 </html>

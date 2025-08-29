@@ -4,13 +4,15 @@ from control import views
 urlpatterns = [
     # Renderizar páginas
     path('lobby/', views.appLobbyRender, name='appLobbyRender'), # Página inicial
-    path('assistance-record/', views.appAssistanceRecordRender, name='appAssistanceRecordRender'), # Página para el registro de asistencia
-    path('dashboard/', views.appDashboardRender, name='appDashboardRender'), # Página inicial al iniciar sesión
+    path('qr-reader/', views.appQrReaderRender, name='appQrReaderRender'), # Página para uso del lector QR
+    path('dashboard/', views.appDashboardRender, name='appDashboardRender'), # Dashboard
+    path('dashboard/employees/', views.appDashboardEmployeesRender, name='appDashboardEmployeesRender'), # Gestión Empleados
+    path('dashboard/assistance-records/', views.appDashboardAssistanceRecordRender, name='appDashboardAssistanceRecordRender'), # Gestión Registros de Asistencias
 
     # Funciones AJAX
     path('lobby/login/authentication/', views.validateAuthentication, name='validateAuthentication'), # Validar credenciales para el inicio de sesión
-    path('assistance-record/define-location/', views.defineLocation, name='defineLocation'), # Guardar sede seleccionada
-    path('assistance-record/save/', views.saveRecord, name='saveRecord'),
+    path('qr-reader/define-location/', views.defineLocation, name='defineLocation'), # Guardar sede seleccionada
+    path('qr-reader/save/', views.saveRecord, name='saveRecord'),
 
     # Cerrar sesión
     path('dashboard/logout/', views.logoutSesion, name='logoutSesion'),

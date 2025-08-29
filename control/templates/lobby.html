@@ -34,7 +34,7 @@
     </head>
     <body>
         <!-- Contenedor para alertas -->
-        <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3"></div>
+        <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3 py-0"></div>
 
         <div class="lobby-container">
             <div class="card-lobby text-center bg-secondary-subtle">
@@ -43,19 +43,26 @@
                 <form id="loginForm" method="POST">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <input type="text" class="form-control" id="username" placeholder="Usuario" required>
+                        <input type="text" class="form-control focus-ring focus-ring-secondary border" id="username" placeholder="Usuario">
                     </div>
                     <div class="mb-3">
-                        <input type="password" class="form-control" id="password" placeholder="Contraseña" autocomplete="off" required>
+                        <input type="password" class="form-control focus-ring focus-ring-secondary border" id="password" placeholder="Contraseña" autocomplete="off">
                     </div>
-                    <button id="loginBtn" type="submit" class="btn btn-animation text-success-emphasis bg-success-subtle border-success-subtle w-75">
+                    <button id="loginBtn" type="submit" class="btn btn-animation bg-secondary text-light w-75">
                         Iniciar Sesión
                     </button>
                 </form>
-                <hr class="my-3">
+
+                <!-- Separador -->
+                <div class="d-flex align-items-center mt-2">
+                    <hr class="flex-grow-1 border-secondary">
+                    <span class="px-2 text-secondary small">o</span>
+                    <hr class="flex-grow-1 border-secondary">
+                </div>
+
+                <!-- Ir a formulario para seleccionar la sede de los registros -->
                 <div class="text-center">
-                    <!-- Iniciar sesión como sede -->
-                    <a href="{% url 'appAssistanceRecordRender' %}" class="btn btn-animation btn-link text-secondary-emphasis link-offset-2">
+                    <a href="{% url 'appQrReaderRender' %}" class="text-secondary-emphasis link-offset-2 link-offset-3-hover link-underline-secondary link-underline-opacity-0 link-underline-opacity-75-hover small">
                         Ingresar como sede
                     </a>
                 </div>
@@ -72,14 +79,33 @@
                 const loginForm = document.getElementById("loginForm");
                 const loginBtn = document.getElementById("loginBtn");
                 const originalText = loginBtn.innerHTML;
+                const usernameInput = document.getElementById("username");
+                const passwordInput = document.getElementById("password");
+
+                // limpiar error al escribir
+                attachClearOnInput([usernameInput, passwordInput]);
 
                 loginForm.addEventListener("submit", (e) => {
                     e.preventDefault();
 
-                    const username = document.getElementById("username").value.trim();
-                    const password = document.getElementById("password").value.trim();
+                    const username = usernameInput.value.trim();
+                    const password = passwordInput.value.trim();
 
-                    // Usar la función global para deshabilitar el botón
+                    // Validación antes de enviar
+                    let hasError = false;
+                    clearInvalid([usernameInput, passwordInput]);
+
+                    if (!username) {
+                        markInvalid(usernameInput, "Campo obligatorio");
+                        hasError = true;
+                    }
+                    if (!password) {
+                        markInvalid(passwordInput, "Campo obligatorio");
+                        hasError = true;
+                    }
+
+                    if (hasError) return; // no envía si hay errores
+
                     disableButtonWithSpinner(loginBtn, "Verificando...");
 
                     fetch("{% url 'validateAuthentication' %}", {
@@ -90,44 +116,26 @@
                         },
                         body: JSON.stringify({ username, password })
                     })
-                    .then(response => {
-                        const status = response.status;
-                        let alertType = "secondary";
-                        let message = "Operación desconocida";
-
-                        if (status === 200) {
-                            alertType = "success";
-                            message = "Inicio exitoso";
-                            disableButtonWithSpinner(loginBtn, "Ingresando...");
-                            setTimeout(() => {
-                                window.location.href = "{% url 'appDashboardRender' %}";
-                            }, 1000);
-                        } else if (status === 401) {
-                            alertType = "warning";
-                            message = "Usuario o contraseña incorrecto";
-                        } else if (status === 400) {
-                            alertType = "info";
-                            message = "Error en los datos enviados";
-                        } else if (status === 405) {
-                            alertType = "info";
-                            message = "Método no permitido";
-                        } else if (status >= 500) {
-                            alertType = "danger";
-                            message = "Error en el servidor. Intenta más tarde";
-                        }
-
-                        showAlert(message, alertType);
-
-                        // Restaurar el botón si no fue exitoso
-                        if (status !== 200) {
-                            enableButton(loginBtn, originalText);
-                        }
+                    .then(response => response.json())
+                    .then(data => {
+                        handleBackendResponse(data, {
+                            onSuccess: () => {
+                                disableButtonWithSpinner(loginBtn, "Ingresando...");
+                                setTimeout(() => {
+                                    window.location.href = "{% url 'appDashboardRender' %}";
+                                }, 1000);
+                            },
+                            onWarning: () => {
+                                enableButton(loginBtn, originalText);
+                            },
+                            onError: () => {
+                                enableButton(loginBtn, originalText);
+                            }
+                        });
                     })
                     .catch(error => {
                         console.error("Error:", error);
                         showAlert("Ocurrió un error inesperado", "danger");
-
-                        // Restaurar el botón en caso de error
                         enableButton(loginBtn, originalText);
                     });
                 });

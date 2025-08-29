@@ -1,40 +1,114 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Inicio - Control de Asistencia</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Inicio{% endblock title %} - Control de Asistencia</title>
     <!-- Bootstrap CSS and Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <!-- Archivo CSS personalizado -->
-        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    </head>
-    <body>
-        <div class="side-panel flex-column p-3 vh-100 col-md-2">
-            <ul class="nav flex-column">
-                <!-- Opción visible para todos los grupos -->
-                <li class="nav-item my-1">
-                    <a href="{% url 'appDashboardRender' %}" class="lh-sm d-flex gap-2 nav-link align-items-center">
-                        <i class="bi bi-house-door-fill"></i>Inicio
+    <!-- Archivo CSS personalizado -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <!-- Contenedor para alertas -->
+    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3"></div>
+
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Panel lateral dinámico (escritorio) -->
+            <nav class="col-md-2 col-lg-2 d-none d-md-flex flex-column flex-shrink-0 p-3 bg-dark-subtle position-sticky top-0 min-vh-100 vh-100 overflow-auto">
+
+                <!-- Info usuario -->
+                <div class="d-flex flex-column align-items-center mb-4">
+                    <i class="bi bi-person-circle fs-1 text-secondary"></i>
+                    <p class="mt-2 mb-0 fw-semibold text-secondary-emphasis text-center">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </p>
+                    <small class="text-muted">Talento Humano</small>
+                </div>
+
+                <h4 class="mb-3 text-secondary-emphasis text-center">Menú</h4>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardRender' %}active text-white bg-primary{% else %}text-secondary{% endif %}">
+                            <i class="bi bi-house-door-fill me-2"></i> Inicio
+                        </a>
+                        <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active text-white bg-primary{% else %}text-secondary{% endif %}">
+                            <i class="bi bi-people-fill me-2"></i> Empleados
+                        </a>
+                        <a href="#" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardAsistenciaRender' %}active text-white bg-primary{% else %}text-secondary{% endif %}">
+                            <i class="bi bi-clipboard-check-fill me-2"></i> Asistencia
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Botón Cerrar sesión -->
+                <div class="mt-auto">
+                    <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2 w-100">
+                        <i class="bi bi-box-arrow-left"></i> <span>Cerrar sesión</span>
                     </a>
-                </li>
-        </div>
-        <div class="d-flex">
+                </div>
+            </nav>
+
+            <!-- Panel lateral móvil (offcanvas) -->
+            <div class="offcanvas offcanvas-start bg-dark-subtle" tabindex="-1" id="mobileSidebar">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title text-secondary-emphasis">Menú</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column">
+
+                    <!-- Info usuario -->
+                    <div class="d-flex flex-column align-items-center mb-4">
+                        <i class="bi bi-person-circle fs-1 text-secondary"></i>
+                        <p class="mt-2 mb-0 fw-semibold text-secondary-emphasis text-center">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                        </p>
+                        <small class="text-muted">Usuario</small>
+                    </div>
+
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                                <i class="bi bi-house-door-fill me-2"></i> Inicio
+                            </a>
+                            <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                                <i class="bi bi-people-fill me-2"></i> Empleados
+                            </a>
+                            <a href="{% url "appDashboardAssistanceRecordRender" %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                                <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Botón Cerrar sesión -->
+                    <div class="mt-auto">
+                        <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2 w-100">
+                            <i class="bi bi-box-arrow-left"></i> <span>Cerrar sesión</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Contenido principal -->
-            <div class="main-container d-flex {% block container_class%} justify-content-center align-items-center{% endblock %} flex-grow-1 col-md-10 overflow-auto">
+            <main class="col px-4 py-3 d-flex {% block container_class %}justify-content-center align-items-center{% endblock %}">
+                <!-- Botón hamburguesa (solo visible en móvil) -->
+                <button class="btn btn-outline-secondary d-md-none mb-3 focus-ring focus-ring-secondary border" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
 
                 {% block content %}
-                welcome
-                {% endblock %}
-            </div>
+                <h2 class="text-secondary">Bienvenido</h2>
+                {% endblock content %}
+            </main>
         </div>
+    </div>
 
-        <!-- Bootstrap JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Global JS -->
-        <script src="{% static 'js/main.js' %}"></script>
-    </body>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Global JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
 </html>

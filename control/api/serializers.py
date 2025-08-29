@@ -20,7 +20,7 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegistroAsistencia
-        fields = ["id", "fk_empleado", "descripcion_registro", "fecha", "hora", "lugar_registro"]
+        fields = '__all__'
 
     def get_fecha(self, obj):
         return localtime(obj.fecha_hora_registro).strftime("%d/%m/%Y")

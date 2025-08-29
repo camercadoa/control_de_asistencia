@@ -32,7 +32,7 @@ function showAlert(message, type = "info", timeout = 3000) {
     const alertContainer = document.getElementById("alert-container");
     const wrapper = document.createElement("div");
     wrapper.innerHTML = `
-        <div class="alert alert-${type} fade show shadow text-center text-nowrap" role="alert">
+        <div class="alert alert-${type} fade show shadow text-center text-nowrap small" role="alert">
             ${message}
         </div>
     `;
@@ -101,6 +101,7 @@ function iniciarReloj(fechaId, horaId) {
     tick();
 }
 
+// Crear tarjeta de información con respuesta del servidor
 function cardInfo(tipo, contenido, icono) {
     let cardClass = "";
 
@@ -146,12 +147,47 @@ function cardInfo(tipo, contenido, icono) {
     setTimeout(() => {
         const el = document.getElementById(cardId);
         if (el) {
-            el.classList.remove("show"); // quita el "show" → inicia fade out
+            el.classList.remove("show");
             el.addEventListener("transitionend", () => {
-                el.remove(); // lo elimina del DOM al terminar animación
+                el.remove();
             }, { once: true });
         }
-    }, 8000); // 8 segundos en pantalla
+    }, 6000); // 6 segundos en pantalla
 
     return html;
+}
+
+// Marcar inputs como inválidos
+function markInvalid(inputs, message = null) {
+    if (!Array.isArray(inputs)) inputs = [inputs];
+    inputs.forEach(input => {
+        if (!input) return;
+        input.classList.add("is-invalid");
+
+        // Si existe feedback, actualizar texto
+        if (message) {
+            let feedback = input.parentElement.querySelector(".invalid-feedback");
+            if (!feedback) {
+                feedback = document.createElement("div");
+                feedback.classList.add("invalid-feedback");
+                input.parentElement.appendChild(feedback);
+            }
+            feedback.textContent = message;
+        }
+    });
+}
+
+// Limpiar estado inválido
+function clearInvalid(inputs) {
+    if (!Array.isArray(inputs)) inputs = [inputs];
+    inputs.forEach(input => input?.classList.remove("is-invalid"));
+}
+
+// Limpiar invalid al escribir
+function attachClearOnInput(inputs) {
+    if (!Array.isArray(inputs)) inputs = [inputs];
+    inputs.forEach(input => {
+        if (!input) return;
+        input.addEventListener("input", () => input.classList.remove("is-invalid"));
+    });
 }
