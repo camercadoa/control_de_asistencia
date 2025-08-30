@@ -132,7 +132,7 @@ function cardInfo(tipo, contenido, icono) {
 
     // Creamos el HTML
     const html = `
-        <div id="${cardId}" class="card ${cardClass} shadow-lg rounded-4 fade show h-100 w-100 m-5">
+        <div id="${cardId}" class="card ${cardClass} shadow-lg rounded-4 fade show h-75 w-100 m-5">
             <div class="card-body d-flex justify-content-between align-items-center px-4 py-3">
                 <div class="flex-grow-1 text-center">
                     ${contenido}
