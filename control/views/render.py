@@ -24,6 +24,7 @@ def appLobbyRender(request):
 # Warn: Si "sede_id" en sesión no corresponde a una sede válida, se elimina de la sesión
 # Return: render() de 'qr_reader.html' con información de la sede si existe
 def appQrReaderRender(request):
+
     sede_id = request.session.get("sede_id")
     sede_info = None
 
@@ -49,6 +50,11 @@ def appQrReaderRender(request):
 # Return: render() de 'dashboard.html'
 @login_required
 def appDashboardRender(request):
+    # Info: Validación de redirecciones centralizada
+    redirection = redirect_if_authenticated_or_sede(request)
+    if redirection:
+        return redirection
+
     return render(
         request,
         'dashboard.html'
