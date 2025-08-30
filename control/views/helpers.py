@@ -18,15 +18,15 @@ logger = logging.getLogger(__name__)
 def build_response(status: str, user_message: str, data: dict = None, code: int = 200, log_message: str = None, exc: Exception = None):
     # Info: Logging según el tipo de status recibido
     if log_message and status == 'info':
-        logger.info(f"INFO: {log_message}")
+        logger.info(f"INFO -> {log_message}")
     elif log_message and status == 'success':
-        logger.info(f"SUCCESS: {log_message}")
+        logger.info(f"SUCCESS -> {log_message}")
     elif log_message and status == 'warning':
-        logger.warning(f"WARNING: {log_message}")
+        logger.warning(f"WARNING -> {log_message}")
     elif log_message and status == 'error':
-        logger.error(f"ERROR: {log_message}")
+        logger.error(f"ERROR -> {log_message}")
         if exc:
-            logger.exception(f'EXCEPTION: {str(exc)}')
+            logger.exception(f'EXCEPTION -> {str(exc)}')
 
     # Info: Construcción del cuerpo de la respuesta
     response = {
