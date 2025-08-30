@@ -38,8 +38,8 @@
                         <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active text-white bg-primary{% else %}text-secondary{% endif %}">
                             <i class="bi bi-people-fill me-2"></i> Empleados
                         </a>
-                        <a href="#" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardAsistenciaRender' %}active text-white bg-primary{% else %}text-secondary{% endif %}">
-                            <i class="bi bi-clipboard-check-fill me-2"></i> Asistencia
+                        <a href="{% url "appDashboardAssistanceRecordRender" %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                            <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
                         </a>
                     </li>
                 </ul>
