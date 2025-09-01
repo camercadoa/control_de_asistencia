@@ -3,17 +3,22 @@ from django.shortcuts import render, redirect
 from control.models import (
     Sede
 )
-from .helpers import redirect_if_authenticated_or_sede
+from .helpers import redirect_if_authenticated, redirect_if_sede
 
 
 # Info: Renderiza la página principal (Lobby) del aplicativo
-# Warn: Si el usuario ya está autenticado o tiene "sede_id" en sesión, será redirigido
 # Return: redirect() si aplica o render() de 'lobby.html'
 def appLobbyRender(request):
-    # Info: Validación de redirecciones centralizada
-    redirection = redirect_if_authenticated_or_sede(request)
-    if redirection:
-        return redirection
+    # Warn: Si el usuario ya está autenticado, será redirigido
+    is_authenticated = redirect_if_authenticated(request)
+    if is_authenticated:
+        return is_authenticated
+
+    # Warn: Si existe "sede_id" en sesión, será redirigido
+    is_sede = redirect_if_sede(request)
+    if is_sede:
+        return is_sede
+
     return render(
         request,
         'lobby.html'
@@ -21,9 +26,12 @@ def appLobbyRender(request):
 
 
 # Info: Renderiza la página del lector de QR
-# Warn: Si "sede_id" en sesión no corresponde a una sede válida, se elimina de la sesión
 # Return: render() de 'qr_reader.html' con información de la sede si existe
 def appQrReaderRender(request):
+    # Warn: Si el usuario ya está autenticado, será redirigido
+    is_authenticated = redirect_if_authenticated(request)
+    if is_authenticated:
+        return is_authenticated
 
     sede_id = request.session.get("sede_id")
     sede_info = None
@@ -36,8 +44,10 @@ def appQrReaderRender(request):
                 "id": sede.id,
                 "text": f"{sede.ubicacion} - {sede.ciudad}"
             }
+        # Warn: Si "sede_id" en sesión no corresponde a una sede válida, se elimina de la sesión
         except Sede.DoesNotExist:
             request.session.pop("sede_id", None)
+
     return render(
         request,
         'qr_reader.html',
@@ -46,14 +56,14 @@ def appQrReaderRender(request):
 
 
 # Info: Renderiza el Dashboard principal
-# Warn: Requiere que el usuario esté autenticado (login_required)
 # Return: render() de 'dashboard.html'
+# Warn: Requiere que el usuario esté autenticado (login_required)
 @login_required
 def appDashboardRender(request):
-    # Info: Validación de redirecciones centralizada
-    redirection = redirect_if_authenticated_or_sede(request)
-    if redirection:
-        return redirection
+    # Warn: Si existe "sede_id" en sesión, será redirigido
+    is_sede = redirect_if_sede(request)
+    if is_sede:
+        return is_sede
 
     return render(
         request,
@@ -63,6 +73,8 @@ def appDashboardRender(request):
 
 # Info: Renderiza el bloque de empleados dentro del Dashboard
 # Return: render() de 'block_content/employees.html'
+# Warn: Requiere que el usuario esté autenticado (login_required)
+@login_required
 def appDashboardEmployeesRender(request):
     return render(
         request,
@@ -72,6 +84,8 @@ def appDashboardEmployeesRender(request):
 
 # Info: Renderiza el bloque de registros de asistencia dentro del Dashboard
 # Return: render() de 'block_content/assistance_records.html'
+# Warn: Requiere que el usuario esté autenticado (login_required)
+@login_required
 def appDashboardAssistanceRecordRender(request):
     return render(
         request,

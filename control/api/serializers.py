@@ -10,9 +10,19 @@ class SedeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmpleadoSerializer(serializers.ModelSerializer):
+    documento = serializers.SerializerMethodField()
+    nombre_completo = serializers.SerializerMethodField()
+
     class Meta:
         model = Empleado
-        fields = '__all__'
+        fields = ["id", "nombre_completo", "cargo", "activo", "documento"]
+
+    def get_documento(self, obj):
+        numero = f"{obj.numero_documento:,}".replace(",", ".")
+        return f"{obj.fk_tipo_documento.tipo_documento} - {numero}"
+
+    def get_nombre_completo(self, obj):
+        return f"{obj.primer_nombre} {obj.segundo_nombre or ''} {obj.primer_apellido} {obj.segundo_apellido or ''}".strip()
 
 class RegistroAsistenciaSerializer(serializers.ModelSerializer):
     fecha = serializers.SerializerMethodField()

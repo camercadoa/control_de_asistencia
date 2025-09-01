@@ -8,48 +8,83 @@
     <h3 class="mb-3 d-flex justify-content-center align-items-center fw-bold">Gestión de Empleados</h3>
 
     <div class="table-responsive">
-        <table class="table table-striped table-bordered text-center" id="tabla-empleados">
-            <thead class="table-dark">
+        <table class="table table-hover table-bordered table-sm text-center" id="tabla-empleados">
+            <thead class="table-dark align-middle">
                 <tr>
-                    <th>ID</th>
-                    <th>Nombre Completo</th>
-                    <th>Número Documento</th>
-                    <th>Cargo</th>
-                    <th>Estado</th>
+                    <th>#</th>
+                    <th>NOMBRE COMPLETO</th>
+                    <th>DOCUMENTO</th>
+                    <th>CARGO</th>
+                    <th>CORREO INSTITUCIONAL</th>
+                    <th>ESTADO</th>
                 </tr>
             </thead>
-            <tbody class="text-uppercase small">
-                <!-- Contenido de la API -->
+            <tbody class="text-uppercase">
+                <!-- Contenido dinámico -->
             </tbody>
         </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-between align-items-center mt-1">
+        <span id="caption-tabla-empleados" class="text-muted"></span>
+        <nav>
+            <ul class="pagination mb-0" id="pagination"></ul>
+        </nav>
     </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    fetch("/api/empleados/")
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.querySelector("#tabla-empleados tbody");
-            tbody.innerHTML = "";
+    document.addEventListener("DOMContentLoaded", () => {
+        const tbody = document.querySelector("#tabla-empleados tbody");
+        const pagination = document.getElementById("pagination");
+        const caption = document.getElementById("caption-tabla-empleados");
+        const pageSize = 25;
 
-            data.forEach(emp => {
-                const fila = document.createElement("tr");
-                fila.innerHTML = `
-                    <td>${emp.id}</td>
-                    <td>${emp.primer_nombre} ${emp.segundo_nombre || ""} ${emp.primer_apellido} ${emp.segundo_apellido || ""}</td>
-                    <td>${emp.numero_documento}</td>
-                    <td>${emp.cargo}</td>
-                    <td>
-                        <span class="badge ${emp.activo ? 'bg-success' : 'bg-danger'}">
-                            ${emp.activo ? "Activo" : "Inactivo"}
-                        </span>
-                    </td>
-                `;
-                tbody.appendChild(fila);
-            });
-        })
-        .catch(error => console.error("Error cargando empleados:", error));
-});
+        async function cargarEmpleados(page = 1) {
+            try {
+                showSpinner(tbody, 6);
+                const response = await fetch(`/api/empleados/?page=${page}`);
+                const data = await response.json();
+
+                tbody.innerHTML = "";
+                let itemIndex = (page - 1) * pageSize + 1;
+
+                data.results.forEach(emp => {
+                    const fila = document.createElement("tr");
+                    fila.className = "align-middle small";
+                    fila.innerHTML = `
+                        <td>${itemIndex++}</td>
+                        <td class="text-wrap">${emp.nombre_completo}</td>
+                        <td>${emp.documento}</td>
+                        <td  class="text-wrap">${emp.cargo}</td>
+                        <td>-</td>
+                        <td>
+                            <span class="badge text-${emp.activo ? 'success-emphasis' : 'danger-emphasis'} bg-${emp.activo ? 'success-subtle' : 'danger-subtle'}">
+                                ${emp.activo ? "Activo" : "Inactivo"}
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+
+                // Calcular rango mostrado en el caption
+                const start = (page - 1) * pageSize + 1;
+                const end = Math.min(page * pageSize, data.count);
+                caption.textContent = `Mostrando ${start}-${end} de ${data.count} empleados`;
+
+                // Reutilizamos la función global de paginación
+                renderPagination(pagination, data, page, pageSize, cargarEmpleados);
+
+            } catch (error) {
+                console.error(error);
+                showAlert("Ocurrió un error inesperado", "danger");
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger-emphasis text-capitalize">Error cargando empleados</td></tr>`;
+                caption.textContent = "";
+            }
+        }
+
+        cargarEmpleados();
+    });
 </script>
 {% endblock %}

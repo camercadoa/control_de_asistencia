@@ -47,12 +47,13 @@
                         <!-- Formulario para seleccionar la sede de los registros -->
                         <form id="formSede" method="POST">
                             {% csrf_token %}
-                            <div class="mb-3">
+                            <div class="form-floating mb-3">
                                 <select class="form-select focus-ring focus-ring-secondary border" id="sede" name="sede" required>
                                     <!-- Listado obtenido con la API -->
                                 </select>
+                                <label for="sede">Selecciona una sede</label>
                             </div>
-                            <button type="button" id="confirmarSede" class="btn btn-animation bg-secondary text-light w-50">
+                            <button type="button" id="confirmarSede" class="btn btn-animation btn-secondary text-light w-50">
                                 Confirmar
                             </button>
                         </form>
@@ -66,7 +67,8 @@
 
                         <!-- Ir al formulario de inicio de sesión -->
                         <div class="text-center">
-                            <a href="{% url 'appLobbyRender' %}" class="text-secondary-emphasis link-offset-2 link-offset-3-hover link-underline-secondary link-underline-opacity-0 link-underline-opacity-75-hover small">
+                            <a href="{% url 'appLobbyRender' %}" class="icon-link icon-link-hover icon-animation-left text-secondary-emphasis link-offset-3-hover link-underline-secondary link-underline-opacity-0 link-underline-opacity-25-hover">
+                                <i class="bi bi-arrow-left"></i>
                                 Ingresar al Dashboard
                             </a>
                         </div>
@@ -120,8 +122,8 @@
                     sedeSeleccionadaSpan.innerHTML = `
                         <span class="lead mb-0">${sedeInfo.text}</span>
                         <div class="vr"></div>
-                        <a href="{% url 'logoutSesion' %}" class="text-danger link-offset-2 link-offset-3-hover link-underline-danger link-underline-opacity-0 link-underline-opacity-75-hover small">
-                            Cerrar Sesión
+                        <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3-hover link-underline-danger link-underline-opacity-0 link-underline-opacity-25-hover">
+                            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                         </a>
                     `;
                 }
@@ -139,7 +141,7 @@
                             return response.json();
                         })
                         .then(data => {
-                            sedeSelect.innerHTML = '<option value="" disabled selected>Selecciona</option>';
+                            sedeSelect.innerHTML = '<option value="" disabled selected></option>';
                             data.forEach(sede => {
                                 const option = document.createElement('option');
                                 option.value = sede.id;
@@ -163,7 +165,7 @@
                     clearInvalid(sedeSelect); // limpiar estado previo
 
                     if (!sedeSeleccionada) {
-                        markInvalid(sedeSelect, "Seleccione una sede antes de continuar");
+                        markInvalid(sedeSelect, "Campo obligatorio");
                         return;
                     }
 
@@ -184,10 +186,10 @@
                                 modalSede.hide();
                                 const sedeText = sedeSelect.options[sedeSelect.selectedIndex].textContent;
                                 sedeSeleccionadaSpan.innerHTML = `
-                                    <span class="lead">${sedeText}</span><br>
-                                    <a href="{% url 'logoutSesion' %}" 
-                                    class="btn btn-sm btn-animation btn-link text-secondary-emphasis link-offset-2">
-                                    Cerrar Sesión
+                                    <span class="lead mb-0">${sedeText}</span>
+                                    <div class="vr"></div>
+                                    <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3-hover link-underline-danger link-underline-opacity-0 link-underline-opacity-25-hover">
+                                        <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                                     </a>
                                 `;
                             },

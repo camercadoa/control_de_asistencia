@@ -5,11 +5,12 @@ from django.contrib.auth import authenticate, login
 from .helpers import success, error, warning, info
 from django.views.decorators.http import require_POST
 
-# Info: El decorador @require_POST asegura que solo se permita el método POST en este endpoint.
+
+# Info: Endpoint para validar autenticación de usuario
+# Info: El decorador @require_POST asegura que solo se permita el método POST
 @csrf_exempt
 @require_POST
 def validateAuthentication(request):
-
     try:
         # 1. Parsear body
         data, response = _parse_request_body(request)
@@ -25,7 +26,7 @@ def validateAuthentication(request):
         return _authenticate_user(request, username, password)
 
     except Exception as e:
-        # Warn: Manejo de excepciones para asegurar que los errores sean capturados y respondidos adecuadamente.
+        # Warn: Captura cualquier excepción inesperada en el servidor
         traceback.print_exc()
         return error(
             user_message="Ocurrió un error inesperado en el servidor",
@@ -37,10 +38,10 @@ def validateAuthentication(request):
 
 def _parse_request_body(request):
     try:
-        # Info: Se intenta convertir el cuerpo de la solicitud en JSON para procesarlo.
+        # Info: Convierte el cuerpo de la solicitud en JSON
         return json.loads(request.body), None
     except json.JSONDecodeError as e:
-        # Warn: Si ocurre un error al parsear el JSON, se retorna un error adecuado.
+        # Warn: Error al parsear el JSON enviado en la solicitud
         return None, error(
             user_message="Los datos enviados no son válidos",
             code=400,
@@ -49,12 +50,12 @@ def _parse_request_body(request):
         )
 
 
+# Params: data (dict) -> Diccionario que contiene los datos enviados en el request
 def _validate_credentials(data):
-    # Params: data (dict) -> Diccionario que contiene los datos enviados en el request.
     username = data.get("username")
     password = data.get("password")
 
-    # Warn: Si no se proporcionan las credenciales necesarias, se retorna una advertencia.
+    # Warn: Usuario o contraseña no proporcionados
     if not username or not password:
         return None, None, warning(
             user_message="Debes ingresar usuario y contraseña",
@@ -64,8 +65,9 @@ def _validate_credentials(data):
     return username, password, None
 
 
+# Params: username (str), password (str)
 def _authenticate_user(request, username, password):
-    # Info: Se usa el método authenticate de Django para verificar las credenciales.
+    # Info: Usa `authenticate` de Django para verificar credenciales
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
@@ -73,9 +75,10 @@ def _authenticate_user(request, username, password):
             user_message="Inicio de sesión exitoso",
             log_message=f"Usuario {username} inició sesión"
         )
-    # Warn: Si las credenciales no son correctas, se retorna un mensaje de error.
+
+    # Warn: Usuario no existe
     return warning(
-        user_message="Usuario o contraseña incorrecto",
+        user_message="Usuario no existente",
         code=401,
         log_message=f"Intento fallido de login con usuario {username}"
     )

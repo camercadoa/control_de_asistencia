@@ -13,7 +13,7 @@
 </head>
 <body>
     <!-- Contenedor para alertas -->
-    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 mt-2 me-2 w-auto px-3"></div>
 
     <div class="container-fluid">
         <div class="row flex-nowrap">
@@ -29,25 +29,36 @@
                     <small class="text-muted">Talento Humano</small>
                 </div>
 
-                <h4 class="mb-3 text-secondary-emphasis text-center">Menú</h4>
+                <!-- Separador -->
+                <div class="d-flex align-items-center">
+                    <hr class="flex-grow-1 border-secondary">
+                    <h6 class="px-2 text-secondary-emphasis">Menú</h6>
+                    <hr class="flex-grow-1 border-secondary">
+                </div>
+
+                <!-- Menú -->
                 <ul class="nav nav-pills flex-column mb-auto">
                     <li class="nav-item">
-                        <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                        <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
                             <i class="bi bi-house-door-fill me-2"></i> Inicio
                         </a>
-                        <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
                             <i class="bi bi-people-fill me-2"></i> Empleados
                         </a>
-                        <a href="{% url "appDashboardAssistanceRecordRender" %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url "appDashboardAssistanceRecordRender" %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
                             <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
                         </a>
                     </li>
                 </ul>
 
                 <!-- Botón Cerrar sesión -->
-                <div class="mt-auto">
-                    <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2 w-100">
-                        <i class="bi bi-box-arrow-left"></i> <span>Cerrar sesión</span>
+                <div class="mt-auto text-center">
+                    <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3-hover link-underline-danger link-underline-opacity-0 link-underline-opacity-25-hover">
+                        <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                     </a>
                 </div>
             </nav>
@@ -71,7 +82,7 @@
 
                     <ul class="nav nav-pills flex-column mb-auto">
                         <li class="nav-item">
-                            <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
+                            <a href="/" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">
                                 <i class="bi bi-house-door-fill me-2"></i> Inicio
                             </a>
                             <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-secondary text-light{% else %}text-secondary{% endif %}">

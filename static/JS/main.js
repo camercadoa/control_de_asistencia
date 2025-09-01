@@ -191,3 +191,66 @@ function attachClearOnInput(inputs) {
         input.addEventListener("input", () => input.classList.remove("is-invalid"));
     });
 }
+
+// Mostrar spinner en un contenedor
+function showSpinner(container, colspan = 1, message = "Cargando...") {
+    container.innerHTML = `
+        <tr>
+            <td colspan="${colspan}" class="text-center py-4">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="spinner-border text-secondary-emphasis mb-2" role="status"></div>
+                    <span class="text-muted small">${message}</span>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// Ocultar spinner
+function hideSpinner(container) {
+    container.innerHTML = "";
+}
+
+// Renderizar paginación
+function renderPagination(paginationContainer, data, currentPage, pageSize, onPageChange) {
+    paginationContainer.innerHTML = "";
+    const totalPages = Math.ceil(data.count / pageSize);
+
+    paginationContainer.innerHTML = `
+        <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="1">
+                <i class="bi bi-chevron-bar-left"></i>
+            </a>
+        </li>
+        <li class="page-item ${!data.previous ? "disabled" : ""}">
+            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="${currentPage - 1}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        <li class="page-item disabled">
+            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary">
+                Página ${currentPage} de ${totalPages}
+            </a>
+        </li>
+        <li class="page-item ${!data.next ? "disabled" : ""}">
+            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="${currentPage + 1}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+        <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="${totalPages}">
+                <i class="bi bi-chevron-bar-right"></i>
+            </a>
+        </li>
+    `;
+
+    paginationContainer.querySelectorAll("a[data-page]").forEach(link => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetPage = parseInt(link.dataset.page);
+            if (!isNaN(targetPage) && targetPage >= 1 && targetPage <= totalPages && targetPage !== currentPage) {
+                onPageChange(targetPage);
+            }
+        });
+    });
+}
