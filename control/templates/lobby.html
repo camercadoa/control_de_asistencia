@@ -27,7 +27,6 @@
                 height: 100%;
                 background: url("{% static 'images/background.webp' %}") no-repeat center center fixed;
                 background-size: cover;
-                opacity: 0.3;
                 z-index: -1;
             }
         </style>
@@ -37,20 +36,20 @@
         <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3 py-0"></div>
 
         <div class="lobby-container">
-            <div class="card-lobby text-center bg-secondary-subtle">
+            <div class="card-lobby text-center bg-light">
                 <h1 class="mb-4 text-secondary-emphasis">Control de Asistencia</h1>
                 <!-- Formulario de inicio de sesión -->
                 <form id="loginForm" method="POST" class="text-secondary">
                     {% csrf_token %}
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control focus-ring focus-ring-secondary border" id="username" placeholder="Usuario">
+                        <input type="text" class="form-control" id="username" placeholder="Usuario">
                         <label for="username">Usuario</label>
                     </div>
                     <div class="form-floating mb-3">
-                        <input type="password" class="form-control focus-ring focus-ring-secondary border" id="password" placeholder="Contraseña" autocomplete="off">
+                        <input type="password" class="form-control" id="password" placeholder="Contraseña" autocomplete="off">
                         <label for="password">Contraseña</label>
                     </div>
-                    <button id="loginBtn" type="submit" class="btn btn-animation btn-secondary text-light w-75">
+                    <button id="loginBtn" type="submit" class="btn btn-animation btn-primary text-light w-75">
                         Iniciar Sesión
                     </button>
                 </form>
@@ -64,7 +63,7 @@
 
                 <!-- Ir a formulario para seleccionar la sede de los registros -->
                 <div class="text-center">
-                    <a href="{% url 'appQrReaderRender' %}" class="icon-link icon-link-hover text-secondary-emphasis link-offset-3-hover link-underline-secondary link-underline-opacity-0 link-underline-opacity-25-hover">
+                    <a href="{% url 'appQrReaderRender' %}" class="icon-link icon-link-hover text-secondary-emphasis link-offset-3 link-underline-secondary link-underline-opacity-50">
                         Ingresar como sede
                         <i class="bi bi-arrow-right"></i>
                     </a>

@@ -27,7 +27,6 @@
                 height: 100%;
                 background: url("{% static 'images/background.webp' %}") no-repeat center center fixed;
                 background-size: cover;
-                opacity: 0.3;
                 z-index: -1;
             }
         </style>
@@ -48,12 +47,12 @@
                         <form id="formSede" method="POST">
                             {% csrf_token %}
                             <div class="form-floating mb-3">
-                                <select class="form-select focus-ring focus-ring-secondary border" id="sede" name="sede" required>
+                                <select class="form-select" id="sede" name="sede" required>
                                     <!-- Listado obtenido con la API -->
                                 </select>
                                 <label for="sede">Selecciona una sede</label>
                             </div>
-                            <button type="button" id="confirmarSede" class="btn btn-animation btn-secondary text-light w-50">
+                            <button type="button" id="confirmarSede" class="btn btn-animation btn-primary text-light w-50">
                                 Confirmar
                             </button>
                         </form>
@@ -67,7 +66,7 @@
 
                         <!-- Ir al formulario de inicio de sesión -->
                         <div class="text-center">
-                            <a href="{% url 'appLobbyRender' %}" class="icon-link icon-link-hover icon-animation-left text-secondary-emphasis link-offset-3-hover link-underline-secondary link-underline-opacity-0 link-underline-opacity-25-hover">
+                            <a href="{% url 'appLobbyRender' %}" class="icon-link icon-link-hover icon-animation-left text-secondary-emphasis link-offset-3 link-underline-secondary link-underline-opacity-50">
                                 <i class="bi bi-arrow-left"></i>
                                 Ingresar al Dashboard
                             </a>
@@ -122,7 +121,7 @@
                     sedeSeleccionadaSpan.innerHTML = `
                         <span class="lead mb-0">${sedeInfo.text}</span>
                         <div class="vr"></div>
-                        <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3-hover link-underline-danger link-underline-opacity-0 link-underline-opacity-25-hover">
+                        <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3 link-underline-danger link-underline-opacity-50">
                             <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                         </a>
                     `;
@@ -132,15 +131,16 @@
                 attachClearOnInput(sedeSelect);
 
                 // Función para cargar las sedes desde la API
-                function cargarSedes() {
-                    fetch('{% url "ApiSedes" %}')
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`Error al cargar las sedes: ${response.statusText}`);
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
+                async function cargarSedes() {
+                    try {
+                        const response = await fetch('{% url "ApiSedes" %}');
+                        if (!response.ok) {
+                            throw new Error(`Error al cargar las sedes: ${response.statusText}`);
+                        }
+
+                        const data = await response.json();
+
+                        if (data.length > 0) {
                             sedeSelect.innerHTML = '<option value="" disabled selected></option>';
                             data.forEach(sede => {
                                 const option = document.createElement('option');
@@ -148,11 +148,14 @@
                                 option.textContent = `${sede.ubicacion} - ${sede.ciudad}`;
                                 sedeSelect.appendChild(option);
                             });
-                        })
-                        .catch(error => {
-                            console.error(error);
+                        } else {
+                            console.error("No hay sedes disponibles.");
                             showAlert("Error al cargar las sedes. Intenta más tarde.", "danger");
-                        });
+                        }
+                    } catch (error) {
+                        console.error("Error al cargar las sedes:", error);
+                        showAlert("Error al cargar las sedes. Intenta más tarde.", "danger");
+                    }
                 }
 
                 cargarSedes();
@@ -188,7 +191,7 @@
                                 sedeSeleccionadaSpan.innerHTML = `
                                     <span class="lead mb-0">${sedeText}</span>
                                     <div class="vr"></div>
-                                    <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3-hover link-underline-danger link-underline-opacity-0 link-underline-opacity-25-hover">
+                                    <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3 link-underline-danger link-underline-opacity-25">
                                         <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                                     </a>
                                 `;

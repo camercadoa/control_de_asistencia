@@ -4,12 +4,12 @@
 {% block container_class %}justify-content-start align-items-start{% endblock %}
 
 {% block content %}
-<div class="container-fluid m-4">
+<div class="container-fluid m-2">
     <h3 class="mb-3 d-flex justify-content-center align-items-center fw-bold">Gestión de Empleados</h3>
 
     <div class="table-responsive">
         <table class="table table-hover table-bordered table-sm text-center" id="tabla-empleados">
-            <thead class="table-dark align-middle">
+            <thead class="table-secondary align-middle">
                 <tr>
                     <th>#</th>
                     <th>NOMBRE COMPLETO</th>
@@ -17,74 +17,68 @@
                     <th>CARGO</th>
                     <th>CORREO INSTITUCIONAL</th>
                     <th>ESTADO</th>
+                    <th></th>
                 </tr>
             </thead>
-            <tbody class="text-uppercase">
-                <!-- Contenido dinámico -->
-            </tbody>
         </table>
-    </div>
-
-    <!-- Paginación -->
-    <div class="d-flex justify-content-between align-items-center mt-1">
-        <span id="caption-tabla-empleados" class="text-muted"></span>
-        <nav>
-            <ul class="pagination mb-0" id="pagination"></ul>
-        </nav>
     </div>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const tbody = document.querySelector("#tabla-empleados tbody");
-        const pagination = document.getElementById("pagination");
-        const caption = document.getElementById("caption-tabla-empleados");
-        const pageSize = 25;
+        $('#tabla-empleados').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: "/api/empleados/",
+                dataSrc: ""
+            },
+            columns: [
+                { data: null, render: (d,t,r,m) => m.row + 1 },
+                { data: "nombre_completo", render: (data) => data ? data.toUpperCase() : "-" },
+                {
+                    data: "documento",
+                    render: function (data, type, row) {
+                        let sides = data.split(" - ");
+                        let typeSide = sides[0];
+                        let formattedNumberDocument = sides[1];
+                        let numberDocument = formattedNumberDocument.replace(/\./g, "");
 
-        async function cargarEmpleados(page = 1) {
-            try {
-                showSpinner(tbody, 6);
-                const response = await fetch(`/api/empleados/?page=${page}`);
-                const data = await response.json();
-
-                tbody.innerHTML = "";
-                let itemIndex = (page - 1) * pageSize + 1;
-
-                data.results.forEach(emp => {
-                    const fila = document.createElement("tr");
-                    fila.className = "align-middle small";
-                    fila.innerHTML = `
-                        <td>${itemIndex++}</td>
-                        <td class="text-wrap">${emp.nombre_completo}</td>
-                        <td>${emp.documento}</td>
-                        <td  class="text-wrap">${emp.cargo}</td>
-                        <td>-</td>
-                        <td>
-                            <span class="badge text-${emp.activo ? 'success-emphasis' : 'danger-emphasis'} bg-${emp.activo ? 'success-subtle' : 'danger-subtle'}">
-                                ${emp.activo ? "Activo" : "Inactivo"}
-                            </span>
-                        </td>
-                    `;
-                    tbody.appendChild(fila);
-                });
-
-                // Calcular rango mostrado en el caption
-                const start = (page - 1) * pageSize + 1;
-                const end = Math.min(page * pageSize, data.count);
-                caption.textContent = `Mostrando ${start}-${end} de ${data.count} empleados`;
-
-                // Reutilizamos la función global de paginación
-                renderPagination(pagination, data, page, pageSize, cargarEmpleados);
-
-            } catch (error) {
-                console.error(error);
-                showAlert("Ocurrió un error inesperado", "danger");
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger-emphasis text-capitalize">Error cargando empleados</td></tr>`;
-                caption.textContent = "";
+                        if (type === 'display') {
+                            return data;
+                        }
+                        if (type === 'filter' || type === 'sort') {
+                            return `${typeSide} - ${numberDocument}`;
+                        }
+                        return data;
+                    }
+                },
+                { data: "cargo", render: (data) => data ? data.toUpperCase() : "-" },
+                { data: null, render: () => "-" },
+                { data: "activo", render: (activo) => `
+                    <span class="badge text-${activo ? 'success-emphasis' : 'danger-emphasis'} bg-${activo ? 'success-subtle' : 'danger-subtle'}">
+                        ${activo ? "Activo" : "Inactivo"}
+                    </span>
+                `},
+                { data: null, orderable: false, render: () => `
+                    <div class="dropdown">
+                        <a class="text-secondary-emphasis" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Definir Horario</a></li>
+                            <li><a class="dropdown-item" href="#">Registro de ingreso</a></li>
+                            <li><a class="dropdown-item" href="#">Generar Código QR</a></li>
+                        </ul>
+                    </div>
+                `}
+            ],
+            pageLength: 25,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
             }
-        }
-
-        cargarEmpleados();
+        });
     });
 </script>
+
 {% endblock %}
