@@ -4,31 +4,38 @@
 {% block container_class %}justify-content-start align-items-start{% endblock %}
 
 {% block content %}
-<div class="container-fluid m-2">
-    <h3 class="mb-3 d-flex justify-content-center align-items-center fw-bold">Gestión de Empleados</h3>
+<h3 class="mb-3 d-flex justify-content-center align-items-center fw-bold">Gestión de Empleados</h3>
 
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered table-sm text-center" id="tabla-empleados">
-            <thead class="table-secondary align-middle">
-                <tr>
-                    <th>#</th>
-                    <th>NOMBRE COMPLETO</th>
-                    <th>DOCUMENTO</th>
-                    <th>CARGO</th>
-                    <th>CORREO INSTITUCIONAL</th>
-                    <th>ESTADO</th>
-                    <th></th>
-                </tr>
-            </thead>
-        </table>
+<!-- Tabla -->
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-3">
+        <div class="table-responsive-md">
+            <table class="table  table-striped table-hover table-borderless align-middle text-center w-100 fs-6" id="tabla-empleados">
+                <thead class="table-dark border-bottom border-2 fw-semibold">
+                    <tr>
+                        <th scope="col" class="py-3">#</th>
+                        <th scope="col" class="py-3">NOMBRE COMPLETO</th>
+                        <th scope="col" class="py-3">DOCUMENTO</th>
+                        <th scope="col" class="py-3">CARGO</th>
+                        <th scope="col" class="py-3">CORREO INSTITUCIONAL</th>
+                        <th scope="col" class="py-3">ESTADO</th>
+                        <th scope="col" class="py-3"></th>
+                    </tr>
+                </thead>
+                <!-- El body lo llena DataTables -->
+            </table>
+        </div>
     </div>
 </div>
 
+
+<!-- Script DataTable -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         $('#tabla-empleados').DataTable({
             processing: true,
             serverSide: false,
+            responsive: true,
             ajax: {
                 url: "/api/empleados/",
                 dataSrc: ""
@@ -39,14 +46,11 @@
                 {
                     data: "documento",
                     render: function (data, type, row) {
+                        if (!data) return "-";
                         let sides = data.split(" - ");
                         let typeSide = sides[0];
                         let formattedNumberDocument = sides[1];
                         let numberDocument = formattedNumberDocument.replace(/\./g, "");
-
-                        if (type === 'display') {
-                            return data;
-                        }
                         if (type === 'filter' || type === 'sort') {
                             return `${typeSide} - ${numberDocument}`;
                         }
@@ -56,7 +60,7 @@
                 { data: "cargo", render: (data) => data ? data.toUpperCase() : "-" },
                 { data: null, render: () => "-" },
                 { data: "activo", render: (activo) => `
-                    <span class="badge text-${activo ? 'success-emphasis' : 'danger-emphasis'} bg-${activo ? 'success-subtle' : 'danger-subtle'}">
+                    <span class="badge rounded-pill text-${activo ? 'success-emphasis' : 'danger-emphasis'} bg-${activo ? 'success-subtle' : 'danger-subtle'} px-3 py-2">
                         ${activo ? "Activo" : "Inactivo"}
                     </span>
                 `},
@@ -65,20 +69,19 @@
                         <a class="text-secondary-emphasis" type="button" data-bs-toggle="dropdown">
                             <i class="bi bi-three-dots-vertical"></i>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Definir Horario</a></li>
-                            <li><a class="dropdown-item" href="#">Registro de ingreso</a></li>
-                            <li><a class="dropdown-item" href="#">Generar Código QR</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-week me-2 text-primary"></i>Definir Horario</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-clock-history me-2 text-success"></i>Registro de ingreso</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-qr-code me-2 text-dark"></i>Generar Código QR</a></li>
                         </ul>
                     </div>
                 `}
             ],
             pageLength: 25,
             language: {
-                url: "//cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+                url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
             }
         });
     });
 </script>
-
 {% endblock %}

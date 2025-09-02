@@ -1,100 +1,70 @@
 {% load static %}
+{% load tags %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Inicio{% endblock title %} - Control de Asistencia</title>
-    <!-- Bootstrap CSS and Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Archivo CSS personalizado -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-</head>
-<body>
-    <!-- Contenedor para alertas -->
-    <div id="alert-container" class="position-fixed top-0 end-0 mt-2 me-2 w-auto px-3"></div>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Inicio{% endblock title %} - Control de Asistencia</title>
+        <!-- Bootstrap CSS and Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <!-- Archivo CSS personalizado -->
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+        <!-- DataTables CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    </head>
+    <body>
+        <!-- Contenedor para alertas -->
+        <div id="alert-container" class="position-fixed top-0 end-0 mt-2 me-2 w-auto px-3"></div>
 
-    <div class="container-fluid">
-        <div class="row flex-nowrap">
-            <!-- Panel lateral dinámico (escritorio) -->
-            <nav class="col-md-2 col-lg-2 d-none d-md-flex flex-column flex-shrink-0 p-3 bg-primary-subtle position-sticky top-0 min-vh-100 vh-100 overflow-auto">
+        <!-- Navbar solo móvil con botón hamburguesa fijo -->
+        <nav class="navbar navbar-dark bg-dark d-md-none position-fixed top-0 start-0 w-100 shadow-sm z-3">
+            <div class="container-fluid">
+                <button class="btn btn-outline-light btn-sm" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <span class="navbar-text text-white fw-semibold">
+                    Control de Asistencia
+                </span>
+            </div>
+        </nav>
 
-                <!-- Info usuario -->
-                <div class="d-flex flex-column align-items-center mb-4">
-                    <i class="bi bi-person-circle fs-1 text-primary-emphasis"></i>
-                    <p class="mt-2 mb-0 fw-semibold text-primary-emphasis text-center">
-                        {{ request.user.get_full_name|default:request.user.username }}
-                    </p>
-                    <small class="text-muted">Talento Humano</small>
-                </div>
+        <div class="container-fluid">
+            <div class="row flex-nowrap">
+                <!-- Panel lateral dinámico (escritorio) -->
+                <nav class="col-md-2 col-lg-2 d-none d-md-flex flex-column flex-shrink-0 p-3 bg-dark position-sticky top-0 min-vh-100 vh-100 overflow-auto">
 
-                <!-- Separador -->
-                <div class="d-flex align-items-center mt-2">
-                    <hr class="flex-grow-1 border-secondary">
-                    <span class="px-2 text-primary-emphasis">Menú</span>
-                    <hr class="flex-grow-1 border-secondary">
-                </div>
-
-                <!-- Menú -->
-                <ul class="nav nav-pills flex-column mb-auto">
-                    <li class="nav-item">
-                        <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-primary text-light{% else %}text-primary-emphasis{% endif %}">
-                            <i class="bi bi-house-door-fill me-2"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-primary text-light{% else %}text-primary-emphasis{% endif %}">
-                            <i class="bi bi-people-fill me-2"></i> Empleados
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url "appDashboardAssistanceRecordRender" %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-primary text-light{% else %}text-primary-emphasis{% endif %}">
-                            <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Botón Cerrar sesión -->
-                <div class="mt-auto text-center">
-                    <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3 link-underline-danger link-underline-opacity-50">
-                        <i class="bi bi-box-arrow-left"></i> Cerrar sesión
-                    </a>
-                </div>
-            </nav>
-
-            <!-- Panel lateral móvil (offcanvas) -->
-            <div class="offcanvas offcanvas-start bg-primary-subtle" tabindex="-1" id="mobileSidebar">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title text-secondary-emphasis">Menú</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-                </div>
-                <div class="offcanvas-body d-flex flex-column">
                     <!-- Info usuario -->
-                    <div class="d-flex flex-column align-items-center mb-4">
-                        <i class="bi bi-person-circle fs-1 text-primary-emphasis"></i>
-                        <p class="mt-2 mb-0 fw-semibold text-primary-emphasis text-center">
+                    <div class="d-flex flex-column align-items-center">
+                        <i class="bi bi-person-circle fs-1 text-light"></i>
+                        <p class="mt-2 mb-0 fw-semibold text-light text-center">
                             {{ request.user.get_full_name|default:request.user.username }}
                         </p>
-                        <small class="text-muted">Talento Humano</small>
+                        <small class="text-white-50">Talento Humano</small>
+                    </div>
+
+                    <!-- Separador -->
+                    <div class="d-flex align-items-center my-3">
+                        <hr class="flex-grow-1 border-secondary">
+                        <span class="px-2 text-white-50">Menú</span>
+                        <hr class="flex-grow-1 border-secondary">
                     </div>
 
                     <!-- Menú -->
                     <ul class="nav nav-pills flex-column mb-auto">
                         <li class="nav-item">
-                            <a href="{% url 'appDashboardRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% if request.resolver_match.url_name == 'appDashboardRender' %}active bg-primary text-light{% else %}text-primary-emphasis{% endif %}">
+                            <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardHomeRender' %}">
                                 <i class="bi bi-house-door-fill me-2"></i> Inicio
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-primary text-light{% else %}text-primary-emphasis{% endif %}">
+                            <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardEmployeesRender' %}">
                                 <i class="bi bi-people-fill me-2"></i> Empleados
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url "appDashboardAssistanceRecordRender" %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-primary text-light{% else %}text-primary-emphasis{% endif %}">
+                            <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardAssistanceRecordRender' %}">
                                 <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
                             </a>
                         </li>
@@ -102,35 +72,78 @@
 
                     <!-- Botón Cerrar sesión -->
                     <div class="mt-auto text-center">
-                        <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3 link-underline-danger link-underline-opacity-50">
-                            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+                        <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
                         </a>
                     </div>
+                </nav>
+
+                <!-- Panel lateral móvil (offcanvas) -->
+                <div class="offcanvas offcanvas-start bg-dark text-light" tabindex="-1" id="mobileSidebar">
+                    <!-- Info usuario -->
+                    <div class="d-flex flex-column align-items-center my-2">
+                        <i class="bi bi-person-circle fs-1 text-light"></i>
+                        <p class="mt-2 mb-0 fw-semibold text-light text-center">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                        </p>
+                        <small class="text-white-50">Talento Humano</small>
+                    </div>
+                    <div class="offcanvas-header border-bottom border-secondary">
+                        <h5 class="offcanvas-title text-white-50">Menú</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                    </div>
+                    <div class="offcanvas-body d-flex flex-column">
+                        <!-- Menú -->
+                        <ul class="nav nav-pills flex-column mb-auto">
+                            <li class="nav-item">
+                                <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center py-3 {% if request.resolver_match.url_name == 'appDashboardHomeRender' %}active bg-primary text-white fw-semibold{% else %}text-light text-opacity-75{% endif %}">
+                                    <i class="bi bi-house-door-fill me-2"></i> Inicio
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center py-3 {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-primary text-white fw-semibold{% else %}text-light text-opacity-75{% endif %}">
+                                    <i class="bi bi-people-fill me-2"></i> Empleados
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center py-3 {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-primary text-white fw-semibold{% else %}text-light text-opacity-75{% endif %}">
+                                    <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- Botón Cerrar sesión -->
+                        <div class="mt-auto text-center">
+                            <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center">
+                                <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
+                            </a>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Contenido principal -->
+                <main class="col px-1 py-2 mt-md-0 mt-5 d-flex {% block container_class %}justify-content-center align-items-center{% endblock %}">
+                    <div class="container-fluid p-4">
+                        {% block content %}
+                        {% endblock content %}
+                    </div>
+                </main>
             </div>
-
-            <!-- Contenido principal -->
-            <main class="col px-1 py-2 d-flex {% block container_class %}justify-content-center align-items-center{% endblock %}">
-                <!-- Botón hamburguesa (solo visible en móvil) -->
-                <button class="position-fixed top-0 start-0 mt-2 ms-2 btn btn-sm btn-outline-secondary d-md-none mb-3" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-                    <i class="bi bi-list fs-6"></i>
-                </button>
-
-                {% block content %}
-                <h2 class="text-secondary">Bienvenido</h2>
-                {% endblock content %}
-            </main>
         </div>
-    </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Global JS -->
-    <script src="{% static 'js/main.js' %}"></script>
-    <!-- jQuery (requerido por DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-</body>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Global JS -->
+        <script src="{% static 'js/main.js' %}"></script>
+        <!-- jQuery (requerido por DataTables) -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <!-- DataTables JS -->
+        <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+        <!-- DataTables Responsive CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+        <!-- DataTables Responsive JS -->
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    </body>
 </html>

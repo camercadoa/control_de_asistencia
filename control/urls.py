@@ -5,7 +5,7 @@ urlpatterns = [
     # Renderizar páginas
     path('lobby/', views.appLobbyRender, name='appLobbyRender'), # Página inicial
     path('qr-reader/', views.appQrReaderRender, name='appQrReaderRender'), # Página para uso del lector QR
-    path('dashboard/', views.appDashboardRender, name='appDashboardRender'), # Dashboard
+    path('dashboard/home/', views.appDashboardHomeRender, name='appDashboardHomeRender'), # Dashboard
     path('dashboard/employees/', views.appDashboardEmployeesRender, name='appDashboardEmployeesRender'), # Gestión Empleados
     path('dashboard/assistance-records/', views.appDashboardAssistanceRecordRender, name='appDashboardAssistanceRecordRender'), # Gestión Registros de Asistencias
 

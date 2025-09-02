@@ -115,13 +115,6 @@ def saveRecord(request):
                 log_message=f"Intento de registro de asistencia para empleado inactivo {codigo}"
             )
 
-        if not empleado.activo:
-            return warning(
-                user_message="El empleado está inactivo y no puede registrar asistencias",
-                code=403,
-                log_message=f"Intento de registro de asistencia para empleado inactivo {codigo}"
-            )
-
         # ✅ Guardar el registro
         sede = Sede.objects.get(id=sede_id)
         # registro = RegistroAsistencia.objects.create(

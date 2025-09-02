@@ -59,7 +59,7 @@ def appQrReaderRender(request):
 # Return: render() de 'dashboard.html'
 # Warn: Requiere que el usuario esté autenticado (login_required)
 @login_required
-def appDashboardRender(request):
+def appDashboardHomeRender(request):
     # Warn: Si existe "sede_id" en sesión, será redirigido
     is_sede = redirect_if_sede(request)
     if is_sede:
@@ -67,7 +67,7 @@ def appDashboardRender(request):
 
     return render(
         request,
-        'dashboard.html'
+        'block_content/home.html'
     )
 
 

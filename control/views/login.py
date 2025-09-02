@@ -2,6 +2,7 @@ import json
 import traceback
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import Group
 from .helpers import success, error, warning, info
 from django.views.decorators.http import require_POST
 
@@ -70,6 +71,19 @@ def _authenticate_user(request, username, password):
     # Info: Usa `authenticate` de Django para verificar credenciales
     user = authenticate(request, username=username, password=password)
     if user is not None:
+        # Info: Validar grupos autorizados
+        groups = ["Secretaria Talento Humano", "Director Talento Humano"]
+        in_groups = any(
+            user.groups.filter(name=grupo).exists() for grupo in groups
+        )
+        # Warn: Usuario no autorizado
+        if not in_groups:
+            return error(
+                user_message="Usuario no autorizado",
+                code=403,
+                log_message=f"Usuario {username} intentó acceder sin pertenecer a los grupos requeridos"
+            )
+
         login(request, user)
         return success(
             user_message="Inicio de sesión exitoso",

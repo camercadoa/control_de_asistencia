@@ -39,10 +39,8 @@
         <div class="modal fade" id="modalSede" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="modalSedeLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header text-secondary-emphasis bg-secondary-subtle">
-                        <h5 class="modal-title" id="modalSedeLabel">Ubicación</h5>
-                    </div>
-                    <div class="modal-body text-center text-secondary-emphasis">
+                    <div class="modal-body text-center text-secondary-emphasis m-0">
+                        <h5 class="modal-title mb-3" id="modalSedeLabel">Ubicación</h5>
                         <!-- Formulario para seleccionar la sede de los registros -->
                         <form id="formSede" method="POST">
                             {% csrf_token %}
@@ -52,22 +50,21 @@
                                 </select>
                                 <label for="sede">Selecciona una sede</label>
                             </div>
-                            <button type="button" id="confirmarSede" class="btn btn-animation btn-primary text-light w-50">
-                                Confirmar
+                            <button type="button" id="confirmarSede" class="btn btn-primary w-50 py-2 fw-semibold">
+                                <i class="bi bi-check-circle"></i> Confirmar
                             </button>
                         </form>
 
                         <!-- Separador -->
-                        <div class="d-flex align-items-center mt-2">
+                        <div class="d-flex align-items-center my-2">
                             <hr class="flex-grow-1 border-secondary">
                             <span class="px-2 text-secondary small">o</span>
                             <hr class="flex-grow-1 border-secondary">
                         </div>
 
                         <!-- Ir al formulario de inicio de sesión -->
-                        <div class="text-center">
-                            <a href="{% url 'appLobbyRender' %}" class="icon-link icon-link-hover icon-animation-left text-secondary-emphasis link-offset-3 link-underline-secondary link-underline-opacity-50">
-                                <i class="bi bi-arrow-left"></i>
+                        <div class="d-flex align-items-center justify-content-center mb-2">
+                            <a href="{% url 'appLobbyRender' %}" class="btn btn-sm btn-outline-secondary w-50 py-1 rounded-3">
                                 Ingresar al Dashboard
                             </a>
                         </div>
@@ -82,7 +79,7 @@
                 <div class="col-sm-12 col-lg-6 d-flex flex-column justify-content-center align-items-center vh-100 p-3">
                     <div class="reloj-box h-100 w-100 d-flex flex-column justify-content-center align-items-center">
                         <p class="lead my-4 text-wrap w-75">
-                            Por favor, escanea tu QR o Código de Barra en el lector cercano para registrar tu ingreso o salida de la sede
+                            Por favor, escanea tu <strong>QR</strong> o <strong>Código de Barra</strong> en el lector cercano para registrar tu ingreso o salida de la sede
                         </p>
                         <span id="fecha" class="display-5"></span>
                         <span id="hora" class="display-1"></span>
@@ -91,7 +88,7 @@
                         <div id="empleadoInfo" class="my-4 text-center w-100 flex-grow-1 d-flex align-items-center justify-content-center"></div>
 
                         <!-- Contenedor para mostrar la sede seleccionada -->
-                        <span id="sedeSeleccionada" class="hstack gap-3 mt-auto mb-4 mx-auto"></span>
+                        <span id="sedeSeleccionada" class="hstack gap-3 mt-auto mb-4 mx-auto w-100 d-flex justify-content-center align-items-center"></span>
                     </div>
                 </div>
             </div>
@@ -121,8 +118,8 @@
                     sedeSeleccionadaSpan.innerHTML = `
                         <span class="lead mb-0">${sedeInfo.text}</span>
                         <div class="vr"></div>
-                        <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3 link-underline-danger link-underline-opacity-50">
-                            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+                        <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm px-3 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-box-arrow-left me-2"></i> Cerrar
                         </a>
                     `;
                 }
@@ -191,8 +188,8 @@
                                 sedeSeleccionadaSpan.innerHTML = `
                                     <span class="lead mb-0">${sedeText}</span>
                                     <div class="vr"></div>
-                                    <a href="{% url 'logoutSesion' %}" class="icon-link icon-link-hover icon-animation-left text-danger-emphasis link-offset-3 link-underline-danger link-underline-opacity-25">
-                                        <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+                                    <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm px-3 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
                                     </a>
                                 `;
                             },
