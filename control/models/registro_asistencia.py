@@ -9,7 +9,7 @@ class RegistroAsistencia(models.Model):
     descripcion_registro = models.CharField(
         max_length=20, verbose_name="Descripcion")
     fecha_hora_registro = models.DateTimeField(
-        default=timezone.now)  # ✅ Unificado
+        default=timezone.now)
     lugar_registro = models.ForeignKey(Sede, on_delete=models.CASCADE)
 
     class Meta:
