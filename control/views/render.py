@@ -42,7 +42,7 @@ def appQrReaderRender(request):
             sede = Sede.objects.get(id=sede_id)
             sede_info = {
                 "id": sede.id,
-                "text": f"{sede.ubicacion} - {sede.ciudad}"
+                "location": f"{sede.ubicacion} - {sede.ciudad}"
             }
         # Warn: Si "sede_id" en sesión no corresponde a una sede válida, se elimina de la sesión
         except Sede.DoesNotExist:
@@ -90,4 +90,24 @@ def appDashboardAssistanceRecordRender(request):
     return render(
         request,
         'block_content/assistance_records.html'
+    )
+
+# Info: Renderiza el bloque de configuración de sedes dentro del Dashboard
+# Return: render() de 'block_content/settings_sedes.html'
+# Warn: Requiere que el usuario esté autenticado (login_required)
+@login_required
+def appDashboardSettingsSedesRender(request):
+    return render(
+        request,
+        'block_content/settings_sedes.html'
+    )
+
+# Info: Renderiza el bloque de configuración de áreas de trabajo dentro del Dashboard
+# Return: render() de 'block_content/settings_areas_trabajo.html'
+# Warn: Requiere que el usuario esté autenticado (login_required)
+@login_required
+def appDashboardSettingsAreasTrabajoRender(request):
+    return render(
+        request,
+        'block_content/settings_areas_trabajo.html'
     )

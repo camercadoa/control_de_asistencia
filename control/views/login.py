@@ -92,7 +92,7 @@ def _authenticate_user(request, username, password):
 
     # Warn: Usuario no existe
     return warning(
-        user_message="Usuario no existente",
+        user_message="Usuario o contraseña incorrectos",
         code=401,
         log_message=f"Intento fallido de login con usuario {username}"
     )

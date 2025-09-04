@@ -5,6 +5,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="{% static 'images/svg/icon.svg' %}" type="image/x-icon">
         <title>{% block title %}Inicio{% endblock title %} - Control de Asistencia</title>
         <!-- Bootstrap CSS and Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -68,6 +69,29 @@
                                 <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
                             </a>
                         </li>
+
+                        <!-- Configuración con sub-menú -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuConfig" role="button" aria-expanded="{{ is_config_active|yesno:'true,false' }}" aria-controls="submenuConfig">
+                                <i class="bi bi-gear-fill me-2"></i> Configuración
+                                <i class="bi bi-caret-down-fill ms-auto small rotate {% if is_config_active %}open{% endif %}"></i>
+                            </a>
+
+                            <div class="collapse ps-4 {% if is_config_active %}show{% endif %}" id="submenuConfig">
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a href="{% url 'appDashboardSettingsSedesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardSettingsSedesRender' %}">
+                                            <i class="bi bi-geo-alt-fill me-2"></i> Sedes
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{% url 'appDashboardSettingsAreasTrabajoRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardSettingsAreasTrabajoRender' %}">
+                                            <i class="bi bi-person-lines-fill me-2"></i> Áreas de Trabajo
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
                     </ul>
 
                     <!-- Botón Cerrar sesión -->
@@ -96,19 +120,40 @@
                         <!-- Menú -->
                         <ul class="nav nav-pills flex-column mb-auto">
                             <li class="nav-item">
-                                <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center py-3 {% if request.resolver_match.url_name == 'appDashboardHomeRender' %}active bg-primary text-white fw-semibold{% else %}text-light text-opacity-75{% endif %}">
+                                <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardHomeRender' %}">
                                     <i class="bi bi-house-door-fill me-2"></i> Inicio
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center py-3 {% if request.resolver_match.url_name == 'appDashboardEmployeesRender' %}active bg-primary text-white fw-semibold{% else %}text-light text-opacity-75{% endif %}">
+                                <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardEmployeesRender' %}">
                                     <i class="bi bi-people-fill me-2"></i> Empleados
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center py-3 {% if request.resolver_match.url_name == 'appDashboardAssistanceRecordRender' %}active bg-primary text-white fw-semibold{% else %}text-light text-opacity-75{% endif %}">
+                                <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardAssistanceRecordRender' %}">
                                     <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
                                 </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuConfigMobile" role="button" aria-expanded="false" aria-controls="submenuConfigMobile">
+                                    <i class="bi bi-gear-fill me-2"></i> Configuración
+                                    <i class="bi bi-caret-down-fill ms-auto small rotate"></i>
+                                </a>
+
+                                <div class="collapse ps-4" id="submenuConfigMobile">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a href="{% url 'appDashboardSettingsSedesRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardSettingsSedesRender' %}">
+                                                <i class="bi bi-geo-alt-fill me-2"></i> Sedes
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'appDashboardSettingsAreasTrabajoRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardSettingsAreasTrabajoRender' %}">
+                                                <i class="bi bi-person-lines-fill me-2"></i> Áreas de Trabajo
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
                         </ul>
 
@@ -145,5 +190,28 @@
         <!-- DataTables Responsive JS -->
         <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
         <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                function handleSubmenuToggle(submenuId, iconSelector) {
+                    const submenu = document.getElementById(submenuId);
+                    const toggleIcon = document.querySelector(iconSelector);
+
+                    if (submenu && toggleIcon) {
+                        submenu.addEventListener("show.bs.collapse", () => {
+                            toggleIcon.classList.add("open");
+                        });
+                        submenu.addEventListener("hide.bs.collapse", () => {
+                            toggleIcon.classList.remove("open");
+                        });
+                    }
+                }
+
+                // Sidebar escritorio
+                handleSubmenuToggle("submenuConfig", 'a[href="#submenuConfig"] .rotate');
+                // Offcanvas móvil
+                handleSubmenuToggle("submenuConfigMobile", 'a[href="#submenuConfigMobile"] .rotate');
+            });
+        </script>
     </body>
 </html>

@@ -120,7 +120,7 @@ def info(user_message: str, data: dict = None, code: int = 200, log_message: str
 # Example: return redirect_if_authenticated(request)
 def redirect_if_authenticated(request):
     if request.user.is_authenticated:
-        return redirect('appDashboardRender')
+        return redirect('appDashboardHomeRender')
     return None
 
 

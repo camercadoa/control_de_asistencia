@@ -5,7 +5,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Registro - Control de Asistencia</title>
+        <link rel="shortcut icon" href="{% static 'images/svg/icon.svg' %}" type="image/x-icon">
+        <title>Lector - Control de Asistencia</title>
         <!-- Bootstrap CSS and Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -40,7 +41,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body text-center text-secondary-emphasis m-0">
-                        <h5 class="modal-title mb-3" id="modalSedeLabel">Ubicación</h5>
+                        <h3 class="modal-title mb-3" id="modalSedeLabel">Ubicación</h3>
                         <!-- Formulario para seleccionar la sede de los registros -->
                         <form id="formSede" method="POST">
                             {% csrf_token %}
@@ -50,7 +51,7 @@
                                 </select>
                                 <label for="sede">Selecciona una sede</label>
                             </div>
-                            <button type="button" id="confirmarSede" class="btn btn-primary w-50 py-2 fw-semibold">
+                            <button type="button" id="confirmarSede" class="btn btn-primary w-100 py-2 fw-semibold">
                                 <i class="bi bi-check-circle"></i> Confirmar
                             </button>
                         </form>
@@ -62,7 +63,7 @@
                             <hr class="flex-grow-1 border-secondary">
                         </div>
 
-                        <!-- Ir al formulario de inicio de sesión -->
+                        <!-- Ir al Lobby -->
                         <div class="d-flex align-items-center justify-content-center mb-2">
                             <a href="{% url 'appLobbyRender' %}" class="btn btn-sm btn-outline-secondary w-50 py-1 rounded-3">
                                 Ingresar al Dashboard
@@ -100,6 +101,16 @@
         <script src="{% static 'js/main.js' %}"></script>
 
         <script>
+            function infoSede(container, sedeLocation) {
+                container.innerHTML = `
+                    <span class="lead mb-0">${sedeLocation}</span>
+                    <div class="vr"></div>
+                    <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm px-3 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-box-arrow-left me-2"></i> Salir
+                    </a>
+                `;
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 const modalSede = new bootstrap.Modal(document.getElementById('modalSede'));
                 const sedeSelect = document.getElementById('sede');
@@ -107,7 +118,7 @@
 
                 iniciarReloj('fecha', 'hora');
 
-                // Datos del backend: sede_info puede ser null o {"id":..., "text":...}
+                // Datos del backend: sede_info puede ser null o {"id":..., "location":...}
                 const sedeInfo = {{ sede_info|default:"null"|safe }};
 
                 if (!sedeInfo) {
@@ -115,13 +126,7 @@
                     modalSede.show();
                 } else {
                     // Ya existe sede en sesión → mostrar directamente
-                    sedeSeleccionadaSpan.innerHTML = `
-                        <span class="lead mb-0">${sedeInfo.text}</span>
-                        <div class="vr"></div>
-                        <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm px-3 d-flex align-items-center justify-content-center">
-                            <i class="bi bi-box-arrow-left me-2"></i> Cerrar
-                        </a>
-                    `;
+                    infoSede(sedeSeleccionadaSpan, sedeInfo.location);
                 }
 
                 // Usar helper para limpiar invalid al escribir/cambiar
@@ -184,14 +189,8 @@
                         handleBackendResponse(data, {
                             onSuccess: () => {
                                 modalSede.hide();
-                                const sedeText = sedeSelect.options[sedeSelect.selectedIndex].textContent;
-                                sedeSeleccionadaSpan.innerHTML = `
-                                    <span class="lead mb-0">${sedeText}</span>
-                                    <div class="vr"></div>
-                                    <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm px-3 d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
-                                    </a>
-                                `;
+                                const sedeLocation = sedeSelect.options[sedeSelect.selectedIndex].textContent;
+                                infoSede(sedeSeleccionadaSpan, sedeLocation);
                             },
                             onWarning: () => {
                                 markInvalid(sedeSelect, "Seleccione una sede válida");

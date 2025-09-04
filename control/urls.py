@@ -8,6 +8,8 @@ urlpatterns = [
     path('dashboard/home/', views.appDashboardHomeRender, name='appDashboardHomeRender'), # Dashboard principal
     path('dashboard/employees/', views.appDashboardEmployeesRender, name='appDashboardEmployeesRender'), # Gestión Empleados
     path('dashboard/assistance-records/', views.appDashboardAssistanceRecordRender, name='appDashboardAssistanceRecordRender'), # Gestión Registros de Asistencias
+    path('dashboard/settings/sedes/', views.appDashboardSettingsSedesRender, name='appDashboardSettingsSedesRender'), # CRUD de Sedes
+    path('dashboard/settings/areas-trabajo/', views.appDashboardSettingsAreasTrabajoRender, name='appDashboardSettingsAreasTrabajoRender'), # CRUD de Áreas de Trabajo
 
     # Funciones AJAX
     path('lobby/login/authentication/', views.validateAuthentication, name='validateAuthentication'), # Validar credenciales para el inicio de sesión

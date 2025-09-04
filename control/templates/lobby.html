@@ -2,140 +2,139 @@
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lobby - Control de Asistencia</title>
-    <!-- Bootstrap CSS and Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Archivo CSS personalizado -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <style>
-        body {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: url("{% static 'images/background.webp' %}") no-repeat center center fixed;
-        background-size: cover;
-        }
-    </style>
-</head>
-<body>
-    <!-- Contenedor para alertas -->
-    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3 py-0"></div>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="{% static 'images/svg/icon.svg' %}" type="image/x-icon">
+        <title>Lobby - Control de Asistencia</title>
+        <!-- Bootstrap CSS and Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <!-- Archivo CSS personalizado -->
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+        <style>
+            body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: url("{% static 'images/background.webp' %}") no-repeat center center fixed;
+            background-size: cover;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Contenedor para alertas -->
+        <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x mt-2 w-auto px-3 py-0"></div>
 
-    <!-- Card principal -->
-    <div class="card shadow-lg border-0 rounded-4 bg-light px-4 py-5" style="max-width: 420px; width: 100%;">
-        <div class="text-center mb-4">
-            <small>Software de</small>
-            <h1 class="h4 fw-bold text-dark">Control de Asistencia</h1>
-        </div>
-
-        <!-- Formulario -->
-        <form id="loginForm" method="POST" class="text-secondary">
-            {% csrf_token %}
-            <div class="form-floating mb-3">
-                <input type="text" class="form-control rounded-3" id="username" placeholder="Usuario">
-                <label for="username">Usuario</label>
+        <!-- Card principal -->
+        <div class="card card-lobby shadow-lg border-0 rounded-4 bg-light px-4 py-5">
+            <div class="text-center mb-4">
+                <small>Software de</small>
+                <h2 class="fw-bold text-dark">Control de Asistencia</h2>
             </div>
-            <div class="form-floating mb-4">
-                <input type="password" class="form-control rounded-3" id="password" placeholder="Contraseña" autocomplete="off">
-                <label for="password">Contraseña</label>
+
+            <!-- Formulario -->
+            <form id="loginForm" method="POST" class="text-secondary">
+                {% csrf_token %}
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control rounded-3" id="username" placeholder="Usuario">
+                    <label for="username">Usuario</label>
+                </div>
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control rounded-3" id="password" placeholder="Contraseña" autocomplete="off">
+                    <label for="password">Contraseña</label>
+                </div>
+                <button id="loginBtn" type="submit" class="btn btn-primary w-100 py-2 fw-semibold gap-2 d-block mx-auto">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                </button>
+            </form>
+
+            <!-- Separador -->
+            <div class="d-flex align-items-center my-2">
+                <hr class="flex-grow-1 border-secondary">
+                <span class="px-2 text-secondary small">o</span>
+                <hr class="flex-grow-1 border-secondary">
             </div>
-            <button id="loginBtn" type="submit" class="btn btn-primary w-100 py-2 fw-semibold gap-2">
-                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
-            </button>
-        </form>
 
-        <!-- Separador -->
-        <div class="d-flex align-items-center my-2">
-            <hr class="flex-grow-1 border-secondary">
-            <span class="px-2 text-secondary small">o</span>
-            <hr class="flex-grow-1 border-secondary">
-        </div>
-
-        <!-- Ingresar como sede -->
-        <div class="text-center">
-            <a href="{% url 'appQrReaderRender' %}" class="btn btn-sm btn-outline-secondary w-75 py-1 rounded-3">
+            <!-- Ingresar como sede -->
+            <a href="{% url 'appQrReaderRender' %}" class="btn btn-sm btn-outline-secondary w-50 py-1 rounded-3 d-block mx-auto">
                 Ingresar como sede
             </a>
         </div>
-    </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Global JS -->
-    <script src="{% static 'js/main.js' %}"></script>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Global JS -->
+        <script src="{% static 'js/main.js' %}"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginForm = document.getElementById("loginForm");
-            const loginBtn = document.getElementById("loginBtn");
-            const originalText = loginBtn.innerHTML;
-            const usernameInput = document.getElementById("username");
-            const passwordInput = document.getElementById("password");
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const loginForm = document.getElementById("loginForm");
+                const loginBtn = document.getElementById("loginBtn");
+                const originalText = loginBtn.innerHTML;
+                const usernameInput = document.getElementById("username");
+                const passwordInput = document.getElementById("password");
 
-            attachClearOnInput([usernameInput, passwordInput]);
+                attachClearOnInput([usernameInput, passwordInput]);
 
-            loginForm.addEventListener("submit", async (e) => {
-                e.preventDefault();
+                loginForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
 
-                const username = usernameInput.value.trim();
-                const password = passwordInput.value.trim();
+                    const username = usernameInput.value.trim();
+                    const password = passwordInput.value.trim();
 
-                let hasError = false;
-                clearInvalid([usernameInput, passwordInput]);
+                    let hasError = false;
+                    clearInvalid([usernameInput, passwordInput]);
 
-                if (!username) {
-                    markInvalid(usernameInput, "Campo obligatorio");
-                    hasError = true;
-                }
-                if (!password) {
-                    markInvalid(passwordInput, "Campo obligatorio");
-                    hasError = true;
-                }
-                if (hasError) return;
+                    if (!username) {
+                        markInvalid(usernameInput, "Campo obligatorio");
+                        hasError = true;
+                    }
+                    if (!password) {
+                        markInvalid(passwordInput, "Campo obligatorio");
+                        hasError = true;
+                    }
+                    if (hasError) return;
 
-                disableButtonWithSpinner(loginBtn, "Verificando...");
+                    disableButtonWithSpinner(loginBtn, "Verificando...");
 
-                try {
-                const response = await fetch("{% url 'validateAuthentication' %}", {
-                    method: "POST",
-                    headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
-                    },
-                    body: JSON.stringify({ username, password })
+                    try {
+                    const response = await fetch("{% url 'validateAuthentication' %}", {
+                        method: "POST",
+                        headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    handleBackendResponse(data, {
+                        onSuccess: () => {
+                            disableButtonWithSpinner(loginBtn, "Ingresando...");
+                            setTimeout(() => {
+                                window.location.href = "{% url 'appDashboardHomeRender' %}";
+                            }, 1000);
+                        },
+                        onWarning: () => {
+                            usernameInput.value = "";
+                            passwordInput.value = "";
+                            enableButton(loginBtn, originalText);
+                        },
+                        onError: () => {
+                            usernameInput.value = "";
+                            passwordInput.value = "";
+                            enableButton(loginBtn, originalText);
+                        },
+                    });
+                    } catch (error) {
+                    showAlert("Ocurrió un error inesperado", "danger");
+                    enableButton(loginBtn, originalText);
+                    }
                 });
-
-                const data = await response.json();
-
-                handleBackendResponse(data, {
-                    onSuccess: () => {
-                        disableButtonWithSpinner(loginBtn, "Ingresando...");
-                        setTimeout(() => {
-                            window.location.href = "{% url 'appDashboardHomeRender' %}";
-                        }, 1000);
-                    },
-                    onWarning: () => {
-                        usernameInput.value = "";
-                        passwordInput.value = "";
-                        enableButton(loginBtn, originalText);
-                    },
-                    onError: () => {
-                        usernameInput.value = "";
-                        passwordInput.value = "";
-                        enableButton(loginBtn, originalText);
-                    },
-                });
-                } catch (error) {
-                showAlert("Ocurrió un error inesperado", "danger");
-                enableButton(loginBtn, originalText);
-                }
             });
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
