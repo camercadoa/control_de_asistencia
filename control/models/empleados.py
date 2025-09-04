@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class TipoDocumento(models.Model):
@@ -9,7 +10,7 @@ class TipoDocumento(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed = False
+        managed = settings.TESTING
         db_table = 'tipo_documentos'
         verbose_name = 'Tipo de Documento'
         verbose_name_plural = 'Tipos de Documentos'
@@ -37,7 +38,7 @@ class Empleado(models.Model):
     activo = models.BooleanField(default=False)
 
     class Meta:
-        managed = False
+        managed = settings.TESTING
         db_table = 'empleados'
         verbose_name = 'Empleado'
         verbose_name_plural = 'Empleados'

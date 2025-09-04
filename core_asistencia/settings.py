@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -185,3 +186,7 @@ LOGGING = {
         },
     },
 }
+
+
+# Settings for testing
+TESTING = "test" in sys.argv

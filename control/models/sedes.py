@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+
 
 class Sede(models.Model):
     id = models.AutoField(primary_key=True)
@@ -6,7 +8,7 @@ class Sede(models.Model):
     ciudad = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = settings.TESTING
         db_table = 'sedes'
         verbose_name = 'Sede'
         verbose_name_plural = 'Sedes'
