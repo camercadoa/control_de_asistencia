@@ -210,3 +210,23 @@ function showSpinner(container, colspan = 1, message = "Cargando...") {
 function hideSpinner(container) {
     container.innerHTML = "";
 }
+
+// Inicializar DataTable con configuración por defecto
+function initDataTable(selector, options = {}) {
+    const defaultConfig = {
+        processing: true,
+        serverSide: false,
+        responsive: true,
+        pageLength: 18,
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+        },
+        // Definir columnas por defecto (si no se pasan en options)
+        columns: []
+    };
+
+    // Fusionar defaults con opciones personalizadas
+    const config = $.extend(true, {}, defaultConfig, options);
+
+    return $(selector).DataTable(config);
+}

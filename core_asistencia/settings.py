@@ -188,6 +188,7 @@ LOGGING = {
     },
 }
 
-
-# Settings for testing
-TESTING = "test" in sys.argv
+# Session settings
+SESSION_COOKIE_AGE = 3600  # 1 hora en segundos
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+LOGIN_URL = 'appLobbyRender'

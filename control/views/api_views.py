@@ -1,6 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from control.models import (
-    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento
+    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia
 )
 from control.api import *
 
@@ -48,3 +48,39 @@ class TipoDocumentoListCreateView(ListCreateAPIView):
 class TipoDocumentoDetailView(RetrieveUpdateDestroyAPIView):
     queryset = TipoDocumento.objects.all()
     serializer_class = TipoDocumentoSerializer
+
+# Area de Trabajo API
+class AreaTrabajoListCreateView(ListCreateAPIView):
+    queryset = AreaTrabajo.objects.all()
+    serializer_class = AreaTrabajoSerializer
+
+class AreaTrabajoDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = AreaTrabajo.objects.all()
+    serializer_class = AreaTrabajoSerializer
+
+# Notificaciones API
+class NotificacionListCreateView(ListCreateAPIView):
+    queryset = Notificacion.objects.all().order_by('-fecha_creacion')
+    serializer_class = NotificacionSerializer
+
+class NotificacionDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Notificacion.objects.all().order_by('-fecha_creacion')
+    serializer_class = NotificacionSerializer
+
+# Tipo Novedad API
+class TipoNovedadListCreateView(ListCreateAPIView):
+    queryset = TipoNovedad.objects.all()
+    serializer_class = TipoNovedadSerializer
+
+class TipoNovedadDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = TipoNovedad.objects.all()
+    serializer_class = TipoNovedadSerializer
+
+# Novedad Asistencia API
+class NovedadAsistenciaListCreateView(ListCreateAPIView):
+    queryset = NovedadAsistencia.objects.all()
+    serializer_class = NovedadAsistenciaSerializer
+
+class NovedadAsistenciaDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = NovedadAsistencia.objects.all()
+    serializer_class = NovedadAsistenciaSerializer

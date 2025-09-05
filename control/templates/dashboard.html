@@ -20,11 +20,11 @@
         <div id="alert-container" class="position-fixed top-0 end-0 mt-2 me-2 w-auto px-3"></div>
 
         <!-- Navbar solo móvil con botón hamburguesa fijo -->
-        <nav class="navbar navbar-dark bg-dark d-md-none position-fixed top-0 start-0 w-100 shadow-sm z-3">
+        <nav class="navbar navbar-dark bg-dark d-lg-none position-fixed top-0 start-0 w-100 shadow-sm z-3">
             <div class="container-fluid">
-                <button class="btn btn-outline-light btn-sm" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-                    <i class="bi bi-list fs-5"></i>
-                </button>
+                <a class="text-light" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list fs-4"></i>
+                </a>
                 <span class="navbar-text text-white fw-semibold">
                     Control de Asistencia
                 </span>
@@ -34,7 +34,7 @@
         <div class="container-fluid">
             <div class="row flex-nowrap">
                 <!-- Panel lateral dinámico (escritorio) -->
-                <nav class="col-md-2 col-lg-2 d-none d-md-flex flex-column flex-shrink-0 p-3 bg-dark position-sticky top-0 min-vh-100 vh-100 overflow-auto">
+                <nav class="col-md-2 col-lg-3 col-xl-2 d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-dark position-sticky top-0 min-vh-100 vh-100 overflow-auto">
 
                     <!-- Info usuario -->
                     <div class="d-flex flex-column align-items-center">
@@ -60,9 +60,24 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardEmployeesRender' %}">
+                            <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuEmployees" role="button" aria-expanded="{{ is_employees_active|yesno:'true,false' }}" aria-controls="submenuEmployees">
                                 <i class="bi bi-people-fill me-2"></i> Empleados
+                                <i class="bi bi-caret-down-fill ms-auto small rotate {% if is_employees_active %}open{% endif %}"></i>
                             </a>
+                            <div class="collapse ps-4 {% if is_employees_active %}show{% endif %}" id="submenuEmployees">
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a href="{% url 'appDashboardActiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardActiveEmployeesRender' %}">
+                                            <i class="bi bi-person-check-fill me-2"></i> Activos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{% url 'appDashboardInactiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardInactiveEmployeesRender' %}">
+                                            <i class="bi bi-person-x-fill me-2"></i> Inactivos
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
                         <li class="nav-item">
                             <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardAssistanceRecordRender' %}">
@@ -80,12 +95,12 @@
                             <div class="collapse ps-4 {% if is_config_active %}show{% endif %}" id="submenuConfig">
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
-                                        <a href="{% url 'appDashboardSettingsSedesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardSettingsSedesRender' %}">
+                                        <a href="{% url 'appDashboardLocationSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardLocationSettingsRender' %}">
                                             <i class="bi bi-geo-alt-fill me-2"></i> Sedes
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="{% url 'appDashboardSettingsAreasTrabajoRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardSettingsAreasTrabajoRender' %}">
+                                        <a href="{% url 'appDashboardWorkAreaSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardWorkAreaSettingsRender' %}">
                                             <i class="bi bi-person-lines-fill me-2"></i> Áreas de Trabajo
                                         </a>
                                     </li>
@@ -125,9 +140,24 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'appDashboardEmployeesRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardEmployeesRender' %}">
+                                <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuEmployeesMobile" role="button" aria-expanded="{{ is_employees_active|yesno:'true,false' }}" aria-controls="submenuEmployeesMobile">
                                     <i class="bi bi-people-fill me-2"></i> Empleados
+                                    <i class="bi bi-caret-down-fill ms-auto small rotate {% if is_employees_active %}open{% endif %}"></i>
                                 </a>
+                                <div class="collapse ps-4 {% if is_employees_active %}show{% endif %}" id="submenuEmployeesMobile">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a href="{% url 'appDashboardActiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardActiveEmployeesRender' %}">
+                                                <i class="bi bi-person-check-fill me-2"></i> Activos
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'appDashboardInactiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardInactiveEmployeesRender' %}">
+                                                <i class="bi bi-person-x-fill me-2"></i> Inactivos
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
                             <li class="nav-item">
                                 <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardAssistanceRecordRender' %}">
@@ -135,20 +165,20 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuConfigMobile" role="button" aria-expanded="false" aria-controls="submenuConfigMobile">
+                                <a class="nav-link d-flex align-items-center lh-1 text-light" data-bs-toggle="collapse" href="#submenuConfigMobile" role="button" aria-expanded="false" aria-controls="submenuConfigMobile">
                                     <i class="bi bi-gear-fill me-2"></i> Configuración
                                     <i class="bi bi-caret-down-fill ms-auto small rotate"></i>
                                 </a>
 
-                                <div class="collapse ps-4" id="submenuConfigMobile">
+                                <div class="collapse ps-4 {% if is_config_active %}show{% endif %}" id="submenuConfigMobile">
                                     <ul class="nav flex-column">
                                         <li class="nav-item">
-                                            <a href="{% url 'appDashboardSettingsSedesRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardSettingsSedesRender' %}">
+                                            <a href="{% url 'appDashboardLocationSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardLocationSettingsRender' %}">
                                                 <i class="bi bi-geo-alt-fill me-2"></i> Sedes
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a href="{% url 'appDashboardSettingsAreasTrabajoRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardSettingsAreasTrabajoRender' %}">
+                                            <a href="{% url 'appDashboardWorkAreaSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardWorkAreaSettingsRender' %}">
                                                 <i class="bi bi-person-lines-fill me-2"></i> Áreas de Trabajo
                                             </a>
                                         </li>
@@ -167,7 +197,7 @@
                 </div>
 
                 <!-- Contenido principal -->
-                <main class="col px-1 py-2 mt-md-0 mt-5 d-flex {% block container_class %}justify-content-center align-items-center{% endblock %}">
+                <main class="col px-1 py-2 mt-lg-0 mt-5 d-flex {% block container_class %}justify-content-center align-items-center{% endblock %}">
                     <div class="container-fluid p-4">
                         {% block content %}
                         {% endblock content %}
@@ -209,8 +239,10 @@
 
                 // Sidebar escritorio
                 handleSubmenuToggle("submenuConfig", 'a[href="#submenuConfig"] .rotate');
+                handleSubmenuToggle("submenuEmployees", 'a[href="#submenuEmployees"] .rotate');
                 // Offcanvas móvil
                 handleSubmenuToggle("submenuConfigMobile", 'a[href="#submenuConfigMobile"] .rotate');
+                handleSubmenuToggle("submenuEmployeesMobile", 'a[href="#submenuEmployeesMobile"] .rotate');
             });
         </script>
     </body>

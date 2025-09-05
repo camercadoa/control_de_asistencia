@@ -12,4 +12,12 @@ urlpatterns = [
     path('correos-institucionales/<int:pk>/', views.CorreoInstitucionalDetailView.as_view(), name='ApiCorreoInstitucionalDetail'),
     path('tipos-documento/', views.TipoDocumentoListCreateView.as_view(), name='ApiTiposDocumento'),
     path('tipos-documento/<int:pk>/', views.TipoDocumentoDetailView.as_view(), name='ApiTipoDocumentoDetail'),
+    path('areas-trabajo/', views.AreaTrabajoListCreateView.as_view(), name='ApiAreasTrabajo'),
+    path('areas-trabajo/<int:pk>/', views.AreaTrabajoDetailView.as_view(), name='ApiAreaTrabajoDetail'),
+    path('notificaciones/', views.NotificacionListCreateView.as_view(), name='ApiNotificaciones'),
+    path('notificaciones/<int:pk>/', views.NotificacionDetailView.as_view(), name='ApiNotificacionDetail'),
+    path('tipos-novedad/', views.TipoNovedadListCreateView.as_view(), name='ApiTiposNovedad'),
+    path('tipos-novedad/<int:pk>/', views.TipoNovedadDetailView.as_view(), name='ApiTipoNovedadDetail'),
+    path('novedades-asistencia/', views.NovedadAsistenciaListCreateView.as_view(), name='ApiNovedadesAsistencia'),
+    path('novedades-asistencia/<int:pk>/', views.NovedadAsistenciaDetailView.as_view(), name='ApiNovedadAsistenciaDetail'),
 ]

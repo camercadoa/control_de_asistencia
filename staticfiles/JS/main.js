@@ -211,46 +211,22 @@ function hideSpinner(container) {
     container.innerHTML = "";
 }
 
-// Renderizar paginación
-function renderPagination(paginationContainer, data, currentPage, pageSize, onPageChange) {
-    paginationContainer.innerHTML = "";
-    const totalPages = Math.ceil(data.count / pageSize);
+// Inicializar DataTable con configuración por defecto
+function initDataTable(selector, options = {}) {
+    const defaultConfig = {
+        processing: true,
+        serverSide: false,
+        responsive: true,
+        pageLength: 18,
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+        },
+        // Definir columnas por defecto (si no se pasan en options)
+        columns: []
+    };
 
-    paginationContainer.innerHTML = `
-        <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
-            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="1">
-                <i class="bi bi-chevron-bar-left"></i>
-            </a>
-        </li>
-        <li class="page-item ${!data.previous ? "disabled" : ""}">
-            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="${currentPage - 1}">
-                <i class="bi bi-chevron-left"></i>
-            </a>
-        </li>
-        <li class="page-item disabled">
-            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary">
-                Página ${currentPage} de ${totalPages}
-            </a>
-        </li>
-        <li class="page-item ${!data.next ? "disabled" : ""}">
-            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="${currentPage + 1}">
-                <i class="bi bi-chevron-right"></i>
-            </a>
-        </li>
-        <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
-            <a class="page-link text-secondary-emphasis focus-ring focus-ring-secondary" href="#" data-page="${totalPages}">
-                <i class="bi bi-chevron-bar-right"></i>
-            </a>
-        </li>
-    `;
+    // Fusionar defaults con opciones personalizadas
+    const config = $.extend(true, {}, defaultConfig, options);
 
-    paginationContainer.querySelectorAll("a[data-page]").forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetPage = parseInt(link.dataset.page);
-            if (!isNaN(targetPage) && targetPage >= 1 && targetPage <= totalPages && targetPage !== currentPage) {
-                onPageChange(targetPage);
-            }
-        });
-    });
+    return $(selector).DataTable(config);
 }
