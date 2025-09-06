@@ -117,20 +117,13 @@ def saveRecord(request):
 
         # ✅ Guardar el registro
         sede = Sede.objects.get(id=sede_id)
-        # registro = RegistroAsistencia.objects.create(
-        #     fk_empleado=empleado,
-        #     descripcion_registro=descripcion,
-        #     fecha_hora_registro=timezone.now(),  # Guardado en UTC
-        #     lugar_registro=sede
-        # )
-
-        # ✅ Preparar el registro (sin guardar en BD todavía)
         registro = RegistroAsistencia(
             fk_empleado=empleado,
             descripcion_registro=descripcion,
             fecha_hora_registro=timezone.now(),  # UTC
             lugar_registro=sede
         )
+        registro.save()
 
         serializer = RegistroAsistenciaSerializer(registro)
         payload = serializer.data

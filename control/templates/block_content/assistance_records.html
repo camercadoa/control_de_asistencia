@@ -73,8 +73,8 @@
             },
             columns: [
                 { data: null, render: (d,t,r,m) => m.row + 1 },
-                { data: "empleado_info", render: emp => emp ? emp.nombre_completo.toUpperCase() : "-" },
-                { data: "empleado_info", render: emp => emp ? emp.documento : "-" },
+                { data: null, render: "-" },
+                { data: null, render: "-" },
                 { data: "fecha", render: d => d || "-" },
                 { data: "hora", render: d => d || "-" },
                 { data: "descripcion_registro", render: d => d || "-" },

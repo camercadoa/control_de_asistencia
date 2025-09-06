@@ -15,11 +15,11 @@ class SedeDetailView(RetrieveUpdateDestroyAPIView):
 
 # Empleados API
 class EmpleadoListCreateView(ListCreateAPIView):
-    queryset = Empleado.objects.all().order_by('primer_apellido')
+    queryset = Empleado.objects.all().order_by('primer_nombre')
     serializer_class = EmpleadoSerializer
 
 class EmpleadoDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Empleado.objects.all().order_by('primer_apellido')
+    queryset = Empleado.objects.all().order_by('primer_nombre')
     serializer_class = EmpleadoSerializer
 
 # Registros de Asistencia API
