@@ -31,93 +31,82 @@
 </div>
 
 <!-- Modal Crear -->
-<div class="modal fade" id="modalCreate" tabindex="-1" data-bs-backdrop="static">
+<div class="modal fade" id="modalCreate" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-        <form id="formCreate">
-            {% csrf_token %}
-            <div class="modal-header">
-            <h5 class="modal-title">Nueva Sede</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-            <div class="mb-3">
-                <label class="form-label">Ubicación</label>
-                <input type="text" class="form-control" name="ubicacion" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Ciudad</label>
-                <input type="text" class="form-control" name="ciudad" required>
-            </div>
-            </div>
-            <div class="modal-footer">
-            <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle"></i> Guardar</button>
-            </div>
-        </form>
+            <form id="formCreate">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Nueva Sede</h5>
+                </div>
+                <div class="modal-body text-center text-secondary-emphasis m-0">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control rounded-3" name="ubicacion" id="createUbicacion" placeholder="Ubicación">
+                        <label for="createUbicacion">Ubicación</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control rounded-3" name="ciudad" id="createCiudad" placeholder="Ciudad">
+                        <label for="createCiudad">Ciudad</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- Modal Editar -->
-<div class="modal fade" id="modalEdit" tabindex="-1" data-bs-backdrop="static">
+<div class="modal fade" id="modalEdit" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-        <form id="formEdit">
-            {% csrf_token %}
-            <div class="modal-header">
-            <h5 class="modal-title">Editar Sede</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-            <input type="hidden" name="id">
-            <div class="mb-3">
-                <label class="form-label">Ubicación</label>
-                <input type="text" class="form-control" name="ubicacion" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Ciudad</label>
-                <input type="text" class="form-control" name="ciudad" required>
-            </div>
-            </div>
-            <div class="modal-footer">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Actualizar</button>
-            </div>
-        </form>
+            <form id="formEdit">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Sede</h5>
+                </div>
+                <div class="modal-body text-center text-secondary-emphasis m-0">
+                    <input type="hidden" name="id">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control rounded-3" name="ubicacion" id="editUbicacion" placeholder="Ubicación">
+                        <label for="editUbicacion">Ubicación</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control rounded-3" name="ciudad" id="editCiudad" placeholder="Ciudad">
+                        <label for="editCiudad">Ciudad</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- Modal Eliminar -->
-<div class="modal fade" id="modalDelete" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="modalDelete" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog">
         <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">Confirmar Eliminación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-            ¿Estás seguro de eliminar esta sede?
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-danger" id="confirmDelete"><i class="bi bi-trash3"></i> Eliminar</button>
-        </div>
+            <div class="modal-body fs-5">
+                ¿Estás seguro de eliminar esta sede?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(";").shift();
-    };
-    const csrftoken = getCookie("csrftoken");
-
-    let table, deleteId = null;
+    // Inicializar DataTable
+    let table = null;
 
     document.addEventListener("DOMContentLoaded", () => {
-        // Inicializar DataTable
         table = initDataTable("#LocationsTable", {
             ajax: { url: "/api/sedes/", dataSrc: "" },
             columns: [
@@ -125,82 +114,142 @@
                 { data: "ubicacion", render: (data) => data ? data.toUpperCase() : "-" },
                 { data: "ciudad", render: (data) => data || "-" },
                 { data: null, orderable: false, render: (data,type,row) => `
-                <div class="d-flex justify-content-center gap-2">
-                    <button class="btn btn-sm btn-outline-primary edit-btn"
-                            data-id="${row.id}" data-ubicacion="${row.ubicacion ?? ''}" data-ciudad="${row.ciudad ?? ''}">
-                    <i class="bi bi-pencil-square"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${row.id}">
-                    <i class="bi bi-trash3"></i> Eliminar
-                    </button>
-                </div>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary edit-btn"
+                                data-id="${row.id}" data-ubicacion="${row.ubicacion ?? ''}" data-ciudad="${row.ciudad ?? ''}">
+                        <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-danger delete-btn" data-id="${row.id}">
+                        <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
                 `}
             ]
         });
 
         // Crear sede
-        document.getElementById("formCreate").addEventListener("submit", async (e) => {
+        const createForm = document.getElementById("formCreate");
+        const createBtn = createForm.querySelector("button[type=submit]");
+        const originalTextCreate = createBtn.innerHTML;
+
+        createForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const form = e.target;
-            const payload = Object.fromEntries(new FormData(form).entries());
+
+            const ubicacionInput = createForm.querySelector("#createUbicacion");
+            const ciudadInput = createForm.querySelector("#createCiudad");
+
+            clearInvalid([ubicacionInput, ciudadInput]);
+            let hasError = false;
+
+            if (!ubicacionInput.value.trim()) {
+                markInvalid(ubicacionInput, "Campo obligatorio");
+                hasError = true;
+            }
+            if (!ciudadInput.value.trim()) {
+                markInvalid(ciudadInput, "Campo obligatorio");
+                hasError = true;
+            }
+            if (hasError) return; // detener si hay errores
+
+            disableButtonWithSpinner(createBtn, "Guardando...");
+
             try {
                 const res = await fetch("/api/sedes/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
-                body: JSON.stringify(payload)
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(Object.fromEntries(new FormData(createForm).entries()))
                 });
-                if (!res.ok) throw new Error("Error al crear la sede");
-                bootstrap.Modal.getInstance(document.getElementById("modalCreate")).hide();
-                form.reset();
-                table.ajax.reload(null, false);
-                showAlert("Sede creada correctamente", "success");
-            } catch (err) {
-                showAlert(err.message, "danger");
+
+                if (res.ok) {
+                    showAlert("Sede creada correctamente", "success");
+                    bootstrap.Modal.getInstance(document.getElementById("modalCreate")).hide();
+                    createForm.reset();
+                    table.ajax.reload(null, false);
+                } else {
+                    showAlert("Error al crear la sede", "danger");
+                }
+            } catch {
+                showAlert("Error inesperado", "danger");
+            } finally {
+                enableButton(createBtn, originalTextCreate);
             }
         });
 
-        // Abrir modal editar
+        resetModalForm("modalCreate", "formCreate", ["createUbicacion", "createCiudad"]);
+
+        // Editar sede
+        const editForm = document.getElementById("formEdit");
+        const editBtn = editForm.querySelector("button[type=submit]");
+        const originalTextEdit = editBtn.innerHTML;
+
         document.getElementById("LocationsTable").addEventListener("click", (e) => {
             const btn = e.target.closest(".edit-btn");
             if (!btn) return;
-            const modal = document.getElementById("modalEdit");
-            modal.querySelector("[name=id]").value = btn.dataset.id;
-            modal.querySelector("[name=ubicacion]").value = btn.dataset.ubicacion;
-            modal.querySelector("[name=ciudad]").value = btn.dataset.ciudad;
-            bootstrap.Modal.getOrCreateInstance(modal).show();
+            editForm.querySelector("[name=id]").value = btn.dataset.id;
+            editForm.querySelector("[name=ubicacion]").value = btn.dataset.ubicacion;
+            editForm.querySelector("[name=ciudad]").value = btn.dataset.ciudad;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("modalEdit")).show();
         });
 
-        // Editar sede
-        document.getElementById("formEdit").addEventListener("submit", async (e) => {
+        editForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const form = e.target;
-            const id = form.querySelector("[name=id]").value;
-            const payload = {
-                ubicacion: form.querySelector("[name=ubicacion]").value,
-                ciudad: form.querySelector("[name=ciudad]").value
-            };
+
+            const ubicacionInput = editForm.querySelector("#editUbicacion");
+            const ciudadInput = editForm.querySelector("#editCiudad");
+
+            clearInvalid([ubicacionInput, ciudadInput]);
+            let hasError = false;
+
+            if (!ubicacionInput.value.trim()) {
+                markInvalid(ubicacionInput, "Campo obligatorio");
+                hasError = true;
+            }
+            if (!ciudadInput.value.trim()) {
+                markInvalid(ciudadInput, "Campo obligatorio");
+                hasError = true;
+            }
+            if (hasError) return;
+
+            disableButtonWithSpinner(editBtn, "Actualizando...");
+            const id = editForm.querySelector("[name=id]").value;
+
             try {
                 const res = await fetch(`/api/sedes/${id}/`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
-                body: JSON.stringify(payload)
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        ubicacion: ubicacionInput.value,
+                        ciudad: ciudadInput.value
+                    })
                 });
-                if (!res.ok) throw new Error("Error al actualizar la sede");
-                bootstrap.Modal.getInstance(document.getElementById("modalEdit")).hide();
-                table.ajax.reload(null, false);
-                showAlert("Sede actualizada correctamente", "success");
-            } catch (err) {
-                showAlert(err.message, "danger");
+
+                if (res.ok) {
+                    showAlert("Sede actualizada correctamente", "success");
+                    bootstrap.Modal.getInstance(document.getElementById("modalEdit")).hide();
+                    table.ajax.reload(null, false);
+                } else {
+                    showAlert("Error al actualizar la sede", "danger");
+                }
+            } catch {
+                showAlert("Error inesperado", "danger");
+            } finally {
+                enableButton(editBtn, originalTextEdit);
             }
         });
 
-        // Abrir modal eliminar
+        resetModalForm("modalEdit", "formEdit", ["editUbicacion", "editCiudad"]);
+
+        // Eliminar sede
+        let deleteId = null;
+        const deleteBtn = document.getElementById("confirmDelete");
+        const originalTextDelete = deleteBtn.innerHTML;
+
         document.getElementById("LocationsTable").addEventListener("click", (e) => {
             const btn = e.target.closest(".delete-btn");
             if (!btn) return;
@@ -208,22 +257,28 @@
             bootstrap.Modal.getOrCreateInstance(document.getElementById("modalDelete")).show();
         });
 
-        // Confirmar eliminación
-        document.getElementById("confirmDelete").addEventListener("click", async () => {
+        deleteBtn.addEventListener("click", async () => {
             if (!deleteId) return;
+            disableButtonWithSpinner(deleteBtn, "Eliminando...");
+
             try {
                 const res = await fetch(`/api/sedes/${deleteId}/`, {
-                method: "DELETE",
-                headers: { "X-CSRFToken": csrftoken }
+                    method: "DELETE",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
                 });
-                if (!res.ok) throw new Error("Error al eliminar la sede");
-                bootstrap.Modal.getInstance(document.getElementById("modalDelete")).hide();
-                table.ajax.reload(null, false);
-                showAlert("Sede eliminada correctamente", "success");
-            } catch (err) {
-                showAlert(err.message, "danger");
+
+                if (res.ok) {
+                    showAlert("Sede eliminada correctamente", "success");
+                    bootstrap.Modal.getInstance(document.getElementById("modalDelete")).hide();
+                    table.ajax.reload(null, false);
+                } else {
+                    showAlert("Error al eliminar la sede", "danger");
+                }
+            } catch {
+                showAlert("Error inesperado", "danger");
             } finally {
                 deleteId = null;
+                enableButton(deleteBtn, originalTextDelete);
             }
         });
     });

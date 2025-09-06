@@ -35,16 +35,22 @@ class EmpleadoSerializer(serializers.ModelSerializer):
 class RegistroAsistenciaSerializer(serializers.ModelSerializer):
     fecha = serializers.SerializerMethodField()
     hora = serializers.SerializerMethodField()
+    nombre_empleado = serializers.SerializerMethodField()
+    empleado_info = EmpleadoSerializer(source="fk_empleado", read_only=True)  # ⚡
 
     class Meta:
         model = RegistroAsistencia
-        fields = '__all__'
+        fields = ["id", "fk_empleado", "empleado_info", "nombre_empleado", "descripcion_registro", "fecha_hora_registro", "fecha", "hora", "lugar_registro"]
 
     def get_fecha(self, obj):
         return localtime(obj.fecha_hora_registro).strftime("%d/%m/%Y")
 
     def get_hora(self, obj):
         return localtime(obj.fecha_hora_registro).strftime("%I:%M:%S %p")
+
+    def get_nombre_empleado(self, obj):
+        return f"{obj.fk_empleado.primer_nombre} {obj.fk_empleado.segundo_nombre or ''} {obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''}".strip()
+
 
 
 class CorreoInstitucionalSerializer(serializers.ModelSerializer):
@@ -60,9 +66,24 @@ class TipoDocumentoSerializer(serializers.ModelSerializer):
 
 
 class AreaTrabajoSerializer(serializers.ModelSerializer):
+    miembros = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Empleado.objects.all(),
+        required=False
+    )
+    miembros_info = EmpleadoSerializer(source="miembros", many=True, read_only=True)
+
     class Meta:
         model = AreaTrabajo
-        fields = '__all__'
+        fields = ["id", "area", "descripcion", "miembros", "miembros_info"]
+
+    def update(self, instance, validated_data):
+        miembros_data = validated_data.pop('miembros', None)
+        instance = super().update(instance, validated_data)
+        if miembros_data is not None:
+            instance.miembros.set(miembros_data)  # ⚡ Actualiza ManyToMany
+        return instance
+
 
 
 class NotificacionSerializer(serializers.ModelSerializer):

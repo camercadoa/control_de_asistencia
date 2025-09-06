@@ -230,3 +230,21 @@ function initDataTable(selector, options = {}) {
 
     return $(selector).DataTable(config);
 }
+
+// Resetea un formulario dentro de un modal y limpia errores de validación
+function resetModalForm(modalId, formId, inputIds = []) {
+    const modal = document.getElementById(modalId);
+    const form = document.getElementById(formId);
+
+    if (!modal || !form) return;
+
+    modal.addEventListener("hidden.bs.modal", () => {
+        form.reset();
+
+        // limpiar estados inválidos
+        const inputs = inputIds.map(id => document.getElementById(id)).filter(Boolean);
+        if (inputs.length) {
+            clearInvalid(inputs);
+        }
+    });
+}

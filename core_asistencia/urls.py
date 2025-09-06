@@ -26,7 +26,7 @@ schema_view = get_schema_view(
         default_version="v1",
         description="Documentación interactiva de la API para el sistema de control de asistencia.",
         terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="soporte@controlasistencia.com"),
+        contact=openapi.Contact(email="support@unicorsalud.edu.co"),
         license=openapi.License(name="MIT License"),
     ),
     public=True,
@@ -34,7 +34,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    # MÓDULO DE ADMINISTRACIÓN
+    # Módulo de administración
     path('root/', admin.site.urls),
 
     # Rutas de la API
