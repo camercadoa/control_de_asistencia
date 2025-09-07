@@ -244,31 +244,30 @@
                             onSuccess: (payload) => {
                                 const empleado = payload.empleado;
                                 const contenido = `
-                                    <p class="mb-1 fw-bold fs-3">${empleado.nombre_completo}</p>
-                                    <p class="mb-1 fs-5">${empleado.cargo}</p><br><br>
-                                    <p class="mb-1 fs-4">Hora ${empleado.descripcion_registro}</p>
-                                    <p class="mb-0 display-3">${empleado.hora_registro}</p>
+                                    <p class="fw-bold fs-3 mb-1">${empleado.nombre_completo}</p>
+                                    <p class="text-muted fs-5 mb-3">${empleado.cargo}</p>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <p class="fs-4 mb-0 fw-bold">Hora ${empleado.descripcion_registro}</p>
+                                        <p class="display-5 mb-0">${empleado.hora_registro}</p>
+                                    </div>
                                 `;
                                 empleadoInfoContainer.innerHTML = cardInfo("success", contenido);
                             },
                             onWarning: (payload, message) => {
                                 const contenido = `
-                                    <p class="mb-1 fw-bold fs-3">Atención</p><br><br>
-                                    <p class="mb-0 fs-5">${message}</p>
+                                    <p class="fs-5 text-muted mb-0">${message}</p>
                                 `;
                                 empleadoInfoContainer.innerHTML = cardInfo("warning", contenido);
                             },
                             onError: (payload, message) => {
                                 const contenido = `
-                                    <p class="mb-1 fw-bold fs-3">Error</p><br><br>
-                                    <p class="mb-0 fs-5">${message}</p>
+                                    <p class="fs-5 text-muted mb-0">${message}</p>
                                 `;
                                 empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
                             },
                             onInfo: (payload, message) => {
                                 const contenido = `
-                                    <p class="mb-1 fw-bold fs-3">Información</p><br><br>
-                                    <p class="mb-0 fs-5">${message}</p>
+                                    <p class="fs-5 text-muted mb-0">${message}</p>
                                 `;
                                 empleadoInfoContainer.innerHTML = cardInfo("info", contenido);
                             },

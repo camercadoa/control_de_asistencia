@@ -1,6 +1,5 @@
-import traceback
+from datetime import timedelta
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from control.models import Empleado, Sede, RegistroAsistencia
 from .helpers import _success, _error, _warning, _info, _parse_request_body
@@ -11,7 +10,6 @@ from control.api import RegistroAsistenciaSerializer
 # Definir sede
 # ---------------------
 
-@csrf_exempt
 @require_POST
 def defineLocation(request):
     # Info: Define la sede en la que se almacenarán los registros de asistencia
@@ -37,7 +35,6 @@ def defineLocation(request):
 
     except Exception as e:
         # Warn: Captura cualquier excepción inesperada
-        traceback.print_exc()  # Debug: remover en producción
         # Return: Respuesta JSON de error con código 500
         return _error(
             user_message="Ocurrió un problema inesperado. Contacte a Soporte",
@@ -47,11 +44,35 @@ def defineLocation(request):
         )
 
 
+def _validate_sede(data):
+    # Info: Valida que se envíe un ID de sede
+    sede_id = data.get("sede")
+    if not sede_id:
+        # Warn: Parámetro sede faltante
+        # Return: Respuesta JSON de advertencia con código 400
+        return None, _warning(
+            user_message="Debes seleccionar una sede antes de continuar",
+            code=400,
+            log_message="Parámetro 'sede' faltante en defineLocation"
+        )
+    return sede_id, None
+
+
+def _save_sede_in_session(request, sede_id):
+    # Info: Guarda la sede en la sesión
+    request.session["sede_id"] = sede_id
+    # Return: Respuesta JSON de éxito
+    return _success(
+        user_message="La sede se ha definido correctamente",
+        data={"sede_id": sede_id},
+        log_message=f"Sede {sede_id} definida en la sesión."
+    )
+
+
 # ---------------------
 # Guardar registro
 # ---------------------
 
-@csrf_exempt
 @require_POST
 def saveRecord(request):
     # Info: Guarda registros de ingreso o salida de empleados
@@ -78,13 +99,13 @@ def saveRecord(request):
         # Info: Validar código de empleado
         response = _validate_codigo(codigo)
         if response:
-            # Return: Respuesta JSON de advertencia si el código no es válido
+            # Return: Respuesta JSON de advertencia si el código es inválido
             return response
 
         # Info: Buscar empleado
         empleado, response = _get_empleado(codigo)
         if response:
-            # Return: Respuesta JSON de error si el empleado no existe
+            # Return: Respuesta JSON de error si no se encuentra el empleado
             return response
 
         # Info: Validar estado activo
@@ -93,19 +114,22 @@ def saveRecord(request):
             # Return: Respuesta JSON de advertencia si el empleado está inactivo
             return response
 
-        # Info: Guardar registro
-        registro, empleado_info = _save_asistencia(empleado, sede_id)
+        # Info: Guardar registro considerando Entrada/Salida y diferencia mínima de 30 min
+        registro, empleado_info_or_response = _save_asistencia(empleado, sede_id)
 
-        # Return: Respuesta JSON de éxito
+        if not registro:
+            # Return: Puede ser un _info si la diferencia mínima no se cumple
+            return empleado_info_or_response
+
+        # Return: Respuesta JSON de éxito con info del empleado
         return _success(
             user_message="Registro guardado correctamente",
-            data={"empleado": empleado_info},
+            data={"empleado": empleado_info_or_response},
             log_message=f"Registro de asistencia guardado para empleado {codigo} en sede {sede_id}"
         )
 
     except Exception as e:
         # Warn: Captura cualquier excepción inesperada
-        traceback.print_exc()  # Debug: remover en producción
         # Return: Respuesta JSON de error con código 500
         return _error(
             user_message="Ocurrió un problema inesperado al guardar el registro",
@@ -113,36 +137,6 @@ def saveRecord(request):
             log_message="Excepción en saveRecord",
             exc=e
         )
-
-
-# ---------------------
-# Helpers
-# ---------------------
-
-
-def _validate_sede(data):
-    # Info: Valida que se envíe un ID de sede
-    sede_id = data.get("sede")
-    if not sede_id:
-        # Warn: Parámetro sede faltante
-        # Return: Respuesta JSON de advertencia con código 400
-        return None, _warning(
-            user_message="Debes seleccionar una sede antes de continuar",
-            code=400,
-            log_message="Parámetro 'sede' faltante en defineLocation"
-        )
-    return sede_id, None
-
-
-def _save_sede_in_session(request, sede_id):
-    # Info: Guarda la sede en la sesión
-    request.session["sede_id"] = sede_id
-    # Return: Respuesta JSON de éxito
-    return _success(
-        user_message="La sede se ha definido correctamente",
-        data={"sede_id": sede_id},
-        log_message=f"Sede {sede_id} definida en la sesión."
-    )
 
 
 def _validate_sede_in_session(sede_id):
@@ -210,12 +204,45 @@ def _validate_empleado_activo(empleado):
 
 
 def _save_asistencia(empleado, sede_id):
-    # Info: Crea un registro de asistencia y construye la respuesta
+    # Info: Determina si el registro será Entrada o Salida, valida diferencia mínima de 30 min, y crea el registro
+    # Params:
+    #   - empleado (Empleado) -> Objeto del empleado
+    #   - sede_id (int) -> ID de la sede donde se registrará
+
+    # Info: Obtener fecha actual
+    ahora = timezone.now()
+    hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+    hoy_fin = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    # Info: Buscar último registro del día
+    ultimo_registro = RegistroAsistencia.objects.filter(
+        fk_empleado=empleado,
+        fecha_hora_registro__range=(hoy_inicio, hoy_fin)
+    ).order_by('-fecha_hora_registro').first()
+
+    # Info: Determinar tipo de registro
+    if not ultimo_registro or ultimo_registro.descripcion_registro == "Salida":
+        tipo_registro = "Entrada"
+    else:
+        tipo_registro = "Salida"
+
+        # Info: Validar diferencia mínima de 30 min entre Entrada y Salida
+        diferencia = ahora - ultimo_registro.fecha_hora_registro
+        # if diferencia < timedelta(minutes=30):
+        if diferencia < timedelta(minutes=1):
+            # Info: No se permite guardar todavía
+            return None, _info(
+                user_message="Tiempo mínimo entre Entrada y Salida no cumplido",
+                code=200,
+                log_message=f"Intento de salida para empleado {empleado.numero_documento} antes del tiempo mínimo (diferencia: {diferencia})"
+            )
+
+    # Info: Guardar registro
     sede = Sede.objects.get(id=sede_id)
     registro = RegistroAsistencia.objects.create(
         fk_empleado=empleado,
-        descripcion_registro="Salida",
-        fecha_hora_registro=timezone.now(),
+        descripcion_registro=tipo_registro,
+        fecha_hora_registro=ahora,
         lugar_registro=sede
     )
 
@@ -232,7 +259,7 @@ def _save_asistencia(empleado, sede_id):
         "cargo": empleado.cargo.upper(),
         "fecha_registro": payload["fecha"],
         "hora_registro": payload["hora"],
-        "descripcion_registro": "Salida"
+        "descripcion_registro": tipo_registro
     }
 
     # Return: Objeto de registro y datos del empleado

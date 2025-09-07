@@ -43,13 +43,13 @@ class EmpleadoDetailView(RetrieveUpdateDestroyAPIView):
 
 class RegistroAsistenciaListCreateView(ListCreateAPIView):
     # Info: Lista todos los registros de asistencia o permite crear uno nuevo
-    queryset = RegistroAsistencia.objects.all()
+    queryset = RegistroAsistencia.objects.all().order_by('-fecha_hora_registro')
     serializer_class = RegistroAsistenciaSerializer
 
 
 class RegistroAsistenciaDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina un registro de asistencia específico
-    queryset = RegistroAsistencia.objects.all()
+    queryset = RegistroAsistencia.objects.all().order_by('-fecha_hora_registro')
     serializer_class = RegistroAsistenciaSerializer
 
 
