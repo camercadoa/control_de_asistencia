@@ -36,11 +36,16 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
     fecha = serializers.SerializerMethodField()
     hora = serializers.SerializerMethodField()
     nombre_empleado = serializers.SerializerMethodField()
-    empleado_info = EmpleadoSerializer(source="fk_empleado", read_only=True)  # ⚡
+    documento = serializers.SerializerMethodField()
+    lugar_registro = serializers.SerializerMethodField()
+    fk_empleado = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = RegistroAsistencia
-        fields = ["id", "fk_empleado", "empleado_info", "nombre_empleado", "descripcion_registro", "fecha_hora_registro", "fecha", "hora", "lugar_registro"]
+        fields = [
+            "id", "nombre_empleado", "documento", "fecha",
+            "hora", "descripcion_registro", "lugar_registro", "fk_empleado"
+        ]
 
     def get_fecha(self, obj):
         return localtime(obj.fecha_hora_registro).strftime("%d/%m/%Y")
@@ -49,8 +54,16 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
         return localtime(obj.fecha_hora_registro).strftime("%I:%M:%S %p")
 
     def get_nombre_empleado(self, obj):
-        return f"{obj.fk_empleado.primer_nombre} {obj.fk_empleado.segundo_nombre or ''} {obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''}".strip()
+        return f"{obj.fk_empleado.primer_nombre} {obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''}".strip()
 
+    def get_documento(self, obj):
+        numero = f"{obj.fk_empleado.numero_documento:,}".replace(",", ".")
+        return f"{obj.fk_empleado.fk_tipo_documento.tipo_documento} - {numero}"
+
+
+    def get_lugar_registro(self, obj):
+        sede = f'{obj.lugar_registro.ubicacion} - {obj.lugar_registro.ciudad}'
+        return sede if obj.lugar_registro else None
 
 
 class CorreoInstitucionalSerializer(serializers.ModelSerializer):

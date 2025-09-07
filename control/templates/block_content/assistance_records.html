@@ -8,19 +8,19 @@
 
 <!-- Filtros -->
 <div class="row mb-3 g-2 align-items-end">
-    <div class="col-md-6">
-        <label for="filterEmployee" class="form-label">Empleado</label>
+    <div class="form-floating col-md-6">
         <select id="filterEmployee" class="form-select">
             <option value="">Todos</option>
         </select>
+        <label for="filterEmployee" class="form-label">Empleado</label>
     </div>
-    <div class="col-md-3">
-        <label for="filterStartDate" class="form-label">Fecha inicio</label>
+    <div class="form-floating col-md-3">
         <input type="date" id="filterStartDate" class="form-control">
+        <label for="filterStartDate" class="form-label">Fecha inicio</label>
     </div>
-    <div class="col-md-3">
-        <label for="filterEndDate" class="form-label">Fecha fin</label>
+    <div class="form-floating col-md-3">
         <input type="date" id="filterEndDate" class="form-control">
+        <label for="filterEndDate" class="form-label">Fecha fin</label>
     </div>
 </div>
 
@@ -33,7 +33,6 @@
                     <tr>
                         <th>#</th>
                         <th>EMPLEADO</th>
-                        <th>DOCUMENTO</th>
                         <th>FECHA</th>
                         <th>HORA</th>
                         <th>DESCRIPCIÓN</th>
@@ -73,12 +72,11 @@
             },
             columns: [
                 { data: null, render: (d,t,r,m) => m.row + 1 },
-                { data: null, render: "-" },
-                { data: null, render: "-" },
-                { data: "fecha", render: d => d || "-" },
-                { data: "hora", render: d => d || "-" },
-                { data: "descripcion_registro", render: d => d || "-" },
-                { data: "lugar_registro", render: lugar => lugar ? lugar.sede.toUpperCase() : "-" }
+                { data: "nombre_empleado", render: nombre_empleado => nombre_empleado ? nombre_empleado.toUpperCase() : "-" },
+                { data: "fecha", render: fecha => fecha || "-" },
+                { data: "hora", render: hora => hora || "-" },
+                { data: "descripcion_registro", render: descripcion_registro => descripcion_registro.toUpperCase() || "-" },
+                { data: "lugar_registro", render: lugar_registro => lugar_registro ? lugar_registro.toUpperCase() : "-" }
             ]
         });
 
@@ -91,7 +89,7 @@
             let show = true;
 
             // Filtrar por empleado
-            if(empId && (!rowData.fk_empleado || rowData.fk_empleado.id != parseInt(empId))) {
+            if (empId && rowData.fk_empleado != parseInt(empId)) {
                 show = false;
             }
 

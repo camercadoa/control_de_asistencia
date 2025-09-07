@@ -217,12 +217,36 @@ function initDataTable(selector, options = {}) {
         processing: true,
         serverSide: false,
         responsive: true,
-        pageLength: 18,
+        pageLength: 15,
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
         },
-        // Definir columnas por defecto (si no se pasan en options)
-        columns: []
+        // Layout: botones a la izquierda del buscador
+        dom: '<"d-flex justify-content-between align-items-center mb-2"lfB>rt<"d-flex justify-content-between align-items-center mt-2"ip>',
+        buttons: [
+            {
+                text: '<i class="bi bi-arrow-clockwise"></i> Recargar',
+                className: 'btn btn-sm bg-primary-subtle border border-primary-subtle text-primary-emphasis',
+                action: function (e, dt, node, config) {
+                    dt.ajax.reload(null, false); // recarga sin resetear página
+                }
+            },
+            {
+                extend: 'excelHtml5',
+                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                className: 'btn btn-sm bg-success-subtle border border-success-subtle text-success-emphasis',
+                titleAttr: 'Exportar a Excel'
+            },
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                className: 'btn btn-sm bg-danger-subtle border border-danger-subtle text-danger-emphasis',
+                titleAttr: 'Exportar a PDF',
+                orientation: 'landscape',
+                pageSize: 'A4'
+            }
+        ],
+        columns: [] // Definir columnas por defecto (si no se pasan en options)
     };
 
     // Fusionar defaults con opciones personalizadas
@@ -230,6 +254,7 @@ function initDataTable(selector, options = {}) {
 
     return $(selector).DataTable(config);
 }
+
 
 // Resetea un formulario dentro de un modal y limpia errores de validación
 function resetModalForm(modalId, formId, inputIds = []) {
