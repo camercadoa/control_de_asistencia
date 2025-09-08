@@ -1,4 +1,5 @@
 from datetime import timedelta
+import datetime
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from control.models import Empleado, Sede, RegistroAsistencia
@@ -246,11 +247,50 @@ def _save_asistencia(empleado, sede_id):
         lugar_registro=sede
     )
 
+    # Info: Calcular puntualidad si es Entrada o Salida
+    horarios = empleado.horarios.all()
+    gabela = timedelta(minutes=10)
+    if horarios.exists():
+        registro_datetime = ahora
+
+        # Info: Buscar el horario más cercano
+        mejor_horario = None
+        menor_diferencia = None
+
+        # Info: Comparar con cada horario del empleado
+        for horario in horarios:
+            if tipo_registro == "Entrada":
+                hora_programada = datetime.combine(registro_datetime.date(), horario.hora_entrada)
+            else:
+                hora_programada = datetime.combine(registro_datetime.date(), horario.hora_salida)
+
+            delta = abs(registro_datetime - hora_programada)
+
+            # Warn: Encontrar el horario con la menor diferencia
+            if menor_diferencia is None or delta < menor_diferencia:
+                menor_diferencia = delta
+                mejor_horario = horario
+
+        if mejor_horario:
+            if tipo_registro == "Entrada":
+                hora_entrada = datetime.combine(registro_datetime.date(), mejor_horario.hora_entrada)
+                delta = registro_datetime - hora_entrada
+                if delta > gabela:
+                    registro.registro_atraso = int(delta.total_seconds() // 60)
+                    registro.estado_registro = "Con retraso"
+            else:
+                hora_salida = datetime.combine(registro_datetime.date(), mejor_horario.hora_salida)
+                delta = hora_salida - registro_datetime
+                if delta > gabela:
+                    registro.registro_salida_anticipada = int(delta.total_seconds() // 60)
+                    registro.estado_registro = "Con anticipación"
+
+            registro.save()
+
     # Info: Serializar registro guardado
     serializer = RegistroAsistenciaSerializer(registro)
     payload = serializer.data
 
-    # Info: Construir información del empleado
     empleado_info = {
         "nombre_completo": f"{empleado.primer_nombre.upper()} "
                         f"{empleado.segundo_nombre.upper() or ''} "
@@ -259,8 +299,10 @@ def _save_asistencia(empleado, sede_id):
         "cargo": empleado.cargo.upper(),
         "fecha_registro": payload["fecha"],
         "hora_registro": payload["hora"],
-        "descripcion_registro": tipo_registro
+        "descripcion_registro": tipo_registro,
+        "estado_registro": registro.estado_registro,
+        "minutos_atraso": registro.registro_atraso,
+        "minutos_anticipacion": registro.registro_salida_anticipada
     }
 
-    # Return: Objeto de registro y datos del empleado
     return registro, empleado_info

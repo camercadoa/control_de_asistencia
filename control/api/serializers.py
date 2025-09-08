@@ -196,18 +196,12 @@ class HorarioSerializer(serializers.ModelSerializer):
         required=False
     )
     miembros_info = EmpleadoSerializer(source="miembros", many=True, read_only=True)
-    hora_entrada = serializers.SerializerMethodField()
-    hora_salida = serializers.SerializerMethodField()
+    hora_entrada = serializers.DateField(format="%I:%M %p")
+    hora_salida = serializers.DateField(format="%I:%M %p")
 
     class Meta:
         model = Horario
         fields = ["id", "hora_entrada", "hora_salida", "miembros", "miembros_info"]
-
-    def get_hora_entrada(self, obj):
-        return obj.hora_entrada.strftime("%I:%M %p")
-
-    def get_hora_salida(self, obj):
-        return obj.hora_salida.strftime("%I:%M %p")
 
     def update(self, instance, validated_data):
         # Info: Actualiza los miembros del horario
