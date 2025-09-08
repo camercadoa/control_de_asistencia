@@ -4,3 +4,4 @@ from .sedes import *
 from .areas import *
 from .notifaciones import *
 from .novedades import *
+from .horarios import *

@@ -11,7 +11,7 @@ class TipoNovedad(models.Model):
         verbose_name_plural = "Tipos de Novedades"
 
     def __str__(self):
-        return self.nombre
+        return self.tipo
 
 
 class NovedadAsistencia(models.Model):
@@ -27,4 +27,4 @@ class NovedadAsistencia(models.Model):
         verbose_name_plural = "Novedades de Asistencia"
 
     def __str__(self):
-        return f"{self.fk_empleado} - {self.fk_tipo_novedad.nombre} ({self.fecha_inicio} a {self.fecha_fin})"
+        return f"{self.fk_empleado} - {self.fk_tipo_novedad.tipo} ({self.fecha_inicio} a {self.fecha_fin})"

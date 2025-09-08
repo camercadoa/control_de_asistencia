@@ -9,8 +9,11 @@ urlpatterns = [
     path('dashboard/employees/active/', views.appDashboardActiveEmployeesRender, name='appDashboardActiveEmployeesRender'), # Gestión Empleados Activos
     path('dashboard/employees/inactive/', views.appDashboardInactiveEmployeesRender, name='appDashboardInactiveEmployeesRender'), # Gestión Empleados Inactivos
     path('dashboard/assistance-records/', views.appDashboardAssistanceRecordRender, name='appDashboardAssistanceRecordRender'), # Gestión Registros de Asistencias
+    path('dashboard/news/', views.appDashboardNewsRender, name='appDashboardNewsRender'), # Gestión Novedades
     path('dashboard/settings/sedes/', views.appDashboardLocationSettingsRender, name='appDashboardLocationSettingsRender'), # CRUD de Sedes
     path('dashboard/settings/areas-trabajo/', views.appDashboardWorkAreaSettingsRender, name='appDashboardWorkAreaSettingsRender'), # CRUD de Áreas de Trabajo
+    path('dashboard/settings/schedules/', views.appDashboardSchedulesSettingsRender, name='appDashboardSchedulesSettingsRender'), # CRUD de Horarios
+    path('dashboard/settings/type-news/', views.appDashboardTypeNewsSettingsRender, name='appDashboardTypeNewsSettingsRender'), # CRUD de Tipos de Novedades
 
     # Funciones AJAX
     path('lobby/login/authentication/', views.validateAuthentication, name='validateAuthentication'), # Validar credenciales para el inicio de sesión

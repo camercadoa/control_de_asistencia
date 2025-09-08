@@ -1,4 +1,26 @@
-// Mapear status de backend a clases de Bootstrap
+// ============================================================================
+// TOOLTIPS BOOTSTRAP
+// ============================================================================
+
+/**
+ * Inicializa todos los tooltips de Bootstrap dentro de un contenedor.
+ * @param {Document|HTMLElement} [container=document] - Elemento donde buscar tooltips.
+ */
+function initTooltips(container = document) {
+    const tooltipTriggerList = [].slice.call(container.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+}
+
+
+// ============================================================================
+// MAPEO DE ESTADOS Y RESPUESTAS DEL BACKEND
+// ============================================================================
+
+/**
+ * Convierte un estado del backend en una clase de Bootstrap.
+ * @param {string} status - Estado recibido (success, error, warning, info).
+ * @returns {string} - Clase de Bootstrap correspondiente.
+ */
 function mapStatusToBootstrap(status) {
     switch (status) {
         case "success": return "success";
@@ -9,7 +31,19 @@ function mapStatusToBootstrap(status) {
     }
 }
 
-// Procesar respuesta estandarizada del backend
+/**
+ * Procesa la respuesta del backend mostrando alertas y ejecutando callbacks.
+ * @param {Object} data - Respuesta del backend.
+ * @param {string} data.status - Estado de la respuesta.
+ * @param {string} data.message - Mensaje del backend.
+ * @param {any} data.data - Datos de la respuesta.
+ * @param {Object} [options={}] - Configuración adicional.
+ * @param {Function} [options.onSuccess] - Callback en caso de éxito.
+ * @param {Function} [options.onWarning] - Callback en caso de advertencia.
+ * @param {Function} [options.onError] - Callback en caso de error.
+ * @param {Function} [options.onInfo] - Callback en caso de información.
+ * @param {boolean} [options.showAlertMsg=true] - Mostrar o no el mensaje en alerta.
+ */
 function handleBackendResponse(data, { onSuccess = null, onWarning = null, onError = null, onInfo = null, showAlertMsg = true } = {}) {
     const { status, message, data: payload } = data;
     const type = mapStatusToBootstrap(status);
@@ -29,7 +63,17 @@ function handleBackendResponse(data, { onSuccess = null, onWarning = null, onErr
     }
 }
 
-// Mostrar alertas
+
+// ============================================================================
+// ALERTAS Y NOTIFICACIONES
+// ============================================================================
+
+/**
+ * Muestra una alerta Bootstrap dentro de #alert-container.
+ * @param {string} message - Texto a mostrar.
+ * @param {string} [type="info"] - Tipo de alerta (success, danger, warning, info).
+ * @param {number|null} [timeout=3000] - Tiempo en ms antes de cerrarse automáticamente. Si es null, no se cierra.
+ */
 function showAlert(message, type = "info", timeout = 3000) {
     const alertContainer = document.getElementById("alert-container");
     const wrapper = document.createElement("div");
@@ -49,60 +93,13 @@ function showAlert(message, type = "info", timeout = 3000) {
     }
 }
 
-// Deshabilitar botón y mostrar spinner
-function disableButtonWithSpinner(button, loadingText = "Procesando...") {
-    button.disabled = true;
-    button.innerHTML = `
-        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        ${loadingText}
-    `;
-}
-
-// Restaurar botón a su estado original
-function enableButton(button, originalText) {
-    button.disabled = false;
-    button.innerHTML = originalText;
-}
-
-// Actualizar reloj (fecha y hora)
-function actualizarReloj(fechaId, horaId) {
-    const now = new Date();
-
-    const formatDate = {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    };
-
-    const formatTime = {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    };
-
-    if (fechaId) {
-        const fechaEl = document.getElementById(fechaId);
-        if (fechaEl) fechaEl.textContent = now.toLocaleDateString('es-CO', formatDate);
-    }
-    if (horaId) {
-        const horaEl = document.getElementById(horaId);
-        if (horaEl) horaEl.textContent = now.toLocaleTimeString('es-CO', formatTime);
-    }
-}
-
-// Inicializar reloj (Igual a la del sistema)
-function iniciarReloj(fechaId, horaId) {
-    function tick() {
-        actualizarReloj(fechaId, horaId);
-        const now = new Date();
-        const delay = 1000 - now.getMilliseconds();
-        setTimeout(tick, delay);
-    }
-    tick();
-}
-
+/**
+ * Crea una tarjeta de información que se elimina automáticamente después de 6 segundos.
+ * @param {string} tipo - Tipo de tarjeta (success, warning, error, info).
+ * @param {string} contenido - Texto o contenido a mostrar.
+ * @param {string} [icono] - HTML de ícono opcional.
+ * @returns {string} - HTML de la tarjeta.
+ */
 function cardInfo(tipo, contenido, icono) {
     let cardClass = "";
     let iconHTML = icono || "";
@@ -160,7 +157,96 @@ function cardInfo(tipo, contenido, icono) {
     return html;
 }
 
-// Marcar inputs como inválidos
+
+// ============================================================================
+// UTILIDADES DE RELOJ (FECHA Y HORA)
+// ============================================================================
+
+/**
+ * Actualiza elementos HTML con la fecha y la hora actual.
+ * @param {string} [fechaId] - ID del elemento donde mostrar la fecha.
+ * @param {string} [horaId] - ID del elemento donde mostrar la hora.
+ */
+function actualizarReloj(fechaId, horaId) {
+    const now = new Date();
+
+    const formatDate = {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    };
+
+    const formatTime = {
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+    };
+
+    if (fechaId) {
+        const fechaEl = document.getElementById(fechaId);
+        if (fechaEl) fechaEl.textContent = now.toLocaleDateString('es-CO', formatDate);
+    }
+    if (horaId) {
+        const horaEl = document.getElementById(horaId);
+        if (horaEl) horaEl.textContent = now.toLocaleTimeString('es-CO', formatTime);
+    }
+}
+
+/**
+ * Inicia un reloj en vivo actualizando fecha y hora en intervalos de 1s.
+ * @param {string} [fechaId] - ID del elemento donde mostrar la fecha.
+ * @param {string} [horaId] - ID del elemento donde mostrar la hora.
+ */
+function iniciarReloj(fechaId, horaId) {
+    function tick() {
+        actualizarReloj(fechaId, horaId);
+        const now = new Date();
+        const delay = 1000 - now.getMilliseconds();
+        setTimeout(tick, delay);
+    }
+    tick();
+}
+
+
+// ============================================================================
+// BOTONES (Loading Spinner y Restaurar)
+// ============================================================================
+
+/**
+ * Deshabilita un botón y muestra un spinner de carga.
+ * @param {HTMLButtonElement} button - Botón a modificar.
+ * @param {string} [loadingText="Procesando..."] - Texto a mostrar junto al spinner.
+ */
+function disableButtonWithSpinner(button, loadingText = "Procesando...") {
+    button.disabled = true;
+    button.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        ${loadingText}
+    `;
+}
+
+/**
+ * Restaura el botón a su estado original.
+ * @param {HTMLButtonElement} button - Botón a restaurar.
+ * @param {string} originalText - Texto original del botón.
+ */
+function enableButton(button, originalText) {
+    button.disabled = false;
+    button.innerHTML = originalText;
+}
+
+
+// ============================================================================
+// VALIDACIÓN DE FORMULARIOS
+// ============================================================================
+
+/**
+ * Marca inputs como inválidos y muestra un mensaje de error.
+ * @param {HTMLInputElement|HTMLInputElement[]} inputs - Uno o varios inputs.
+ * @param {string|null} [message=null] - Mensaje de error a mostrar.
+ */
 function markInvalid(inputs, message = null) {
     if (!Array.isArray(inputs)) inputs = [inputs];
     inputs.forEach(input => {
@@ -180,13 +266,19 @@ function markInvalid(inputs, message = null) {
     });
 }
 
-// Limpiar estado inválido
+/**
+ * Elimina la clase de error de los inputs.
+ * @param {HTMLInputElement|HTMLInputElement[]} inputs - Uno o varios inputs.
+ */
 function clearInvalid(inputs) {
     if (!Array.isArray(inputs)) inputs = [inputs];
     inputs.forEach(input => input?.classList.remove("is-invalid"));
 }
 
-// Limpiar invalid al escribir
+/**
+ * Escucha eventos de input para limpiar el estado inválido al escribir.
+ * @param {HTMLInputElement|HTMLInputElement[]} inputs - Uno o varios inputs.
+ */
 function attachClearOnInput(inputs) {
     if (!Array.isArray(inputs)) inputs = [inputs];
     inputs.forEach(input => {
@@ -195,26 +287,17 @@ function attachClearOnInput(inputs) {
     });
 }
 
-// Mostrar spinner en un contenedor
-function showSpinner(container, colspan = 1, message = "Cargando...") {
-    container.innerHTML = `
-        <tr>
-            <td colspan="${colspan}" class="text-center py-4">
-                <div class="d-flex flex-column align-items-center">
-                    <div class="spinner-border text-secondary-emphasis mb-2" role="status"></div>
-                    <span class="text-muted small">${message}</span>
-                </div>
-            </td>
-        </tr>
-    `;
-}
 
-// Ocultar spinner
-function hideSpinner(container) {
-    container.innerHTML = "";
-}
+// ============================================================================
+// TABLAS (DataTables con configuración por defecto)
+// ============================================================================
 
-// Inicializar DataTable con configuración por defecto
+/**
+ * Inicializa un DataTable con configuración estándar (exportación, responsive, tooltips).
+ * @param {string} selector - Selector del elemento <table>.
+ * @param {Object} [options={}] - Configuración personalizada.
+ * @returns {DataTable} - Instancia de DataTable.
+ */
 function initDataTable(selector, options = {}) {
     const defaultConfig = {
         processing: true,
@@ -224,25 +307,24 @@ function initDataTable(selector, options = {}) {
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
         },
-        // Layout:
         dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rt<"d-flex justify-content-between align-items-center mt-2"ip>',
         buttons: [
             {
-                text: '<i class="bi bi-arrow-clockwise"></i> Recargar',
+                text: '<i class="bi bi-arrow-clockwise me-2 fs-5"></i> Recargar',
                 className: 'btn btn-link bg-white text-primary',
                 action: function (e, dt, node, config) {
-                    dt.ajax.reload(null, false); // recarga sin resetear página
+                    dt.ajax.reload(null, false);
                 }
             },
             {
                 extend: 'excelHtml5',
-                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                text: '<i class="bi bi-file-earmark-excel-fill me-2 fs-5"></i> Excel',
                 className: 'btn btn-link bg-white text-success',
                 titleAttr: 'Exportar a Excel'
             },
             {
                 extend: 'pdfHtml5',
-                text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                text: '<i class="bi bi-file-earmark-pdf-fill me-2 fs-5"></i> PDF',
                 className: 'btn btn-link bg-white text-danger',
                 titleAttr: 'Exportar a PDF',
                 orientation: 'landscape',
@@ -250,22 +332,34 @@ function initDataTable(selector, options = {}) {
             },
             {
                 extend: 'print',
-                text: '<i class="bi bi-printer"></i> Imprimir',
+                text: '<i class="bi bi-printer-fill me-2 fs-5"></i> Imprimir',
                 className: 'btn btn-link bg-white text-dark',
                 titleAttr: 'Imprimir'
             }
         ],
-        columns: [] // Definir columnas por defecto (si no se pasan en options)
+        columns: []
     };
 
-    // Fusionar defaults con opciones personalizadas
     const config = $.extend(true, {}, defaultConfig, options);
+    const dt = $(selector).DataTable(config);
 
-    return $(selector).DataTable(config);
+    // Iniciar tooltips en botones después de cada renderizado
+    dt.on("draw.dt", () => initTooltips(document.querySelector(selector)));
+
+    return dt;
 }
 
 
-// Resetea un formulario dentro de un modal y limpia errores de validación
+// ============================================================================
+// MODALES Y FORMULARIOS
+// ============================================================================
+
+/**
+ * Resetea un formulario dentro de un modal y limpia errores de validación.
+ * @param {string} modalId - ID del modal.
+ * @param {string} formId - ID del formulario.
+ * @param {string[]} [inputIds=[]] - IDs de inputs a limpiar.
+ */
 function resetModalForm(modalId, formId, inputIds = []) {
     const modal = document.getElementById(modalId);
     const form = document.getElementById(formId);

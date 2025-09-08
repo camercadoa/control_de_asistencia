@@ -8,19 +8,37 @@
 
 <!-- Filtros -->
 <div class="row mb-3 g-2 align-items-end">
-    <div class="form-floating col-md-6">
+    <!-- Filtro de Empleado -->
+    <div class="form-floating col-md-4">
         <select id="filterEmployee" class="form-select">
             <option value="">Todos</option>
         </select>
         <label for="filterEmployee" class="form-label">Empleado</label>
     </div>
-    <div class="form-floating col-md-3">
+    <!-- Filtros de Fecha -->
+    <div class="form-floating col-md-2">
         <input type="date" id="filterStartDate" class="form-control">
         <label for="filterStartDate" class="form-label">Fecha inicio</label>
     </div>
-    <div class="form-floating col-md-3">
+    <div class="form-floating col-md-2">
         <input type="date" id="filterEndDate" class="form-control">
         <label for="filterEndDate" class="form-label">Fecha fin</label>
+    </div>
+    <!-- Filtro de Descripción -->
+    <div class="form-floating col-md-2">
+        <select id="filterDescription" class="form-select">
+            <option value="">Todos</option>
+            <option value="Entrada">Entrada</option>
+            <option value="Salida">Salida</option>
+        </select>
+        <label for="filterDescription" class="form-label">Descripción</label>
+    </div>
+    <!-- Filtro de Áreas de Trabajo -->
+    <div class="form-floating col-md-2">
+        <select id="filterWorkArea" class="form-select">
+            <option value="">Todas</option>
+        </select>
+        <label for="filterWorkArea" class="form-label">Área de Trabajo</label>
     </div>
 </div>
 
@@ -49,21 +67,6 @@
         let empleados = [];
         let table = null;
 
-        // Traer todos los empleados para el filtro
-        try {
-            const resEmp = await fetch("/api/empleados/");
-            empleados = await resEmp.json();
-            const select = document.getElementById("filterEmployee");
-            empleados.forEach(emp => {
-                const option = document.createElement("option");
-                option.value = emp.id;
-                option.textContent = emp.nombre_completo.toUpperCase();
-                select.appendChild(option);
-            });
-        } catch {
-            showAlert("Error cargando empleados para el filtro", "danger");
-        }
-
         // Inicializar DataTable
         table = initDataTable("#AttendanceTable", {
             ajax: {
@@ -80,11 +83,48 @@
             ]
         });
 
+        // Cargar empleados y áreas de trabajo para los filtros
+        try {
+            const [resEmp, resAreas] = await Promise.all([
+                fetch("/api/empleados/"),
+                fetch("/api/areas-trabajo/")
+            ]);
+
+            const [empleadosData, areasData] = await Promise.all([
+                resEmp.json(),
+                resAreas.json()
+            ]);
+
+            // Poblar empleados
+            const selectEmp = document.getElementById("filterEmployee");
+            empleadosData.forEach(emp => {
+                const option = document.createElement("option");
+                option.value = emp.id;
+                option.textContent = emp.nombre_completo.toUpperCase();
+                selectEmp.appendChild(option);
+            });
+
+            // Poblar áreas
+            const selectArea = document.getElementById("filterWorkArea");
+            areasData.forEach(area => {
+                const option = document.createElement("option");
+                option.value = area.id;
+                option.textContent = area.area.toUpperCase();
+                selectArea.appendChild(option);
+            });
+
+        } catch {
+            showAlert("Error cargando empleados o áreas de trabajo", "danger");
+        }
+
+
         // Filtro automático con DataTables API
         $.fn.dataTable.ext.search.push((settings, data, dataIndex, rowData) => {
             const empId = document.getElementById("filterEmployee").value;
             const startDate = document.getElementById("filterStartDate").value;
             const endDate = document.getElementById("filterEndDate").value;
+            const description = document.getElementById("filterDescription").value;
+            const workAreaId = document.getElementById("filterWorkArea").value;
 
             let show = true;
 
@@ -94,15 +134,25 @@
             }
 
             // Filtrar por fecha inicio
-            if(startDate) {
+            if (startDate) {
                 const regDate = new Date(rowData.fecha.split("/").reverse().join("-"));
-                if(regDate < new Date(startDate)) show = false;
+                if (regDate < new Date(startDate)) show = false;
             }
 
             // Filtrar por fecha fin
-            if(endDate) {
+            if (endDate) {
                 const regDate = new Date(rowData.fecha.split("/").reverse().join("-"));
-                if(regDate > new Date(endDate)) show = false;
+                if (regDate > new Date(endDate)) show = false;
+            }
+
+            // Filtrar por descripción
+            if (description && rowData.descripcion_registro.toLowerCase() !== description.toLowerCase()) {
+                show = false;
+            }
+
+            // Filtrar por área de trabajo
+            if (workAreaId && !rowData.fk_areas_trabajo.includes(parseInt(workAreaId))) {
+                show = false;
             }
 
             return show;
@@ -112,6 +162,8 @@
         document.getElementById("filterEmployee").addEventListener("change", () => table.draw());
         document.getElementById("filterStartDate").addEventListener("change", () => table.draw());
         document.getElementById("filterEndDate").addEventListener("change", () => table.draw());
+        document.getElementById("filterDescription").addEventListener("input", () => table.draw());
+        document.getElementById("filterWorkArea").addEventListener("change", () => table.draw());
     });
 </script>
 {% endblock %}

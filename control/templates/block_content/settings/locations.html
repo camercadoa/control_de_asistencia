@@ -4,13 +4,15 @@
 {% block container_class %}justify-content-start align-items-start{% endblock %}
 
 {% block content %}
-<h3 class="mb-3 d-flex justify-content-center align-items-center fw-bold">Configuración de Sedes</h3>
-
-<!-- Botón Nueva Sede -->
-<div class="mb-3 d-flex justify-content-end">
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCreate">
-        <i class="bi bi-plus-circle"></i> Nueva Sede
-    </button>
+<div class="row mb-3">
+    <div class="col-auto d-flex align-items-center">
+        <h3 class="fw-bold mb-0">Configuración de Sedes</h3>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-success py-2" data-bs-toggle="modal" data-bs-target="#modalCreate">
+            <i class="bi bi-plus-circle fs-5 me-2"></i>Agregar Sede
+        </button>
+    </div>
 </div>
 
 <!-- Tabla -->
@@ -116,12 +118,19 @@
                 { data: "ciudad", render: (data) => data || "-" },
                 { data: null, orderable: false, render: (data,type,row) => `
                     <div class="d-flex justify-content-center gap-3">
-                        <button class="btn btn-primary edit-btn"
-                                data-id="${row.id}" data-ubicacion="${row.ubicacion ?? ''}" data-ciudad="${row.ciudad ?? ''}">
-                        <i class="bi bi-pencil-square"></i>
+                        <button class="btn btn-sm btn-primary edit-btn"
+                                data-id="${row.id}"
+                                data-ubicacion="${row.ubicacion ?? ''}"
+                                data-ciudad="${row.ciudad ?? ''}"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                data-bs-title="Editar">
+                        <i class="bi bi-pencil-square fs-5"></i>
                         </button>
-                        <button class="btn btn-danger delete-btn" data-id="${row.id}">
-                        <i class="bi bi-trash3"></i>
+                        <button class="btn btn-sm btn-danger delete-btn"
+                        data-id="${row.id}"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom"
+                        data-bs-title="Eliminar">
+                        <i class="bi bi-trash3 fs-5"></i>
                         </button>
                     </div>
                 `}
@@ -138,6 +147,8 @@
 
             const ubicacionInput = createForm.querySelector("#createUbicacion");
             const ciudadInput = createForm.querySelector("#createCiudad");
+
+            attachClearOnInput([ubicacionInput, ciudadInput]);
 
             clearInvalid([ubicacionInput, ciudadInput]);
             let hasError = false;
@@ -200,6 +211,8 @@
 
             const ubicacionInput = editForm.querySelector("#editUbicacion");
             const ciudadInput = editForm.querySelector("#editCiudad");
+
+            attachClearOnInput([ubicacionInput, ciudadInput]);
 
             clearInvalid([ubicacionInput, ciudadInput]);
             let hasError = false;

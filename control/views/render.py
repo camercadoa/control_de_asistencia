@@ -113,6 +113,17 @@ def appDashboardAssistanceRecordRender(request):
     return render(request, 'block_content/assistance_records.html')
 
 
+@login_required
+def appDashboardNewsRender(request):
+    # Info: Renderiza el bloque de novedades dentro del Dashboard
+    # Warn: Requiere que el usuario esté autenticado (login_required)
+    # Params:
+    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+
+    # Return: render() de 'block_content/news.html'
+    return render(request, 'block_content/news.html')
+
+
 # ---------------------
 # Dashboard Settings
 # ---------------------
@@ -124,8 +135,8 @@ def appDashboardLocationSettingsRender(request):
     # Params:
     #   - request (HttpRequest) -> Objeto de solicitud HTTP
 
-    # Return: render() de 'block_content/location_settings.html'
-    return render(request, 'block_content/location_settings.html')
+    # Return: render() de 'block_content/settings/locations.html'
+    return render(request, 'block_content/settings/locations.html')
 
 
 @login_required
@@ -135,5 +146,27 @@ def appDashboardWorkAreaSettingsRender(request):
     # Params:
     #   - request (HttpRequest) -> Objeto de solicitud HTTP
 
-    # Return: render() de 'block_content/work_area_settings.html'
-    return render(request, 'block_content/work_area_settings.html')
+    # Return: render() de 'block_content/settings/work_areas.html'
+    return render(request, 'block_content/settings/work_areas.html')
+
+
+@login_required
+def appDashboardSchedulesSettingsRender(request):
+    # Info: Renderiza el bloque de configuración de horarios dentro del Dashboard
+    # Warn: Requiere que el usuario esté autenticado (login_required)
+    # Params:
+    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+
+    # Return: render() de 'block_content/settings/schedules.html'
+    return render(request, 'block_content/settings/schedules.html')
+
+
+@login_required
+def appDashboardTypeNewsSettingsRender(request):
+    # Info: Renderiza el bloque de configuración de tipos de novedades dentro del Dashboard
+    # Warn: Requiere que el usuario esté autenticado (login_required)
+    # Params:
+    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+
+    # Return: render() de 'block_content/settings/type_news.html'
+    return render(request, 'block_content/settings/type_news.html')

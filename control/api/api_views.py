@@ -1,8 +1,9 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from control.models import (
-    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia
+    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia, Horario
 )
-from control.api import *
+from .serializers import *
+from django.utils.timezone import now
 
 
 # ---------------------
@@ -42,9 +43,16 @@ class EmpleadoDetailView(RetrieveUpdateDestroyAPIView):
 # ---------------------
 
 class RegistroAsistenciaListCreateView(ListCreateAPIView):
-    # Info: Lista todos los registros de asistencia o permite crear uno nuevo
     queryset = RegistroAsistencia.objects.all().order_by('-fecha_hora_registro')
     serializer_class = RegistroAsistenciaSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        fecha_hoy = self.request.query_params.get('fecha_hoy', None)
+        if fecha_hoy:
+            hoy = now().date()
+            queryset = queryset.filter(fecha_hora_registro__date=hoy)
+        return queryset
 
 
 class RegistroAsistenciaDetailView(RetrieveUpdateDestroyAPIView):
@@ -147,3 +155,19 @@ class NovedadAsistenciaDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina una novedad de asistencia específica
     queryset = NovedadAsistencia.objects.all()
     serializer_class = NovedadAsistenciaSerializer
+
+
+# ---------------------
+# Horario API
+# ---------------------
+
+class HorarioListCreateView(ListCreateAPIView):
+    # Info: Lista todos los horarios o permite crear uno nuevo
+    queryset = Horario.objects.all()
+    serializer_class = HorarioSerializer
+
+
+class HorarioDetailView(RetrieveUpdateDestroyAPIView):
+    # Info: Obtiene, actualiza o elimina un horario específico
+    queryset = Horario.objects.all()
+    serializer_class = HorarioSerializer

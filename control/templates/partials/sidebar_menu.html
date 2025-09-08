@@ -1,0 +1,72 @@
+{% load tags %}
+
+<!-- Menú -->
+<ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item">
+        <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center py-2 {% active_link 'appDashboardHomeRender' %}">
+            <i class="bi bi-house-door-fill fs-5 me-2"></i> Inicio
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center lh-1 py-2 text-light" data-bs-toggle="collapse" href="#submenuEmployeesMobile" role="button" aria-expanded="{{ is_employees_active|yesno:'true,false' }}" aria-controls="submenuEmployeesMobile">
+            <i class="bi bi-people-fill fs-5 me-2"></i> Empleados
+            <i class="bi bi-caret-down-fill fs-5 ms-auto small rotate {% if is_employees_active %}open{% endif %}"></i>
+        </a>
+        <!-- Sub-menú Empleados -->
+        <div class="collapse ps-4 {% if is_employees_active %}show{% endif %}" id="submenuEmployeesMobile">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'appDashboardActiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-2 {% active_link 'appDashboardActiveEmployeesRender' %}">
+                        <i class="bi bi-person-check-fill fs-5 me-2"></i> Activos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'appDashboardInactiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-2 {% active_link 'appDashboardInactiveEmployeesRender' %}">
+                        <i class="bi bi-person-x-fill fs-5 me-2"></i> Inactivos
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center py-2 {% active_link 'appDashboardAssistanceRecordRender' %}">
+            <i class="bi bi-clipboard-check-fill fs-5 me-2"></i> Registros de Asistencia
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'appDashboardNewsRender' %}" class="nav-link d-flex align-items-center py-2 {% active_link 'appDashboardNewsRender' %}">
+            <i class="bi bi-file-earmark-text-fill fs-5 me-2"></i> Novedades
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center lh-1 text-light" data-bs-toggle="collapse" href="#submenuConfigMobile" role="button" aria-expanded="false" aria-controls="submenuConfigMobile">
+            <i class="bi bi-gear-fill fs-5 me-2"></i> Configuración
+            <i class="bi bi-caret-down-fill fs-5 ms-auto small rotate"></i>
+        </a>
+        <!-- Sub-menú Configuración -->
+        <div class="collapse ps-4 {% if is_config_active %}show{% endif %}" id="submenuConfigMobile">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'appDashboardLocationSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-2 {% active_link 'appDashboardLocationSettingsRender' %}">
+                        <i class="bi bi-geo-alt-fill fs-5 me-2"></i> Sedes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'appDashboardWorkAreaSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-2 {% active_link 'appDashboardWorkAreaSettingsRender' %}">
+                        <i class="bi bi-person-lines-fill fs-5 me-2"></i> Áreas de Trabajo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'appDashboardTypeNewsSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-2 {% active_link 'appDashboardTypeNewsSettingsRender' %}">
+                        <i class="bi bi-file-earmark-medical-fill fs-5 me-2"></i> Tipos de Novedades
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'appDashboardSchedulesSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-2 {% active_link 'appDashboardSchedulesSettingsRender' %}">
+                        <i class="bi bi-calendar-fill fs-5 me-2"></i> Horarios
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </li>
+</ul>

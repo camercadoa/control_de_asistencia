@@ -12,6 +12,8 @@ def dashboard_context(request):
         "config": [
             "appDashboardLocationSettingsRender",
             "appDashboardWorkAreaSettingsRender",
+            "appDashboardSchedulesSettingsRender",
+            "appDashboardTypeNewsSettingsRender",
         ],
         "employees": [
             "appDashboardActiveEmployeesRender",

@@ -56,65 +56,11 @@
                     </div>
 
                     <!-- Menú -->
-                    <ul class="nav nav-pills flex-column mb-auto">
-                        <li class="nav-item">
-                            <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardHomeRender' %}">
-                                <i class="bi bi-house-door-fill me-2"></i> Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuEmployees" role="button" aria-expanded="{{ is_employees_active|yesno:'true,false' }}" aria-controls="submenuEmployees">
-                                <i class="bi bi-people-fill me-2"></i> Empleados
-                                <i class="bi bi-caret-down-fill ms-auto small rotate {% if is_employees_active %}open{% endif %}"></i>
-                            </a>
-                            <div class="collapse ps-4 {% if is_employees_active %}show{% endif %}" id="submenuEmployees">
-                                <ul class="nav flex-column">
-                                    <li class="nav-item">
-                                        <a href="{% url 'appDashboardActiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardActiveEmployeesRender' %}">
-                                            <i class="bi bi-person-check-fill me-2"></i> Activos
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{% url 'appDashboardInactiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardInactiveEmployeesRender' %}">
-                                            <i class="bi bi-person-x-fill me-2"></i> Inactivos
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardAssistanceRecordRender' %}">
-                                <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
-                            </a>
-                        </li>
-
-                        <!-- Configuración con sub-menú -->
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuConfig" role="button" aria-expanded="{{ is_config_active|yesno:'true,false' }}" aria-controls="submenuConfig">
-                                <i class="bi bi-gear-fill me-2"></i> Configuración
-                                <i class="bi bi-caret-down-fill ms-auto small rotate {% if is_config_active %}open{% endif %}"></i>
-                            </a>
-
-                            <div class="collapse ps-4 {% if is_config_active %}show{% endif %}" id="submenuConfig">
-                                <ul class="nav flex-column">
-                                    <li class="nav-item">
-                                        <a href="{% url 'appDashboardLocationSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardLocationSettingsRender' %}">
-                                            <i class="bi bi-geo-alt-fill me-2"></i> Sedes
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{% url 'appDashboardWorkAreaSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardWorkAreaSettingsRender' %}">
-                                            <i class="bi bi-person-lines-fill me-2"></i> Áreas de Trabajo
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
+                    {% include "partials/sidebar_menu.html" with suffix="" %}
 
                     <!-- Botón Cerrar sesión -->
                     <div class="mt-auto text-center">
-                        <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center">
+                        <a href="{% url 'logoutSesion' %}" class="btn btn-danger btn-sm w-100 d-flex align-items-center justify-content-center">
                             <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
                         </a>
                     </div>
@@ -136,59 +82,7 @@
                     </div>
                     <div class="offcanvas-body d-flex flex-column">
                         <!-- Menú -->
-                        <ul class="nav nav-pills flex-column mb-auto">
-                            <li class="nav-item">
-                                <a href="{% url 'appDashboardHomeRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardHomeRender' %}">
-                                    <i class="bi bi-house-door-fill me-2"></i> Inicio
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center lh-1 py-3 text-light" data-bs-toggle="collapse" href="#submenuEmployeesMobile" role="button" aria-expanded="{{ is_employees_active|yesno:'true,false' }}" aria-controls="submenuEmployeesMobile">
-                                    <i class="bi bi-people-fill me-2"></i> Empleados
-                                    <i class="bi bi-caret-down-fill ms-auto small rotate {% if is_employees_active %}open{% endif %}"></i>
-                                </a>
-                                <div class="collapse ps-4 {% if is_employees_active %}show{% endif %}" id="submenuEmployeesMobile">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a href="{% url 'appDashboardActiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardActiveEmployeesRender' %}">
-                                                <i class="bi bi-person-check-fill me-2"></i> Activos
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'appDashboardInactiveEmployeesRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardInactiveEmployeesRender' %}">
-                                                <i class="bi bi-person-x-fill me-2"></i> Inactivos
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'appDashboardAssistanceRecordRender' %}" class="nav-link d-flex align-items-center py-3 {% active_link 'appDashboardAssistanceRecordRender' %}">
-                                    <i class="bi bi-clipboard-check-fill me-2"></i> Registros de Asistencia
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center lh-1 text-light" data-bs-toggle="collapse" href="#submenuConfigMobile" role="button" aria-expanded="false" aria-controls="submenuConfigMobile">
-                                    <i class="bi bi-gear-fill me-2"></i> Configuración
-                                    <i class="bi bi-caret-down-fill ms-auto small rotate"></i>
-                                </a>
-
-                                <div class="collapse ps-4 {% if is_config_active %}show{% endif %}" id="submenuConfigMobile">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a href="{% url 'appDashboardLocationSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardLocationSettingsRender' %}">
-                                                <i class="bi bi-geo-alt-fill me-2"></i> Sedes
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'appDashboardWorkAreaSettingsRender' %}" class="nav-link d-flex align-items-center icon-link icon-link-hover icon-animation-top lh-1 py-3 {% active_link 'appDashboardWorkAreaSettingsRender' %}">
-                                                <i class="bi bi-person-lines-fill me-2"></i> Áreas de Trabajo
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        </ul>
+                        {% include "partials/sidebar_menu.html" with suffix="_Mobile" %}
 
                         <!-- Botón Cerrar sesión -->
                         <div class="mt-auto text-center">
@@ -234,15 +128,20 @@
         <!-- Botones de exportación -->
         <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-                function handleSubmenuToggle(submenuId, iconSelector) {
+                function handleSubmenuToggle(submenuId) {
                     const submenu = document.getElementById(submenuId);
-                    const toggleIcon = document.querySelector(iconSelector);
+                    if (!submenu) return;
 
-                    if (submenu && toggleIcon) {
+                    // Icono de flecha para rotar
+                    const toggleIcon = document.querySelector(`a[href="#${submenuId}"] .rotate`);
+
+                    if (toggleIcon) {
                         submenu.addEventListener("show.bs.collapse", () => {
                             toggleIcon.classList.add("open");
                         });
@@ -252,12 +151,10 @@
                     }
                 }
 
-                // Sidebar escritorio
-                handleSubmenuToggle("submenuConfig", 'a[href="#submenuConfig"] .rotate');
-                handleSubmenuToggle("submenuEmployees", 'a[href="#submenuEmployees"] .rotate');
-                // Offcanvas móvil
-                handleSubmenuToggle("submenuConfigMobile", 'a[href="#submenuConfigMobile"] .rotate');
-                handleSubmenuToggle("submenuEmployeesMobile", 'a[href="#submenuEmployeesMobile"] .rotate');
+                // Inicializar todos los sub-menús
+                document.querySelectorAll('[id^="submenu"]').forEach(submenu => {
+                    handleSubmenuToggle(submenu.id);
+                });
             });
         </script>
     </body>
