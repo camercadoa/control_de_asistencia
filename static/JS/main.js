@@ -78,7 +78,7 @@ function showAlert(message, type = "info", timeout = 3000) {
     const alertContainer = document.getElementById("alert-container");
     const wrapper = document.createElement("div");
     wrapper.innerHTML = `
-        <div class="alert alert-${type} fade show shadow text-center text-nowrap small" role="alert">
+        <div class="alert alert-${type} fade show shadow text-center text-nowrap small col-12 col-md-6 col-lg-4 mx-auto" role="alert">
             ${message}
         </div>
     `;
@@ -134,7 +134,7 @@ function cardInfo(tipo, contenido, icono) {
 
     const cardId = `card-${Date.now()}`;
     const html = `
-        <div id="${cardId}" class="card ${cardClass} shadow-sm rounded-4 fade show w-75 mx-auto my-3">
+        <div id="${cardId}" class="card ${cardClass} shadow-sm rounded-4 fade show col-12 col-md-6 col-lg-4 mx-auto my-3">
             <div class="card-body d-flex flex-column align-items-center text-center py-4 px-3">
                 <div class="mb-3">
                     ${iconHTML}
@@ -307,7 +307,7 @@ function initDataTable(selector, options = {}) {
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
         },
-        dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rt<"d-flex justify-content-between align-items-center mt-2"ip>',
+        dom: '<"d-flex flex-column flex-md-row justify-content-between align-items-center mb-2"Bf>rt<"d-flex flex-column flex-md-row justify-content-between align-items-center mb-2"ip>',
         buttons: [
             {
                 text: '<i class="bi bi-arrow-clockwise me-2 fs-5"></i> Recargar',
@@ -343,11 +343,12 @@ function initDataTable(selector, options = {}) {
     const config = $.extend(true, {}, defaultConfig, options);
     const dt = $(selector).DataTable(config);
 
-    // Iniciar tooltips en botones después de cada renderizado
-    dt.on("draw.dt", () => initTooltips(document.querySelector(selector)));
+    // Envuelve la tabla con la clase 'table-responsive' para hacerla desplazable en pantallas pequeñas
+    $(selector).wrap('<div class="table-responsive"></div>');
 
     return dt;
 }
+
 
 
 // ============================================================================
@@ -375,4 +376,29 @@ function resetModalForm(modalId, formId, inputIds = []) {
             clearInvalid(inputs);
         }
     });
+}
+
+// ============================================================================
+// FORMATOS DE FECHAS Y HORAS (Django REST Framework)
+// ============================================================================
+
+/** * Formatea horas en formato 12 horas con a. m./p. m.
+ * @param {string} timeStr - Hora en formato "HH:MM:SS".
+ * @returns {string} - Hora formateada en "hh:mm a. m." o "hh:mm p. m.".
+ */
+function formatTime12Hour(timeStr) {
+    const [hours, minutes] = timeStr.split(":");
+    const period = hours >= 12 ? "p. m." : "a. m.";
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours < 10 ? '0' : ''}${formattedHours}:${minutes < 10 ? '0' : ''}${minutes} ${period}`;
+}
+
+/**
+ * Formatea fechas en formato "DD/MM/YYYY".
+ * @param {string} dateStr - Fecha en formato "YYYY-MM-DD".
+ * @returns {string} - Fecha formateada en "DD/MM/YYYY".
+ */
+function formatDateDDMMYYYY(dateStr) {
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year}`;
 }

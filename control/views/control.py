@@ -1,5 +1,4 @@
-from datetime import timedelta
-import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from control.models import Empleado, Sede, RegistroAsistencia
@@ -210,7 +209,7 @@ def _save_asistencia(empleado, sede_id):
     #   - empleado (Empleado) -> Objeto del empleado
     #   - sede_id (int) -> ID de la sede donde se registrará
 
-    # Info: Obtener fecha actual
+    # Info: Obtener fecha y hora actual aware
     ahora = timezone.now()
     hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
     hoy_fin = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
@@ -229,9 +228,7 @@ def _save_asistencia(empleado, sede_id):
 
         # Info: Validar diferencia mínima de 30 min entre Entrada y Salida
         diferencia = ahora - ultimo_registro.fecha_hora_registro
-        # if diferencia < timedelta(minutes=30):
-        if diferencia < timedelta(minutes=1):
-            # Info: No se permite guardar todavía
+        if diferencia < timedelta(minutes=1):  # ajustar minutos según política
             return None, _info(
                 user_message="Tiempo mínimo entre Entrada y Salida no cumplido",
                 code=200,
@@ -249,40 +246,44 @@ def _save_asistencia(empleado, sede_id):
 
     # Info: Calcular puntualidad si es Entrada o Salida
     horarios = empleado.horarios.all()
-    gabela = timedelta(minutes=10)
+    gabela = timedelta(minutes=10)  # tolerancia de 10 min
+
     if horarios.exists():
         registro_datetime = ahora
+        tz = timezone.get_current_timezone()  # Obtener la zona horaria actual una sola vez
 
         # Info: Buscar el horario más cercano
         mejor_horario = None
         menor_diferencia = None
 
-        # Info: Comparar con cada horario del empleado
         for horario in horarios:
-            if tipo_registro == "Entrada":
-                hora_programada = datetime.combine(registro_datetime.date(), horario.hora_entrada)
-            else:
-                hora_programada = datetime.combine(registro_datetime.date(), horario.hora_salida)
+            # Info: Convertir horario programado a aware
+            hora_programada_naive = horario.hora_entrada if tipo_registro == "Entrada" else horario.hora_salida
+            hora_programada = timezone.make_aware(
+                datetime.combine(registro_datetime.date(), hora_programada_naive),
+                tz
+            )
 
             delta = abs(registro_datetime - hora_programada)
 
-            # Warn: Encontrar el horario con la menor diferencia
             if menor_diferencia is None or delta < menor_diferencia:
                 menor_diferencia = delta
                 mejor_horario = horario
 
         if mejor_horario:
+            # Info: Reutilizar la misma conversión aware para la comparación final
+            hora_final_naive = mejor_horario.hora_entrada if tipo_registro == "Entrada" else mejor_horario.hora_salida
+            hora_final = timezone.make_aware(datetime.combine(registro_datetime.date(), hora_final_naive), tz)
+
             if tipo_registro == "Entrada":
-                hora_entrada = datetime.combine(registro_datetime.date(), mejor_horario.hora_entrada)
-                delta = registro_datetime - hora_entrada
+                delta = registro_datetime - hora_final
                 if delta > gabela:
-                    registro.registro_atraso = int(delta.total_seconds() // 60)
+                    registro.minutos = int(delta.total_seconds() // 60)
                     registro.estado_registro = "Con retraso"
             else:
-                hora_salida = datetime.combine(registro_datetime.date(), mejor_horario.hora_salida)
-                delta = hora_salida - registro_datetime
+                delta = hora_final - registro_datetime
                 if delta > gabela:
-                    registro.registro_salida_anticipada = int(delta.total_seconds() // 60)
+                    registro.minutos = int(delta.total_seconds() // 60)
                     registro.estado_registro = "Con anticipación"
 
             registro.save()
@@ -299,10 +300,7 @@ def _save_asistencia(empleado, sede_id):
         "cargo": empleado.cargo.upper(),
         "fecha_registro": payload["fecha"],
         "hora_registro": payload["hora"],
-        "descripcion_registro": tipo_registro,
-        "estado_registro": registro.estado_registro,
-        "minutos_atraso": registro.registro_atraso,
-        "minutos_anticipacion": registro.registro_salida_anticipada
+        "descripcion_registro": tipo_registro
     }
 
     return registro, empleado_info

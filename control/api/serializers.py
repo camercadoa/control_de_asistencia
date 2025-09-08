@@ -60,7 +60,7 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegistroAsistencia
-        fields = ["id", "nombre_empleado", "documento", "fecha", "hora", "descripcion_registro", "lugar_registro", "fk_empleado", "fk_areas_trabajo", "registro_atraso", "registro_salida_anticipada", "estado_registro"]
+        fields = ["id", "nombre_empleado", "documento", "fecha", "hora", "descripcion_registro", "lugar_registro", "fk_empleado", "fk_areas_trabajo", "minutos", "estado_registro"]
 
     def get_fecha(self, obj):
         return localtime(obj.fecha_hora_registro).strftime("%d/%m/%Y")
@@ -186,14 +186,14 @@ class NovedadAsistenciaSerializer(serializers.ModelSerializer):
 
 class HorarioSerializer(serializers.ModelSerializer):
     # Info: Serializer para el modelo Horario
+    hora_entrada = serializers.TimeField()
+    hora_salida = serializers.TimeField()
     miembros = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Empleado.objects.all(),
         required=False
     )
     miembros_info = EmpleadoSerializer(source="miembros", many=True, read_only=True)
-    hora_entrada = serializers.DateField(format="%I:%M %p")
-    hora_salida = serializers.DateField(format="%I:%M %p")
 
     class Meta:
         model = Horario

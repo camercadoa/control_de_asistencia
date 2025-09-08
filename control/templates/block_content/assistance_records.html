@@ -55,8 +55,7 @@
                         <th>HORA</th>
                         <th>DESCRIPCIÓN</th>
                         <th>ESTADO</th>
-                        <th>MIN. ATRASO</th>
-                        <th>MIN. ANTICIPACIÓN</th>
+                        <th>MINUTOS</th>
                         <th>LUGAR</th>
                     </tr>
                 </thead>
@@ -82,9 +81,8 @@
                 { data: "fecha", render: fecha => fecha || "-" },
                 { data: "hora", render: hora => hora || "-" },
                 { data: "descripcion_registro", render: descripcion_registro => descripcion_registro.toUpperCase() || "-" },
-                { data: null, render: d => d.registro_atraso || "-" },
-                { data: null, render: d => d.registro_salida_anticipada || "-" },
-                { data: null, render: d => d.estado_registro || "-" },
+                { data: "estado_registro", render: estado_registro => estado_registro ? estado_registro.toUpperCase() : "-" },
+                { data: "minutos", render: minutos => minutos !== null ? `${minutos} min` : "-" },
                 { data: "lugar_registro", render: lugar_registro => lugar_registro ? lugar_registro.toUpperCase() : "-" }
             ]
         });

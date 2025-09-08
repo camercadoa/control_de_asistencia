@@ -49,7 +49,7 @@ class RegistroAsistenciaListCreateView(ListCreateAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         hoy = now().date()
-        return queryset.filter(fecha_hora_registro__date=hoy)
+        return queryset.filter(fecha_hora_registro__date=hoy).order_by('-fecha_hora_registro')
 
 
 class RegistroAsistenciaDetailView(RetrieveUpdateDestroyAPIView):

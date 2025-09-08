@@ -13,8 +13,7 @@ class RegistroAsistencia(models.Model):
     )
     fecha_hora_registro = models.DateTimeField(default=timezone.now)
     lugar_registro = models.ForeignKey(Sede, on_delete=models.CASCADE)
-    registro_atraso = models.IntegerField(null=True, blank=True)
-    registro_salida_anticipada = models.IntegerField(null=True, blank=True)
+    minutos = models.IntegerField(null=True, blank=True)
     estado_registro = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:

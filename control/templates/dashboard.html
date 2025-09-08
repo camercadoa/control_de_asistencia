@@ -35,12 +35,12 @@
         </nav>
 
         <div class="container-fluid">
-            <div class="row flex-nowrap">
+            <div class="row flex-wrap">
                 <!-- Panel lateral dinámico (escritorio) -->
                 <nav class="col-md-2 col-lg-3 col-xl-2 d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-dark position-sticky top-0 min-vh-100 vh-100 overflow-auto">
 
                     <!-- Info usuario -->
-                    <div class="d-flex flex-column align-items-center">
+                    <div class="d-flex flex-column align-items-center mb-2">
                         <i class="bi bi-person-circle fs-1 text-light"></i>
                         <p class="mt-2 mb-0 fw-semibold text-light text-center">
                             {{ request.user.get_full_name|default:request.user.username }}
@@ -49,7 +49,7 @@
                     </div>
 
                     <!-- Separador -->
-                    <div class="d-flex align-items-center my-3">
+                    <div class="d-flex align-items-center my-2">
                         <hr class="flex-grow-1 border-secondary">
                         <span class="px-2 text-white-50">Menú</span>
                         <hr class="flex-grow-1 border-secondary">
@@ -59,7 +59,7 @@
                     {% include "partials/sidebar_menu.html" with suffix="" %}
 
                     <!-- Botón Cerrar sesión -->
-                    <div class="mt-auto text-center">
+                    <div class="mt-auto text-center pt-3 border-top border-secondary">
                         <a href="{% url 'logoutSesion' %}" class="btn btn-danger btn-sm w-100 d-flex align-items-center justify-content-center">
                             <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
                         </a>
@@ -83,18 +83,18 @@
                     <div class="offcanvas-body d-flex flex-column">
                         <!-- Menú -->
                         {% include "partials/sidebar_menu.html" with suffix="_Mobile" %}
+                    </div>
 
-                        <!-- Botón Cerrar sesión -->
-                        <div class="mt-auto text-center">
-                            <a href="{% url 'logoutSesion' %}" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center">
-                                <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
-                            </a>
-                        </div>
+                    <!-- Botón Cerrar sesión fijo abajo -->
+                    <div class="offcanvas-footer mt-auto p-3 border-top border-secondary">
+                        <a href="{% url 'logoutSesion' %}" class="btn btn-danger btn-sm w-100 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión
+                        </a>
                     </div>
                 </div>
 
                 <!-- Contenido principal -->
-                <main class="col px-1 py-2 mt-lg-0 mt-5 d-flex {% block container_class %}justify-content-center align-items-center{% endblock %}">
+                <main class="col-12 col-lg px-1 py-2 mt-lg-0 mt-5 d-flex flex-column overflow-auto min-vh-100 {% block container_class %}justify-content-center align-items-center{% endblock %}">
                     <div class="container-fluid px-4 py-2">
                         {% block content %}
                         {% endblock content %}
@@ -102,6 +102,38 @@
                 </main>
             </div>
         </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                function handleSubmenuToggle(submenuId) {
+                    const submenu = document.getElementById(submenuId);
+                    if (!submenu) return;
+
+                    // Encuentra TODOS los <a> que lo abren
+                    const toggleLinks = document.querySelectorAll(
+                        `[data-bs-toggle="collapse"][href="#${submenuId}"]`
+                    );
+
+                    toggleLinks.forEach(toggleLink => {
+                        const toggleIcon = toggleLink.querySelector(".rotate");
+
+                        if (toggleIcon) {
+                            submenu.addEventListener("show.bs.collapse", () => {
+                                toggleIcon.classList.add("open");
+                            });
+                            submenu.addEventListener("hide.bs.collapse", () => {
+                                toggleIcon.classList.remove("open");
+                            });
+                        }
+                    });
+                }
+
+                // Inicializar todos los sub-menús
+                document.querySelectorAll('[id^="submenu"]').forEach(submenu => {
+                    handleSubmenuToggle(submenu.id);
+                });
+            });
+        </script>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -130,32 +162,5 @@
         <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
         <!-- Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                function handleSubmenuToggle(submenuId) {
-                    const submenu = document.getElementById(submenuId);
-                    if (!submenu) return;
-
-                    // Icono de flecha para rotar
-                    const toggleIcon = document.querySelector(`a[href="#${submenuId}"] .rotate`);
-
-                    if (toggleIcon) {
-                        submenu.addEventListener("show.bs.collapse", () => {
-                            toggleIcon.classList.add("open");
-                        });
-                        submenu.addEventListener("hide.bs.collapse", () => {
-                            toggleIcon.classList.remove("open");
-                        });
-                    }
-                }
-
-                // Inicializar todos los sub-menús
-                document.querySelectorAll('[id^="submenu"]').forEach(submenu => {
-                    handleSubmenuToggle(submenu.id);
-                });
-            });
-        </script>
     </body>
 </html>
