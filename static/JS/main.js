@@ -134,7 +134,7 @@ function cardInfo(tipo, contenido, icono) {
 
     const cardId = `card-${Date.now()}`;
     const html = `
-        <div id="${cardId}" class="card ${cardClass} shadow-sm rounded-4 fade show col-12 col-md-6 col-lg-4 mx-auto my-3">
+        <div id="${cardId}" class="card ${cardClass} shadow-sm rounded-4 fade show col-10 col-md-8 mx-auto my-0 my-md-3">
             <div class="card-body d-flex flex-column align-items-center text-center py-4 px-3">
                 <div class="mb-3">
                     ${iconHTML}
@@ -310,30 +310,30 @@ function initDataTable(selector, options = {}) {
         dom: '<"d-flex flex-column flex-md-row justify-content-between align-items-center mb-2"Bf>rt<"d-flex flex-column flex-md-row justify-content-between align-items-center mb-2"ip>',
         buttons: [
             {
-                text: '<i class="bi bi-arrow-clockwise me-2 fs-5"></i> Recargar',
-                className: 'btn btn-link bg-white text-primary',
+                text: '<i class="bi bi-arrow-clockwise me-1 text-primary"></i><span class="text-dark">Recargar</span>',
+                className: 'btn btn-sm bg-white border-0',
                 action: function (e, dt, node, config) {
                     dt.ajax.reload(null, false);
                 }
             },
             {
                 extend: 'excelHtml5',
-                text: '<i class="bi bi-file-earmark-excel-fill me-2 fs-5"></i> Excel',
-                className: 'btn btn-link bg-white text-success',
+                text: '<i class="bi bi-file-earmark-excel-fill me-1 text-success"></i><span class="text-dark">Excel</span>',
+                className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Exportar a Excel'
             },
             {
                 extend: 'pdfHtml5',
-                text: '<i class="bi bi-file-earmark-pdf-fill me-2 fs-5"></i> PDF',
-                className: 'btn btn-link bg-white text-danger',
+                text: '<i class="bi bi-file-earmark-pdf-fill me-1 text-danger"></i><span class="text-dark">PDF</span>',
+                className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Exportar a PDF',
                 orientation: 'landscape',
                 pageSize: 'A4'
             },
             {
                 extend: 'print',
-                text: '<i class="bi bi-printer-fill me-2 fs-5"></i> Imprimir',
-                className: 'btn btn-link bg-white text-dark',
+                text: '<i class="bi bi-printer-fill me-1 text-secondary"></i><span class="text-dark">Imprimir</span>',
+                className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Imprimir'
             }
         ],
@@ -390,7 +390,7 @@ function formatTime12Hour(timeStr) {
     const [hours, minutes] = timeStr.split(":");
     const period = hours >= 12 ? "p. m." : "a. m.";
     const formattedHours = hours % 12 || 12;
-    return `${formattedHours < 10 ? '0' : ''}${formattedHours}:${minutes < 10 ? '0' : ''}${minutes} ${period}`;
+    return `${formattedHours < 10 ? '0' : ''}${formattedHours}:${minutes} ${period}`;
 }
 
 /**
@@ -401,4 +401,16 @@ function formatTime12Hour(timeStr) {
 function formatDateDDMMYYYY(dateStr) {
     const [year, month, day] = dateStr.split("-");
     return `${day}/${month}/${year}`;
+}
+
+
+/** * Obtiene la fecha actual en formato "DD/MM/YYYY".
+ * @returns {string} - Fecha de hoy en formato "DD/MM/YYYY".
+ */
+function fechaHoyFormato() {
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const yyyy = hoy.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
 }

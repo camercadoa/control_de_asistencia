@@ -3,8 +3,6 @@ from control.models import (
     Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia, Horario
 )
 from .serializers import *
-from django.utils.timezone import now
-
 
 # ---------------------
 # Sedes API

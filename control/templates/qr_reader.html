@@ -89,7 +89,7 @@
                         <div id="empleadoInfo" class="my-4 text-center w-100 flex-grow-1 d-flex align-items-center justify-content-center"></div>
 
                         <!-- Contenedor para mostrar la sede seleccionada -->
-                        <span id="sedeSeleccionada" class="hstack gap-3 mt-auto mb-4 mx-auto w-100 d-flex justify-content-center align-items-center"></span>
+                        <span id="sedeSeleccionada" class="hstack gap-3 mt-auto mb-4 mx-auto w-100 d-flex d-flex flex-column flex-md-row justify-content-center align-items-center"></span>
                     </div>
                 </div>
             </div>
@@ -104,7 +104,7 @@
             function infoSede(container, sedeLocation) {
                 container.innerHTML = `
                     <span class="lead mb-0">${sedeLocation}</span>
-                    <div class="vr"></div>
+                    <div class="d-none d-md-block vr"></div>
                     <a href="{% url 'logoutSesion' %}" class="btn btn-danger btn-sm px-3 d-flex align-items-center justify-content-center">
                         <i class="bi bi-box-arrow-left me-2"></i> Salir
                     </a>
