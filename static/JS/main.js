@@ -78,7 +78,7 @@ function showAlert(message, type = "info", timeout = 3000) {
     const alertContainer = document.getElementById("alert-container");
     const wrapper = document.createElement("div");
     wrapper.innerHTML = `
-        <div class="alert alert-${type} fade show shadow text-center text-nowrap small col-12 col-md-6 col-lg-4 mx-auto" role="alert">
+        <div class="alert alert-${type} fade show shadow text-center text-nowrap small mx-auto" role="alert">
             ${message}
         </div>
     `;

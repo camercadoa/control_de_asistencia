@@ -46,11 +46,6 @@ class RegistroAsistenciaListCreateView(ListCreateAPIView):
     queryset = RegistroAsistencia.objects.all().order_by('-fecha_hora_registro')
     serializer_class = RegistroAsistenciaSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        hoy = now().date()
-        return queryset.filter(fecha_hora_registro__date=hoy).order_by('-fecha_hora_registro')
-
 
 class RegistroAsistenciaDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina un registro de asistencia específico
