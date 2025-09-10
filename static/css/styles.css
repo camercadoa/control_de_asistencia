@@ -2,6 +2,9 @@
     margin: 0;
     padding: 0;
     font-size: 17px;
+    @media screen and (max-width: 768px) {
+        font-size: 15px;
+    }
 }
 #alert-container {z-index: 1055;}
 .btn-animation {transition: transform 0.1s ease-in-out;}

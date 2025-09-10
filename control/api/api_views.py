@@ -1,3 +1,6 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from control.models import (
     Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia, Horario
@@ -18,6 +21,16 @@ class SedeDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina una sede específica (excepto id=5)
     queryset = Sede.objects.exclude(id=5).order_by('id')
     serializer_class = SedeSerializer
+
+class SedeRegistroCountView(APIView):
+    def get(self, request, pk):
+        try:
+            sede = Sede.objects.get(pk=pk)
+        except Sede.DoesNotExist:
+            return Response({"error": "Sede no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+        count = RegistroAsistencia.objects.filter(lugar_registro=sede).count()
+        return Response({"sede": sede.id, "conteo": count})
 
 
 # ---------------------
@@ -129,6 +142,17 @@ class TipoNovedadDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina un tipo de novedad específico
     queryset = TipoNovedad.objects.all()
     serializer_class = TipoNovedadSerializer
+
+
+class TipoNovedadRegistroCountView(APIView):
+    def get(self, request, pk):
+        try:
+            tipo_novedad = TipoNovedad.objects.get(pk=pk)
+        except TipoNovedad.DoesNotExist:
+            return Response({"error": "Tipo de novedad no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        count = NovedadAsistencia.objects.filter(fk_tipo_novedad=tipo_novedad).count()
+        return Response({"conteo": count})
 
 
 # ---------------------

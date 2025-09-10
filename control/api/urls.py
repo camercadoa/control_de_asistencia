@@ -4,6 +4,7 @@ from .api_views import *
 urlpatterns = [
     path('sedes/', SedeListCreateView.as_view(), name='ApiSedes'),
     path('sedes/<int:pk>/', SedeDetailView.as_view(), name='ApiSedeDetail'),
+    path('sedes/<int:pk>/conteo-registros/', SedeRegistroCountView.as_view(), name='ApiSedeRegistroCount'),
     path('empleados/', EmpleadoListCreateView.as_view(), name='ApiEmpleados'),
     path('empleados/<int:pk>/', EmpleadoDetailView.as_view(), name='ApiEmpleadoDetail'),
     path('registros-asistencias/', RegistroAsistenciaListCreateView.as_view(), name='ApiRegistrosAsistencias'),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('notificaciones/<int:pk>/', NotificacionDetailView.as_view(), name='ApiNotificacionDetail'),
     path('tipos-novedad/', TipoNovedadListCreateView.as_view(), name='ApiTiposNovedad'),
     path('tipos-novedad/<int:pk>/', TipoNovedadDetailView.as_view(), name='ApiTipoNovedadDetail'),
+    path('tipos-novedad/<int:pk>/conteo-registros/', TipoNovedadRegistroCountView.as_view(), name='TipoNovedadRegistroCount'),
     path('novedades-asistencia/', NovedadAsistenciaListCreateView.as_view(), name='ApiNovedadesAsistencia'),
     path('novedades-asistencia/<int:pk>/', NovedadAsistenciaDetailView.as_view(), name='ApiNovedadAsistenciaDetail'),
     path('horarios/', HorarioListCreateView.as_view(), name='ApiHorarios'),
