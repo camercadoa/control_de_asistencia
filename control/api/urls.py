@@ -6,7 +6,6 @@ urlpatterns = [
     path('sedes/<int:pk>/', SedeDetailView.as_view(), name='ApiSedeDetail'),
     path('sedes/<int:pk>/conteo-registros/', SedeRegistroCountView.as_view(), name='ApiSedeRegistroCount'),
     path('empleados/', EmpleadoListCreateView.as_view(), name='ApiEmpleados'),
-    path('empleados/<int:pk>/', EmpleadoDetailView.as_view(), name='ApiEmpleadoDetail'),
     path('registros-asistencias/', RegistroAsistenciaListCreateView.as_view(), name='ApiRegistrosAsistencias'),
     path('registros-asistencias/<int:pk>/', RegistroAsistenciaDetailView.as_view(), name='ApiRegistroAsistenciaDetail'),
     path('correos-institucionales/', CorreoInstitucionalListCreateView.as_view(), name='ApiCorreosInstitucionales'),

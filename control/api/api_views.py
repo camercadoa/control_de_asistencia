@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from control.models import (
     Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, TipoNovedad, NovedadAsistencia, Horario
 )
@@ -37,14 +37,8 @@ class SedeRegistroCountView(APIView):
 # Empleados API
 # ---------------------
 
-class EmpleadoListCreateView(ListCreateAPIView):
+class EmpleadoListCreateView(ListAPIView):
     # Info: Lista todos los empleados o permite crear uno nuevo
-    queryset = Empleado.objects.all().order_by('primer_nombre')
-    serializer_class = EmpleadoSerializer
-
-
-class EmpleadoDetailView(RetrieveUpdateDestroyAPIView):
-    # Info: Obtiene, actualiza o elimina un empleado específico
     queryset = Empleado.objects.all().order_by('primer_nombre')
     serializer_class = EmpleadoSerializer
 
