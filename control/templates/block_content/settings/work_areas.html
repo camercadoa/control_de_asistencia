@@ -337,7 +337,11 @@
                 const count = area.miembros.length;
 
                 if (count > 0) {
-                    deleteWarningText.textContent = `Esta área tiene ${count} miembro(s) asociado(s).`;
+                    deleteWarningText.innerHTML = `
+                        <p>Esta área tiene <strong>${count}</strong> miembro(s) asociado(s).
+                        Si lo eliminas, se <strong>perderá la relación</strong> de estos miembros con el área.</p>
+                        <p class="mb-0"><strong>Esta acción no se puede deshacer</strong>.</p>
+                    `;
                     deleteWarning.classList.remove("d-none");
                     deleteConfirmCheck.classList.remove("d-none");
                 } else {

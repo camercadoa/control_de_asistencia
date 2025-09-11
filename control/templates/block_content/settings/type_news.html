@@ -116,7 +116,6 @@
 </div>
 
 <script>
-    // La lógica permanece igual
     let table = null;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -147,7 +146,7 @@
             ]
         });
 
-        // Crear
+        // Crear tipo de novedad
         const createForm = document.getElementById("formCreate");
         const createBtn = createForm.querySelector("button[type=submit]");
         const originalTextCreate = createBtn.innerHTML;
@@ -197,7 +196,7 @@
 
         resetModalForm("modalCreate", "formCreate", ["createTipo", "createDescripcion"]);
 
-        // Editar
+        // Editar tipo de novedad
         const editForm = document.getElementById("formEdit");
         const editBtn = editForm.querySelector("button[type=submit]");
         const originalTextEdit = editBtn.innerHTML;
@@ -259,7 +258,7 @@
 
         resetModalForm("modalEdit", "formEdit", ["editTipo", "editDescripcion"]);
 
-        // Eliminar sede
+        // Eliminar tipo de novedad
         let deleteId = null;
         const deleteBtn = document.getElementById("confirmDelete");
         const originalTextDelete = deleteBtn.innerHTML;
@@ -285,7 +284,11 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data.conteo > 0) {
-                        deleteWarningText.textContent = `Este tipo de novedad tiene ${data.conteo} registros de novedad asociados. Eliminarla puede afectar la información histórica.`;
+                        deleteWarningText.innerHTML = `
+                            <p>Este tipo de novedad tiene <strong>${data.conteo}</strong> registros asociados.
+                            Si la eliminas, también se <strong>eliminarán de forma permanente</strong> todos los registros vinculados (asistencias, novedades, etc.).</p>
+                            <p class="mb-0"><strong>Esta acción no se puede deshacer</strong> y afectará la información histórica.</p>
+                        `;
                         deleteWarning.classList.remove("d-none");
                         deleteConfirmCheck.classList.remove("d-none");
                     } else {

@@ -297,7 +297,7 @@
                     const data = await res.json();
                     if (data.conteo > 0) {
                         deleteWarningText.innerHTML = `
-                            <p>Esta sede tiene <strong>${data.conteo}</strong> registros de asistencia asociados.
+                            <p>Esta sede tiene <strong>${data.conteo}</strong> registros asociados.
                             Si la eliminas, también se <strong>eliminarán de forma permanente</strong> todos los registros vinculados (asistencias, novedades, etc.).</p>
                             <p class="mb-0"><strong>Esta acción no se puede deshacer</strong> y afectará la información histórica.</p>
                         `;
