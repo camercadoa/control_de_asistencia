@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from control.models import (
-    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia, Horario
+    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, TipoNovedad, NovedadAsistencia, Horario
 )
 from .serializers import *
 
@@ -110,22 +110,6 @@ class AreaTrabajoDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina un área de trabajo específica
     queryset = AreaTrabajo.objects.all()
     serializer_class = AreaTrabajoSerializer
-
-
-# ---------------------
-# Notificaciones API
-# ---------------------
-
-class NotificacionListCreateView(ListCreateAPIView):
-    # Info: Lista todas las notificaciones (ordenadas por fecha descendente) o permite crear una nueva
-    queryset = Notificacion.objects.all().order_by('-fecha_creacion')
-    serializer_class = NotificacionSerializer
-
-
-class NotificacionDetailView(RetrieveUpdateDestroyAPIView):
-    # Info: Obtiene, actualiza o elimina una notificación específica
-    queryset = Notificacion.objects.all().order_by('-fecha_creacion')
-    serializer_class = NotificacionSerializer
 
 
 # ---------------------

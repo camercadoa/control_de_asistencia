@@ -40,6 +40,13 @@
         </select>
         <label for="filterWorkArea" class="form-label">Área de Trabajo</label>
     </div>
+    <!-- Filtro de Sede -->
+    <div class="form-floating col-md-2">
+        <select id="filterSede" class="form-select">
+            <option value="">Todas</option>
+        </select>
+        <label for="filterSede" class="form-label">Sede</label>
+    </div>
 </div>
 
 <!-- Tabla -->
@@ -89,17 +96,18 @@
 
         // Cargar empleados y áreas de trabajo para los filtros
         try {
-            const [resEmp, resAreas] = await Promise.all([
+            const [resEmp, resAreas, resSedes] = await Promise.all([
                 fetch("/api/empleados/"),
-                fetch("/api/areas-trabajo/")
+                fetch("/api/areas-trabajo/"),
+                fetch("/api/sedes/")
             ]);
 
-            const [empleadosData, areasData] = await Promise.all([
+            const [empleadosData, areasData, sedesData] = await Promise.all([
                 resEmp.json(),
-                resAreas.json()
+                resAreas.json(),
+                resSedes.json()
             ]);
-
-            // Poblar empleados
+            // Llenar select de empleados
             const selectEmp = document.getElementById("filterEmployee");
             empleadosData.forEach(emp => {
                 const option = document.createElement("option");
@@ -108,7 +116,7 @@
                 selectEmp.appendChild(option);
             });
 
-            // Poblar áreas
+            // Llenar select de áreas
             const selectArea = document.getElementById("filterWorkArea");
             areasData.forEach(area => {
                 const option = document.createElement("option");
@@ -117,8 +125,18 @@
                 selectArea.appendChild(option);
             });
 
-        } catch {
-            showAlert("Error cargando empleados o áreas de trabajo", "danger");
+            // Llenar select de sedes
+            const selectSede = document.getElementById("filterSede");
+            sedesData.forEach(sede => {
+                const option = document.createElement("option");
+                option.value = sede.id;
+                option.textContent = `${sede.ubicacion.toUpperCase()} - ${sede.ciudad.toUpperCase()}`;
+                selectSede.appendChild(option);
+            });
+
+        } catch (error) {
+            console.log(error)
+            showAlert("Error cargando empleados, áreas de trabajo o sede", "danger");
         }
 
 
@@ -129,6 +147,7 @@
             const endDate = document.getElementById("filterEndDate").value;
             const description = document.getElementById("filterDescription").value;
             const workAreaId = document.getElementById("filterWorkArea").value;
+            const sedeId = document.getElementById("filterSede").value;
 
             let show = true;
 
@@ -159,6 +178,11 @@
                 show = false;
             }
 
+            // Filtrar por sede
+            if (sedeId && rowData.fk_sede != parseInt(sedeId)) {
+                show = false;
+            }
+
             return show;
         });
 
@@ -168,6 +192,7 @@
         document.getElementById("filterEndDate").addEventListener("change", () => table.draw());
         document.getElementById("filterDescription").addEventListener("input", () => table.draw());
         document.getElementById("filterWorkArea").addEventListener("change", () => table.draw());
+        document.getElementById("filterSede").addEventListener("change", () => table.draw());
     });
 </script>
 {% endblock %}

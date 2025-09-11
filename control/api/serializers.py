@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils.timezone import localtime
 from control.models import (
-    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, Notificacion, TipoNovedad, NovedadAsistencia, Horario
+    Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, TipoNovedad, NovedadAsistencia, Horario
 )
 
 # ---------------------
@@ -57,10 +57,11 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
     lugar_registro = serializers.SerializerMethodField()
     fk_empleado = serializers.PrimaryKeyRelatedField(read_only=True)
     fk_areas_trabajo = serializers.SerializerMethodField()
+    fk_sede = serializers.PrimaryKeyRelatedField(source="lugar_registro", read_only=True)
 
     class Meta:
         model = RegistroAsistencia
-        fields = ["id", "nombre_empleado", "documento", "fecha", "hora", "descripcion_registro", "lugar_registro", "fk_empleado", "fk_areas_trabajo", "minutos", "estado_registro"]
+        fields = ["id", "nombre_empleado", "documento", "fecha", "hora", "descripcion_registro", "lugar_registro", "fk_empleado", "fk_areas_trabajo","fk_sede", "minutos", "estado_registro"]
 
     def get_fecha(self, obj):
         return localtime(obj.fecha_hora_registro).strftime("%d/%m/%Y")
@@ -130,23 +131,6 @@ class AreaTrabajoSerializer(serializers.ModelSerializer):
         if miembros_data is not None:
             instance.miembros.set(miembros_data)
         return instance
-
-
-# ---------------------
-# Notificaciones Serializer
-# ---------------------
-
-class NotificacionSerializer(serializers.ModelSerializer):
-    # Info: Serializer para el modelo Notificacion
-    fecha_creacion = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Notificacion
-        fields = '__all__'
-
-    def get_fecha_creacion(self, obj):
-        # Info: Devuelve la fecha de creación en formato "DD/MM/AAAA HH:MM:SS AM/PM"
-        return localtime(obj.fecha_creacion).strftime("%d/%m/%Y %I:%M:%S %p")
 
 
 # ---------------------
