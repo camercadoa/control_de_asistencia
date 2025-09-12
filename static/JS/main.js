@@ -343,12 +343,16 @@ function initDataTable(selector, options = {}) {
     const config = $.extend(true, {}, defaultConfig, options);
     const dt = $(selector).DataTable(config);
 
-    // Envuelve la tabla con la clase 'table-responsive' para hacerla desplazable en pantallas pequeñas
+    // Envuelve la tabla con la clase 'table-responsive'
     $(selector).wrap('<div class="table-responsive"></div>');
+
+    // ⚡ Inicializar tooltips cada vez que se dibujen filas
+    dt.on("draw", function () {
+        initTooltips(document);
+    });
 
     return dt;
 }
-
 
 
 // ============================================================================

@@ -27,9 +27,100 @@
     </div>
 </div>
 
+<!-- Modal Correo Institucional -->
+<div class="modal fade" id="modalCorreo" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <form id="formCorreo">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCorreoTitle">Correo Institucional</h5>
+                </div>
+
+                <div class="modal-body text-secondary-emphasis m-0">
+                    <input type="hidden" id="correoEmpleadoId">
+
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control rounded-3" id="correoInstitucionalInput" placeholder="Correo Institucional">
+                        <label for="correoInstitucionalInput">Correo Institucional</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" id="btnEliminarCorreo" class="btn btn-danger d-none">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnGuardarCorreo" class="btn">Guardar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminación Correo -->
+<div class="modal fade" id="modalDeleteCorreo" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p>¿Estás seguro de eliminar el correo institucional de este empleado?</p>
+                <div id="deleteCorreoWarning" class="alert alert-warning d-flex align-items-center gap-3">
+                    <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                    <span>
+                        <p>Si eliminas este correo, el empleado quedará <strong>sin un correo institucional</strong>
+                        donde se envíe el <strong>código QR</strong> y otras notificaciones.</p>
+                        <p class="mb-0"><strong>Esta acción no se puede deshacer</strong>.
+                    </span>
+                </div>
+                <div class="form-check mt-3" id="deleteCorreoConfirmCheck">
+                    <input class="form-check-input" type="checkbox" id="confirmDeleteCorreoCheck">
+                    <label class="form-check-label" for="confirmDeleteCorreoCheck">
+                        Entiendo que esta acción eliminará el correo y no se podrá deshacer.
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteCorreo" disabled>Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Código QR -->
+<div class="modal fade" id="modalCodigoQR" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Código QR</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrPreview" class="border rounded p-5 mb-3 text-muted">
+                    <i class="bi bi-qr-code fs-1 d-block mb-2"></i>
+                    <span>En desarrollo</span>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" id="btnEnviarCorreoQR" class="btn btn-primary" disabled>
+                    <i class="bi bi-envelope"></i> Enviar por Correo
+                </button>
+                <div class="ms-auto d-flex gap-2">
+                    <button type="button" id="btnDescargarQR" class="btn btn-success">Descargar</button>
+                    <button type="button" id="btnImprimirQR" class="btn btn-secondary">Imprimir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    let table = null;
+
     document.addEventListener("DOMContentLoaded", () => {
-        initDataTable("#ActiveEmployeesTable", {
+        table = initDataTable("#ActiveEmployeesTable", {
             ajax: {
                 url: "/api/empleados/",
                 dataSrc: function (json) {
@@ -55,19 +146,250 @@
                 },
                 { data: "cargo", render: (data) => data ? data.toUpperCase() : "-" },
                 { data: "correo_institucional", render: (data) => data ? data : "-" },
-                { data: null, orderable: false, render: () => `
-                    <div class="dropdown">
-                        <a class="text-secondary-emphasis" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-envelope me-2"></i>Correo Institucional</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-qr-code me-2"></i>Generar Código QR</a></li>
-                        </ul>
-                    </div>
-                `}
+                { data: null, orderable: false, render: (data, type, row) => `
+                        <div class="dropdown">
+                            <a class="text-secondary-emphasis" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li>
+                                    <a class="dropdown-item btn-correo" data-id="${row.id}" href="#">
+                                        <i class="bi bi-envelope me-2"></i>Correo Institucional
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item btn-qr" data-id="${row.id}" href="#">
+                                        <i class="bi bi-qr-code me-2"></i>Generar Código QR
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    `
+                }
             ]
         });
+
+        const modalCorreoEl = document.getElementById("modalCorreo");
+        const modalCorreo = new bootstrap.Modal(modalCorreoEl);
+
+        const modalTitle = document.getElementById("modalCorreoTitle");
+        const correoInput = document.getElementById("correoInstitucionalInput");
+        const empleadoIdInput = document.getElementById("correoEmpleadoId");
+        const btnGuardar = document.getElementById("btnGuardarCorreo");
+        const btnEliminar = document.getElementById("btnEliminarCorreo");
+        const formCorreo = document.getElementById("formCorreo");
+        const originalTextGuardar = btnGuardar.innerHTML;
+
+        // Abrir modal al hacer clic en Correo Institucional
+        $("#ActiveEmployeesTable").on("click", ".btn-correo", async function () {
+            const empleadoId = $(this).data("id");
+            empleadoIdInput.value = empleadoId;
+
+            try {
+                const res = await fetch(`/api/empleados/`);
+                const empleados = await res.json();
+                const empleado = empleados.find(e => e.id === empleadoId);
+
+                if (!empleado) {
+                    showAlert("Empleado no encontrado", "danger");
+                    return;
+                }
+
+                if (empleado.correo_institucional) {
+                    modalTitle.textContent = "Actualizar Correo Institucional";
+                    correoInput.value = empleado.correo_institucional;
+                    btnGuardar.textContent = "Actualizar";
+                    btnGuardar.classList.add("btn-primary");
+                    btnEliminar.classList.remove("d-none");
+                } else {
+                    modalTitle.textContent = "Agregar Correo Institucional";
+                    correoInput.value = "";
+                    btnGuardar.textContent = "Guardar";
+                    btnGuardar.classList.add("btn-success");
+                    btnEliminar.classList.add("d-none");
+                }
+
+                modalCorreo.show();
+            } catch {
+                showAlert("Error al cargar la información", "danger");
+            }
+        });
+
+        // Guardar / Actualizar correo
+        formCorreo.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            clearInvalid([correoInput]);
+            let hasError = false;
+
+            attachClearOnInput([correoInput]);
+
+            if (!correoInput.value.trim()) {
+                markInvalid(correoInput, "Campo obligatorio");
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            disableButtonWithSpinner(btnGuardar, btnGuardar.textContent === "Guardar" ? "Guardando..." : "Actualizando...");
+
+            const empleadoId = empleadoIdInput.value;
+            const correo = correoInput.value;
+
+            try {
+                const resCorreos = await fetch(`/api/correos-institucionales/`);
+                const correos = await resCorreos.json();
+                const existente = correos.find(c => c.fk_empleado === parseInt(empleadoId));
+
+                let res;
+                if (existente) {
+                    // Actualizar
+                    res = await fetch(`/api/correos-institucionales/${existente.id}/`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({ fk_empleado: empleadoId, correo_institucional: correo })
+                    });
+                } else {
+                    // Crear
+                    res = await fetch(`/api/correos-institucionales/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({ fk_empleado: empleadoId, correo_institucional: correo })
+                    });
+                }
+
+                if (res.ok) {
+                    showAlert(existente ? "Correo actualizado correctamente" : "Correo agregado correctamente", "success");
+                    modalCorreo.hide();
+                    formCorreo.reset();
+                    table.ajax.reload(null, false);
+                } else {
+                    showAlert("Error al guardar el correo", "danger");
+                }
+            } catch {
+                showAlert("Error inesperado", "danger");
+            } finally {
+                enableButton(btnGuardar, originalTextGuardar);
+            }
+        });
+
+        // Eliminar correo
+        const modalDeleteCorreoEl = document.getElementById("modalDeleteCorreo");
+        const modalDeleteCorreo = new bootstrap.Modal(modalDeleteCorreoEl);
+        const btnConfirmDeleteCorreo = document.getElementById("confirmDeleteCorreo");
+        const confirmDeleteCorreoCheck = document.getElementById("confirmDeleteCorreoCheck");
+        let empleadoIdToDelete = null;
+
+        // Abrir modal de confirmación al hacer clic en Eliminar dentro del modal de correo
+        btnEliminar.addEventListener("click", () => {
+            empleadoIdToDelete = empleadoIdInput.value;
+
+            // Reiniciar estado
+            confirmDeleteCorreoCheck.checked = false;
+            btnConfirmDeleteCorreo.disabled = true;
+
+            modalDeleteCorreo.show();
+        });
+
+        // Habilitar botón solo si marca el checkbox
+        confirmDeleteCorreoCheck.addEventListener("change", () => {
+            btnConfirmDeleteCorreo.disabled = !confirmDeleteCorreoCheck.checked;
+        });
+
+        // Confirmar eliminación
+        btnConfirmDeleteCorreo.addEventListener("click", async () => {
+            if (!empleadoIdToDelete) return;
+            disableButtonWithSpinner(btnConfirmDeleteCorreo, "Eliminando...");
+
+            try {
+                const resCorreos = await fetch(`/api/correos-institucionales/`);
+                const correos = await resCorreos.json();
+                const existente = correos.find(c => c.fk_empleado === parseInt(empleadoIdToDelete));
+
+                if (existente) {
+                    const res = await fetch(`/api/correos-institucionales/${existente.id}/`, {
+                        method: "DELETE",
+                        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                    });
+
+                    if (res.ok) {
+                        showAlert("Correo eliminado correctamente", "success");
+                        modalDeleteCorreo.hide();
+                        modalCorreo.hide();
+                        formCorreo.reset();
+                        table.ajax.reload(null, false);
+                    } else {
+                        showAlert("Error al eliminar el correo", "danger");
+                    }
+                }
+            } catch {
+                showAlert("Error inesperado", "danger");
+            } finally {
+                empleadoIdToDelete = null;
+                enableButton(btnConfirmDeleteCorreo, "Eliminar");
+            }
+        });
+
+        // Resetear modal cuando se cierra
+        resetModalForm("modalCorreo", "formCorreo", ["correoInstitucionalInput"]);
+
+        // Código QR
+        const modalQR = new bootstrap.Modal(document.getElementById("modalCodigoQR"));
+        const btnEnviarCorreoQR = document.getElementById("btnEnviarCorreoQR");
+        const btnDescargarQR = document.getElementById("btnDescargarQR");
+        const btnImprimirQR = document.getElementById("btnImprimirQR");
+        let empleadoQR = null;
+
+        // Abrir modal de QR
+        $("#ActiveEmployeesTable").on("click", ".btn-qr", async function () {
+            const empleadoId = $(this).data("id");
+            try {
+                const res = await fetch(`/api/empleados/`);
+                const empleados = await res.json();
+                empleadoQR = empleados.find(e => e.id === empleadoId);
+
+                if (!empleadoQR) {
+                    showAlert("Empleado no encontrado", "danger");
+                    return;
+                }
+
+                // Habilitar o deshabilitar botón de enviar al correo
+                if (empleadoQR.correo_institucional) {
+                    btnEnviarCorreoQR.disabled = false;
+                } else {
+                    btnEnviarCorreoQR.disabled = true;
+                }
+
+                // Mostrar modal
+                modalQR.show();
+            } catch {
+                showAlert("Error al cargar la información", "danger");
+            }
+        });
+
+        // Acción enviar al correo
+        btnEnviarCorreoQR.addEventListener("click", async () => {
+            if (!empleadoQR || !empleadoQR.correo_institucional) return;
+            showAlert(`El código QR se enviará a ${empleadoQR.correo_institucional}`, "info");
+            // Aquí en el futuro harás la lógica de envío real
+        });
+
+        // Acción descargar
+        btnDescargarQR.addEventListener("click", () => {
+            showAlert("Descarga de QR en desarrollo", "warning");
+        });
+
+        // Acción imprimir
+        btnImprimirQR.addEventListener("click", () => {
+            showAlert("Función de impresión en desarrollo", "warning");
+        });
     });
+
 </script>
 {% endblock %}
