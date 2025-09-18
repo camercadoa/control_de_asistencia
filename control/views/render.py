@@ -92,17 +92,6 @@ def appDashboardActiveEmployeesRender(request):
 
 
 @login_required
-def appDashboardInactiveEmployeesRender(request):
-    # Info: Renderiza el bloque de empleados inactivos dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
-
-    # Return: render() de 'block_content/inactive_employees.html'
-    return render(request, 'block_content/inactive_employees.html')
-
-
-@login_required
 def appDashboardAssistanceRecordRender(request):
     # Info: Renderiza el bloque de registros de asistencia dentro del Dashboard
     # Warn: Requiere que el usuario esté autenticado (login_required)

@@ -7,7 +7,6 @@ urlpatterns = [
     path('qr-reader/', views.appQrReaderRender, name='appQrReaderRender'), # Página para uso del lector QR
     path('dashboard/home/', views.appDashboardHomeRender, name='appDashboardHomeRender'), # Dashboard principal
     path('dashboard/employees/active/', views.appDashboardActiveEmployeesRender, name='appDashboardActiveEmployeesRender'), # Gestión Empleados Activos
-    path('dashboard/employees/inactive/', views.appDashboardInactiveEmployeesRender, name='appDashboardInactiveEmployeesRender'), # Gestión Empleados Inactivos
     path('dashboard/assistance-records/', views.appDashboardAssistanceRecordRender, name='appDashboardAssistanceRecordRender'), # Gestión Registros de Asistencias
     path('dashboard/news/', views.appDashboardNewsRender, name='appDashboardNewsRender'), # Gestión Novedades
     path('dashboard/settings/sedes/', views.appDashboardLocationSettingsRender, name='appDashboardLocationSettingsRender'), # CRUD de Sedes

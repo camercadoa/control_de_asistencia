@@ -98,9 +98,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <div id="qrPreview" class="border rounded p-5 mb-3 text-muted">
-                    <i class="bi bi-qr-code fs-1 d-block mb-2"></i>
-                    <span>En desarrollo</span>
+                <div id="qrPreview" class="border rounded p-4 mb-3">
+                    <img id="qrImage" class="img-fluid" style="max-width: 300px;">
+                </div>
+                <div class="text-muted">
+                    <p class="mb-0" id="qrEmpleadoInfo"></p>
                 </div>
             </div>
             <div class="modal-footer d-flex justify-content-between">
@@ -108,8 +110,9 @@
                     <i class="bi bi-envelope"></i> Enviar por Correo
                 </button>
                 <div class="ms-auto d-flex gap-2">
-                    <button type="button" id="btnDescargarQR" class="btn btn-success">Descargar</button>
-                    <button type="button" id="btnImprimirQR" class="btn btn-secondary">Imprimir</button>
+                    <button type="button" id="btnDescargarQR" class="btn btn-success">
+                        <i class="bi bi-download"></i> Descargar
+                    </button>
                 </div>
             </div>
         </div>
@@ -343,7 +346,6 @@
         const modalQR = new bootstrap.Modal(document.getElementById("modalCodigoQR"));
         const btnEnviarCorreoQR = document.getElementById("btnEnviarCorreoQR");
         const btnDescargarQR = document.getElementById("btnDescargarQR");
-        const btnImprimirQR = document.getElementById("btnImprimirQR");
         let empleadoQR = null;
 
         // Abrir modal de QR
@@ -359,36 +361,64 @@
                     return;
                 }
 
+                // Cargar imagen QR
+                const qrImage = document.getElementById("qrImage");
+                qrImage.src = `/api/empleados/${empleadoId}/qr/?t=${new Date().getTime()}`;
+
+                // Info del empleado
+                document.getElementById("qrEmpleadoInfo").textContent =`
+                    ${empleadoQR.documento}
+                `;
+
                 // Habilitar o deshabilitar botón de enviar al correo
-                if (empleadoQR.correo_institucional) {
-                    btnEnviarCorreoQR.disabled = false;
-                } else {
-                    btnEnviarCorreoQR.disabled = true;
-                }
+                btnEnviarCorreoQR.disabled = !empleadoQR.correo_institucional;
 
                 // Mostrar modal
                 modalQR.show();
-            } catch {
+            } catch (error) {
+                console.error("Error:", error);
                 showAlert("Error al cargar la información", "danger");
             }
         });
 
-        // Acción enviar al correo
+        // Descargar
+        btnDescargarQR.addEventListener("click", () => {
+            if (!empleadoQR) return;
+
+            // Crear link temporal para descargar
+            const link = document.createElement('a');
+            link.download = `QR ${empleadoQR.documento}.png`;
+            link.href = document.getElementById("qrImage").src;
+            link.click();
+        });
+
+        // Enviar al correo
         btnEnviarCorreoQR.addEventListener("click", async () => {
             if (!empleadoQR || !empleadoQR.correo_institucional) return;
-            showAlert(`El código QR se enviará a ${empleadoQR.correo_institucional}`, "info");
-            // Aquí en el futuro harás la lógica de envío real
+
+            // Guardamos el texto original
+            const originalText = btnEnviarCorreoQR.innerHTML;
+            disableButtonWithSpinner(btnEnviarCorreoQR, "Enviando...");
+
+            try {
+                const res = await fetch(`/api/empleados/${empleadoQR.id}/qr/email/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+
+                if (res.ok) {
+                    showAlert(`Código QR enviado a ${empleadoQR.correo_institucional}`, "success");
+                    modalQR.hide();
+                } else {
+                    showAlert("Error al enviar el correo", "danger");
+                }
+            } catch {
+                showAlert("Error inesperado", "danger");
+            } finally {
+                enableButton(btnEnviarCorreoQR, originalText);
+            }
         });
 
-        // Acción descargar
-        btnDescargarQR.addEventListener("click", () => {
-            showAlert("Descarga de QR en desarrollo", "warning");
-        });
-
-        // Acción imprimir
-        btnImprimirQR.addEventListener("click", () => {
-            showAlert("Función de impresión en desarrollo", "warning");
-        });
     });
 
 </script>

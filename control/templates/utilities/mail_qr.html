@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Código QR - Control de Asistencia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f8f9fa;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 25px 20px;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 15px 0;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .main-message {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #555555;
+            line-height: 1.5;
+        }
+
+        .qr-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px dashed #dee2e6;
+        }
+
+        .qr-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .instructions h3 {
+            color: #2980b9;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+            color: #34495e;
+        }
+
+        .instructions li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .contact-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .contact-info h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .footer {
+            background-color: #34495e;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .footer-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .footer-disclaimer {
+            font-size: 12px;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 10px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 0;
+            }
+
+            .content, .footer {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔐 Sistema de Control de Asistencia</h1>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div style="margin-bottom: 20px; padding: 12px; background-color: #fff3e0; border-radius: 6px; text-align: center; color: #e65100; font-weight: 500;">
+                🤖 Este es un correo automático. Por favor, no responda a este mensaje.
+            </div>
+
+            <div class="greeting">
+                Estimado/a <strong>{{ empleado.primer_nombre|title }} {{ empleado.primer_apellido|title }}</strong>,
+            </div>
+
+            <div class="main-message">
+                Le saludamos cordialmente desde el Sistema de Control de Asistencia de <strong>Unicorsalud</strong>.
+                <br><br>
+                Nos complace informarle que su <span class="highlight">código QR personal</span> para el registro de entrada y salida ha sido generado exitosamente y se encuentra adjunto a este correo.
+            </div>
+
+            <div class="qr-section">
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                    Este es su código QR personal e intransferible
+                </p>
+                <img src="cid:qr_code" alt="Código QR" style="max-width:200px; height:auto; border:4px solid #ddd; border-radius:8px;"/>
+            </div>
+
+            <div class="instructions">
+                <h3>📋 Instrucciones de Uso</h3>
+                <ul>
+                    <li>Presente el código QR en los lectores ubicados en las entradas principales</li>
+                    <li>Mantenga el código visible y en buen estado para garantizar su correcto funcionamiento</li>
+                    <li>Cada empleado debe usar únicamente su código personal asignado</li>
+                    <li>En caso de pérdida o daño, contacte inmediatamente al departamento de Talento Humano</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <strong>Importante:</strong> Este código es personal e intransferible. No lo comparta con terceros y manténgalo seguro en todo momento.
+            </div>
+
+            <div class="contact-info">
+                <h4>📞 ¿Necesita ayuda?</h4>
+                <p style="color: #555; font-size: 14px; margin: 0;">
+                    Si tiene alguna consulta o inconveniente, puede contactarnos a través de los canales oficiales de comunicación de Talento Humano.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-title">Departamento de Talento Humano</div>
+            <div class="footer-subtitle">Unicorsalud</div>
+
+            <div class="footer-disclaimer">
+                Este mensaje y sus adjuntos son confidenciales y están dirigidos exclusivamente al destinatario indicado.
+                Si usted no es el destinatario, por favor elimine este mensaje y notifique al remitente.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
