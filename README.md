@@ -1,43 +1,43 @@
-# 🚀 Control de Asistencia
+# Control de Asistencia
 
-Este proyecto es un sistema de control de asistencia desarrollado en Django, diseñado para gestionar y registrar la asistencia de empleados en diferentes sedes de una organización.
+Sistema de control de asistencia del personal desarrollado con Django y JavaScript.
 
-> **Nota:** Este repositorio es privado y su uso está destinado únicamente para fines académicos.
+## 📋 Descripción
 
-## Finalidad
+Este proyecto es un sistema de gestión para el control de asistencia del personal, diseñado para facilitar el registro y seguimiento de la asistencia de empleados de manera eficiente y organizada.
 
-Este sistema ha sido desarrollado como Proyecto de Grado para el cumplimiento de la etapa educativa universitaria de los autores.
+## 🚀 Características
 
-## Características
+- Registro de asistencia del personal
+- Panel de administración
+- Reportes de asistencia
+- Gestión de usuarios
+- Interfaz intuitiva y responsiva
 
-- Gestión de empleados.
-- Control y registro de asistencia.
-- Administración de sedes.
-- Panel de administración con Django Admin.
-- Integración con base de datos PostgreSQL.
+## 🛠️ Tecnologías Utilizadas
 
-## Estructura del Proyecto
+- **Backend:** Django
+- **Frontend:** JavaScript
+- **Base de Datos:** Django ORM
+- **Estilos:** CSS
+- **Plantillas:** Django Templates
 
-```bash
+## 📦 Estructura del Proyecto
+
+```
 control_de_asistencia/
-├── control/
-│   ├── models/
-│   ├── views/
-│   ├── templates/
-│   ├── admin.py
-│   ├── apps.py
-│   └── urls.py
-├── core_asistencia/
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── manage.py
-├── requirements.txt
-└── .env
+│
+├── control/              # Aplicación principal 
+├── core_asistencia/      # Configuraciones principales de Django
+├── static/               # Archivos estáticos (CSS, JS, imágenes)
+├── staticfiles/          # Archivos estáticos recolectados
+├── manage.py             # Script de gestión de Django
+└── requirements.txt      # Dependencias del proyecto
 ```
 
-## Tecnologías utilizadas
+## 📄 Licencia
 
-- Python 3.10+
-- Django 5.2.4
-- PostgreSQL
+Este proyecto está bajo la Licencia MIT - mira el archivo `LICENSE` para detalles
+
+---
+⌨️ con ❤️ por [camercadoa](https://github.com/camercadoa)
