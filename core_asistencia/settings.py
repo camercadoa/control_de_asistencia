@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import sys
+from django.core.exceptions import ImproperlyConfigured
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,13 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY") or config("SECRET_KEY", default=None)
+if not SECRET_KEY:
+    raise ImproperlyConfigured("SECRET_KEY is not set. Define it in environment or .env")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(config("DEBUG", default="False")).lower() in ["true", "1", "yes"]
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*").split(",")
 
 # Application definition
 
@@ -146,20 +148,18 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '--- {asctime} | {message} ---',
-            'style': '{',
-        },
+        'verbose': {'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}', 'style': '{'},
+        'simple': {'format': '--- {asctime} | {message} ---','style': '{'},
     },
     'handlers': {
-        'console': {
+        'console': {'level': 'INFO', 'class': 'logging.StreamHandler', 'formatter': 'simple'},
+        'file': {
             'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs/django.log',
+            'maxBytes': 1024*1024*5,  # 5MB
+            'backupCount': 3,
+            'formatter': 'verbose',
         },
         'mail_admins': {
             'level': 'ERROR',
@@ -167,24 +167,10 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'control': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'myproject.custom': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'INFO',
-        },
+        'django': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': True},
+        'control': {'handlers': ['console'], 'level': 'DEBUG'},
+        'django.request': {'handlers': ['mail_admins'], 'level': 'ERROR', 'propagate': False},
+        'myproject.custom': {'handlers': ['console', 'mail_admins'], 'level': 'INFO'},
     },
 }
 
