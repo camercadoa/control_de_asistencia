@@ -17,17 +17,16 @@ Este proyecto es un sistema de gestión para el control de asistencia del person
 ## 🛠️ Tecnologías Utilizadas
 
 - **Backend:** Django
-- **Frontend:** JavaScript
+- **Frontend:** HTML + CSS + JavaScript
 - **Base de Datos:** Django ORM
-- **Estilos:** CSS
 - **Plantillas:** Django Templates
 
 ## 📦 Estructura del Proyecto
 
-```
+```bash
 control_de_asistencia/
 │
-├── control/              # Aplicación principal 
+├── control/              # Aplicación principal
 ├── core_asistencia/      # Configuraciones principales de Django
 ├── static/               # Archivos estáticos (CSS, JS, imágenes)
 ├── staticfiles/          # Archivos estáticos recolectados
