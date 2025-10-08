@@ -35,7 +35,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # Módulo de administración
-    path('root/', admin.site.urls),
+    path('control/root/', admin.site.urls),
 
     # Rutas de la API
     path('api/', include('control.api.urls')),
