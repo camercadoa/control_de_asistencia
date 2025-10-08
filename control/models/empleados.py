@@ -13,6 +13,7 @@ class TipoDocumento(models.Model):
         db_table = 'tipo_documentos'
         verbose_name = 'Tipo de Documento'
         verbose_name_plural = 'Tipos de Documentos'
+        managed = False
 
     def __str__(self):
         return f"{self.tipo_documento} - {self.descripcion}"
@@ -40,6 +41,7 @@ class Empleado(models.Model):
         db_table = 'empleados'
         verbose_name = 'Empleado'
         verbose_name_plural = 'Empleados'
+        managed = False
 
     def __str__(self):
         return f"{self.primer_nombre} {self.primer_apellido} - {self.fk_tipo_documento.tipo_documento} {self.numero_documento}"

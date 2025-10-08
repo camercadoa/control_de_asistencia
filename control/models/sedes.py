@@ -10,6 +10,7 @@ class Sede(models.Model):
         db_table = 'sedes'
         verbose_name = 'Sede'
         verbose_name_plural = 'Sedes'
+        managed = False
 
     def __str__(self):
         return f"{self.ubicacion}"
