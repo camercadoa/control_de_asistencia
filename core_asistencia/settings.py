@@ -31,6 +31,10 @@ if not SECRET_KEY:
 DEBUG = str(config("DEBUG", default="False")).lower() in ["true", "1", "yes"]
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*").split(",")
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="http://localhost:8000,http://127.0.0.1:8000"
+).split(",")
 
 # Application definition
 
