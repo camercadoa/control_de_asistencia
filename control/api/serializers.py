@@ -36,7 +36,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
 
     def get_nombre_completo(self, obj):
         # Info: Devuelve el nombre completo del empleado
-        return f"{obj.primer_nombre} {obj.segundo_nombre or ''} {obj.primer_apellido} {obj.segundo_apellido or ''}".strip()
+        return f"{obj.primer_apellido} {obj.segundo_apellido or ''} {obj.primer_nombre} {obj.segundo_nombre or ''}".strip()
 
     def get_correo_institucional(self, obj):
         # Info: Devuelve el correo institucional del empleado si existe
@@ -70,7 +70,7 @@ class RegistroAsistenciaSerializer(serializers.ModelSerializer):
         return localtime(obj.fecha_hora_registro).strftime("%I:%M:%S %p")
 
     def get_nombre_empleado(self, obj):
-        return f"{obj.fk_empleado.primer_nombre} {obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''}".strip()
+        return f"{obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''} {obj.fk_empleado.primer_nombre}".strip()
 
     def get_documento(self, obj):
         numero = f"{obj.fk_empleado.numero_documento:,}".replace(",", ".")
@@ -158,7 +158,7 @@ class NovedadAsistenciaSerializer(serializers.ModelSerializer):
         fields = ['id', 'fk_empleado', 'fk_tipo_novedad', 'nombre_empleado', 'tipo_novedad', 'fecha_inicio', 'fecha_fin', 'observacion']
 
     def get_nombre_empleado(self, obj):
-        return f"{obj.fk_empleado.primer_nombre} {obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''}".strip()
+        return f"{obj.fk_empleado.primer_apellido} {obj.fk_empleado.segundo_apellido or ''} {obj.fk_empleado.primer_nombre}".strip()
 
     def get_tipo_novedad(self, obj):
         return obj.fk_tipo_novedad.tipo

@@ -119,34 +119,61 @@
 
 <!-- Modal Miembros (Lista Dual) -->
 <div class="modal fade" id="modalMembers" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form id="formMembers">
                 {% csrf_token %}
                 <div class="modal-header">
                     <h5 class="modal-title">Miembros del Horario</h5>
                 </div>
+
                 <div class="modal-body">
-                    <div class="row justify-content-between align-items-center p-2">
-                        <!-- Empleados disponibles -->
-                        <div class="col-12 col-md-5">
-                            <label class="form-label">Empleados Disponibles</label>
-                            <select id="availableEmployees" class="form-select" multiple size="10"></select>
-                        </div>
+                    <!-- Contenedor de carga -->
+                    <div id="loadingMembers" class="d-flex flex-column justify-content-center align-items-center p-5">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p class="text-muted mb-0">Cargando datos...</p>
+                    </div>
 
-                        <!-- Botones de mover -->
-                        <div class="col-12 col-md-2 d-flex flex-column justify-content-center align-items-center gap-2">
-                            <button type="button" class="btn btn-outline-primary w-50" id="btnAdd">→</button>
-                            <button type="button" class="btn btn-outline-danger w-50" id="btnRemove">←</button>
-                        </div>
+                    <!-- Contenido real (oculto hasta que carguen los datos) -->
+                    <div id="membersContent" class="d-none">
+                        <div class="row justify-content-center align-items-center p-2">
+                            <!-- Empleados disponibles -->
+                            <div class="col-12 col-md-5">
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+                                    <div class="card-header bg-body-tertiary fw-semibold text-secondary rounded-top-4 py-2">
+                                        <i class="bi bi-person-lines-fill me-2 text-primary"></i> Empleados Disponibles
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <select id="availableEmployees" class="form-select border-0" multiple size="20"></select>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- Miembros -->
-                        <div class="col-12 col-md-5">
-                            <label class="form-label">Miembros del Horario</label>
-                            <select id="horarioMembers" class="form-select" multiple size="10"></select>
+                            <!-- Botones -->
+                            <div class="col-12 col-md-auto d-flex flex-column justify-content-center align-items-center gap-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle shadow-sm" id="btnAdd" title="Agregar">
+                                    <i class="bi bi-arrow-right-short"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" id="btnRemove" title="Quitar">
+                                    <i class="bi bi-arrow-left-short"></i>
+                                </button>
+                            </div>
+
+                            <!-- Miembros del horario -->
+                            <div class="col-12 col-md-5">
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+                                    <div class="card-header bg-body-tertiary fw-semibold text-secondary rounded-top-4 py-2">
+                                        <i class="bi bi-person-check-fill me-2 text-success"></i> Miembros del Horario
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <select id="horarioMembers" class="form-select border-0" multiple size="20"></select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <button type="submit" class="btn btn-success">Guardar Miembros</button>
@@ -378,14 +405,19 @@
             }
         });
 
-        // Gestionar miembros
+        // Gestionar miembros (lista dual)
         const membersModal = document.getElementById("modalMembers");
         const membersForm = document.getElementById("formMembers");
+
+        const loadingMembers = document.getElementById("loadingMembers");
+        const membersContent = document.getElementById("membersContent");
 
         const availableEmployees = document.getElementById("availableEmployees");
         const horarioMembers = document.getElementById("horarioMembers");
         const btnAdd = document.getElementById("btnAdd");
         const btnRemove = document.getElementById("btnRemove");
+        const membersBtn = membersForm.querySelector("button[type=submit]");
+        const originalTextMembers = membersBtn.innerHTML;
 
         let currentHorarioId = null;
 
@@ -395,17 +427,32 @@
 
             currentHorarioId = btn.dataset.id;
 
+            // Mostrar modal
+            const modal = bootstrap.Modal.getOrCreateInstance(membersModal);
+            modal.show();
+
+            // Mostrar estado de carga
+            loadingMembers.classList.remove("d-none");
+            membersContent.classList.add("d-none");
+
+            // Limpiar selects
             availableEmployees.innerHTML = "";
             horarioMembers.innerHTML = "";
 
             try {
-                const resEmpleados = await fetch("/api/empleados/");
-                const empleados = await resEmpleados.json();
+                // Cargar empleados y datos del horario
+                const [resEmpleados, resHorario] = await Promise.all([
+                    fetch("/api/empleados/"),
+                    fetch(`/api/horarios/${currentHorarioId}/`)
+                ]);
 
-                const resHorario = await fetch(`/api/horarios/${currentHorarioId}/`);
+                if (!resEmpleados.ok || !resHorario.ok) throw new Error("Error al obtener datos");
+
+                const empleados = await resEmpleados.json();
                 const horarioData = await resHorario.json();
                 const membersIds = horarioData.miembros.map(id => parseInt(id));
 
+                // LLenar los selects
                 empleados.forEach(emp => {
                     const option = document.createElement("option");
                     option.value = emp.id;
@@ -417,26 +464,45 @@
                     }
                 });
 
-                bootstrap.Modal.getOrCreateInstance(membersModal).show();
-            } catch {
-                showAlert("Error al cargar empleados", "danger");
+                // Agregar funcionalidad de búsqueda
+                addSearchToMultipleSelect("availableEmployees", "Buscar...");
+                addSearchToMultipleSelect("horarioMembers", "Buscar...");
+
+                // Mostrar contenido real
+                loadingMembers.classList.add("d-none");
+                membersContent.classList.remove("d-none");
+
+            } catch (err) {
+                console.error(err);
+                loadingMembers.innerHTML = `
+                    <div class="text-center text-danger">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 mb-3"></i>
+                        <p class="fw-semibold mb-0">Error al cargar los datos</p>
+                        <p class="small text-muted mb-0">Intenta nuevamente</p>
+                    </div>
+                `;
             }
         });
 
+        // Agregar miembros
         btnAdd.addEventListener("click", () => {
             Array.from(availableEmployees.selectedOptions).forEach(opt => {
                 horarioMembers.appendChild(opt);
             });
         });
 
+        // Remover miembros
         btnRemove.addEventListener("click", () => {
             Array.from(horarioMembers.selectedOptions).forEach(opt => {
                 availableEmployees.appendChild(opt);
             });
         });
 
+        // Guardar miembros
         membersForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            disableButtonWithSpinner(membersBtn, "Guardando...");
 
             const selectedIds = Array.from(horarioMembers.options).map(opt => parseInt(opt.value));
 
@@ -457,8 +523,11 @@
                 } else {
                     showAlert("Error al actualizar miembros", "danger");
                 }
-            } catch {
+            } catch (err) {
+                console.error(err);
                 showAlert("Error inesperado", "danger");
+            } finally {
+                enableButton(membersBtn, originalTextMembers);
             }
         });
     });

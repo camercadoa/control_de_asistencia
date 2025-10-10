@@ -94,7 +94,7 @@
             ]
         });
 
-        // Cargar empleados y áreas de trabajo para los filtros
+        // Cargar empleados, áreas de trabajo y sedes para los filtros
         try {
             const [resEmp, resAreas, resSedes] = await Promise.all([
                 fetch("/api/empleados/"),
@@ -186,7 +186,7 @@
             return show;
         });
 
-        // Eventos de filtro
+        // Eventos de filtros
         document.getElementById("filterEmployee").addEventListener("change", () => table.draw());
         document.getElementById("filterStartDate").addEventListener("change", () => table.draw());
         document.getElementById("filterEndDate").addEventListener("change", () => table.draw());

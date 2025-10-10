@@ -45,7 +45,7 @@ class SedeRegistroCountView(APIView):
 
 class EmpleadoListCreateView(ListAPIView):
     # Info: Lista todos los empleados o permite crear uno nuevo
-    queryset = Empleado.objects.all().order_by('primer_nombre')
+    queryset = Empleado.objects.all().order_by('primer_apellido', 'segundo_apellido', 'primer_nombre', 'segundo_nombre')
     serializer_class = EmpleadoSerializer
 
 

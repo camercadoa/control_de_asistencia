@@ -320,7 +320,13 @@ function initDataTable(selector, options = {}) {
                 extend: 'excelHtml5',
                 text: '<i class="bi bi-file-earmark-excel-fill me-1 text-success"></i><span class="text-dark">Excel</span>',
                 className: 'btn btn-sm bg-white border-0',
-                titleAttr: 'Exportar a Excel'
+                titleAttr: 'Exportar a Excel',
+                exportOptions: {
+                    rows: function (idx, data, node) {
+                        const totalRows = $(node).closest('table').DataTable().rows().count();
+                        return idx < totalRows - 1;
+                    }
+                }
             },
             {
                 extend: 'pdfHtml5',
@@ -328,13 +334,25 @@ function initDataTable(selector, options = {}) {
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Exportar a PDF',
                 orientation: 'landscape',
-                pageSize: 'A4'
+                pageSize: 'A4',
+                exportOptions: {
+                    rows: function (idx, data, node) {
+                        const totalRows = $(node).closest('table').DataTable().rows().count();
+                        return idx < totalRows - 1;
+                    }
+                }
             },
             {
                 extend: 'print',
                 text: '<i class="bi bi-printer-fill me-1 text-secondary"></i><span class="text-dark">Imprimir</span>',
                 className: 'btn btn-sm bg-white border-0',
-                titleAttr: 'Imprimir'
+                titleAttr: 'Imprimir',
+                exportOptions: {
+                    rows: function (idx, data, node) {
+                        const totalRows = $(node).closest('table').DataTable().rows().count();
+                        return idx < totalRows - 1;
+                    }
+                }
             }
         ],
         columns: []
@@ -417,4 +435,78 @@ function fechaHoyFormato() {
     const mm = String(hoy.getMonth() + 1).padStart(2, '0');
     const yyyy = hoy.getFullYear();
     return `${dd}/${mm}/${yyyy}`;
+}
+
+// ============================================================================
+// SELECT MULTIPLE CON BÚSQUEDA
+// ============================================================================
+
+/**
+ * Agrega un campo de búsqueda a un <select multiple>
+ * @param {string} selectId - ID del <select>
+ * @param {string} placeholder - Texto opcional para el campo de búsqueda
+ */
+function addSearchToMultipleSelect(selectId, placeholder = "Buscar...") {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    // Evitar duplicar el buscador
+    if (select.parentElement.querySelector(".select-search-input")) return;
+
+    // Crear contenedor general
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("mb-2");
+
+    const inputGroup = document.createElement("div");
+    inputGroup.classList.add("input-group", "input-group-sm", "mb-2");
+
+    // Icono de búsqueda
+    const spanIcon = document.createElement("span");
+    spanIcon.classList.add("input-group-text");
+    spanIcon.innerHTML = '<i class="bi bi-search"></i>';
+
+    // Campo de texto
+    const input = document.createElement("input");
+    input.type = "text";
+    input.classList.add("form-control", "select-search-input");
+    input.placeholder = placeholder;
+
+    // Botón de limpiar
+    const clearBtn = document.createElement("button");
+    clearBtn.classList.add("btn", "btn-outline-secondary");
+    clearBtn.type = "button";
+    clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+    // Armar estructura del input-group
+    inputGroup.appendChild(spanIcon);
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(clearBtn);
+
+    // Insertar el input-group antes del select
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(inputGroup);
+    wrapper.appendChild(select);
+
+    // Guardar las opciones originales (para restaurar)
+    const originalOptions = Array.from(select.options);
+
+    // Filtrar opciones al escribir
+    input.addEventListener("input", () => {
+        const term = input.value.trim().toLowerCase();
+        select.innerHTML = "";
+
+        const filtered = originalOptions.filter(opt =>
+            opt.textContent.toLowerCase().includes(term)
+        );
+
+        filtered.forEach(opt => select.appendChild(opt));
+    });
+
+    // Limpiar búsqueda
+    clearBtn.addEventListener("click", () => {
+        input.value = "";
+        select.innerHTML = "";
+        originalOptions.forEach(opt => select.appendChild(opt));
+        input.focus();
+    });
 }
