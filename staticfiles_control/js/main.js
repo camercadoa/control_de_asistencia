@@ -322,10 +322,7 @@ function initDataTable(selector, options = {}) {
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Exportar a Excel',
                 exportOptions: {
-                    rows: function (idx, data, node) {
-                        const totalRows = $(node).closest('table').DataTable().rows().count();
-                        return idx < totalRows - 1;
-                    }
+                    columns: ':not(:last-child)'
                 }
             },
             {
@@ -336,10 +333,7 @@ function initDataTable(selector, options = {}) {
                 orientation: 'landscape',
                 pageSize: 'A4',
                 exportOptions: {
-                    rows: function (idx, data, node) {
-                        const totalRows = $(node).closest('table').DataTable().rows().count();
-                        return idx < totalRows - 1;
-                    }
+                    columns: ':not(:last-child)'
                 }
             },
             {
@@ -348,13 +342,11 @@ function initDataTable(selector, options = {}) {
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Imprimir',
                 exportOptions: {
-                    rows: function (idx, data, node) {
-                        const totalRows = $(node).closest('table').DataTable().rows().count();
-                        return idx < totalRows - 1;
-                    }
+                    columns: ':not(:last-child)'
                 }
             }
         ],
+
         columns: []
     };
 
