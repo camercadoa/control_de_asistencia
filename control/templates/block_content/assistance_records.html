@@ -7,9 +7,9 @@
 <h5 class="mb-4 d-flex justify-content-center align-items-center fw-bold">Registros de Asistencia</h5>
 
 <!-- Filtros -->
-<div class="row mb-3 g-2 align-items-end">
+<div class="row mb-3 g-2 align-items-center">
     <!-- Filtro de Empleado -->
-    <div class="form-floating col-md-3">
+    <div class="form-floating col-md-2">
         <select id="filterEmployee" class="form-select">
             <option value="">Todos</option>
         </select>
@@ -46,6 +46,14 @@
             <option value="">Todas</option>
         </select>
         <label for="filterSede" class="form-label">Sede</label>
+    </div>
+    <!-- Botón Limpiar -->
+    <div class="col-12 col-md-auto text-center">
+        <button id="clearFilters"
+                class="btn btn-outline-secondary w-100 w-md-auto py-2 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-x-circle fs-5"></i>
+            <span class="d-md-none">Limpiar</span>
+        </button>
     </div>
 </div>
 
@@ -193,6 +201,17 @@
         document.getElementById("filterDescription").addEventListener("input", () => table.draw());
         document.getElementById("filterWorkArea").addEventListener("change", () => table.draw());
         document.getElementById("filterSede").addEventListener("change", () => table.draw());
+
+        // Botón Limpiar Filtros
+        document.getElementById("clearFilters").addEventListener("click", () => {
+            document.getElementById("filterEmployee").value = "";
+            document.getElementById("filterStartDate").value = "";
+            document.getElementById("filterEndDate").value = "";
+            document.getElementById("filterDescription").value = "";
+            document.getElementById("filterWorkArea").value = "";
+            document.getElementById("filterSede").value = "";
+            table.search("").columns().search("").draw();
+        });
     });
 </script>
 {% endblock %}

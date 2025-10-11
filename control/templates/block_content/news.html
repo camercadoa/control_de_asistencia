@@ -16,7 +16,7 @@
 </div>
 
 <!-- Filtros -->
-<div class="row mb-3 g-2 align-items-end">
+<div class="row mb-3 g-2 align-items-center">
     <!-- Filtro de Empleado -->
     <div class="form-floating col-md-3">
         <select id="filterEmployee" class="form-select">
@@ -24,13 +24,11 @@
         </select>
         <label for="filterEmployee" class="form-label">Empleado</label>
     </div>
-
     <!-- Filtro por Mes -->
     <div class="form-floating col-md-2">
         <input type="month" id="filterMonth" class="form-control">
         <label for="filterMonth" class="form-label">Mes</label>
     </div>
-
     <!-- Filtro de Tipo de Novedad -->
     <div class="form-floating col-md-3">
         <select id="filterTipoNovedad" class="form-select">
@@ -38,11 +36,12 @@
         </select>
         <label for="filterTipoNovedad" class="form-label">Tipo de Novedad</label>
     </div>
-
     <!-- Botón Limpiar -->
-    <div class="col-md-2 text-center">
-        <button id="clearFilters" class="btn btn-outline-secondary w-100 py-2">
-            <i class="bi bi-x-circle me-2"></i>Limpiar Filtros
+    <div class="col-12 col-md-auto text-center">
+        <button id="clearFilters"
+                class="btn btn-outline-secondary w-100 w-md-auto py-2 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-x-circle fs-5"></i>
+            <span class="d-md-none">Limpiar</span>
         </button>
     </div>
 </div>
@@ -211,32 +210,42 @@ document.addEventListener("DOMContentLoaded", async () => {
         ]
     });
 
-    // Cargar empleados y tipos de novedad para los filtros
+    // Cargar empleados y tipos de Novedades
+    let empleados = [];
+    let tipos = [];
+
     try {
         const [resEmp, resTipo] = await Promise.all([
             fetch("/api/empleados/"),
             fetch("/api/tipos-novedad/")
         ]);
-        const [empleados, tipos] = await Promise.all([resEmp.json(), resTipo.json()]);
 
-        const selectEmp = document.getElementById("filterEmployee");
-        empleados.forEach(emp => {
-            const opt = document.createElement("option");
-            opt.value = emp.id;
-            opt.textContent = emp.nombre_completo.toUpperCase();
-            selectEmp.appendChild(opt);
-        });
+        empleados = await resEmp.json();
+        tipos = await resTipo.json();
 
-        const selectTipo = document.getElementById("filterTipoNovedad");
-        tipos.forEach(tipo => {
-            const opt = document.createElement("option");
-            opt.value = tipo.id;
-            opt.textContent = tipo.tipo.toUpperCase();
-            selectTipo.appendChild(opt);
-        });
+        // Filtros
+        fillSelect("filterEmployee", empleados, "Todos", "nombre_completo");
+        fillSelect("filterTipoNovedad", tipos, "Todas", "tipo");
+
+        // Formularios
+        fillSelect("createEmpleado", empleados, "Selecciona un empleado", "nombre_completo");
+        fillSelect("editEmpleado", empleados, "Selecciona un empleado", "nombre_completo");
+        fillSelect("createTipoNovedad", tipos, "Selecciona un tipo de novedad", "tipo");
+        fillSelect("editTipoNovedad", tipos, "Selecciona un tipo de novedad", "tipo");
+
     } catch (error) {
         console.error(error);
         showAlert("Error cargando empleados o tipos de novedad", "danger");
+    }
+
+    // Función auxiliar para llenar selects
+    function fillSelect(selectId, data, placeholder, labelKey) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+        data.forEach(item => {
+            const text = item[labelKey] || "—";
+            select.innerHTML += `<option value="${item.id}">${text.toUpperCase()}</option>`;
+        });
     }
 
     // Filtro automático con DataTables API
@@ -247,13 +256,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let show = true;
 
-        // Filtrar por empleado
         if (empId && rowData.fk_empleado != parseInt(empId)) show = false;
-
-        // Filtrar por tipo de novedad
         if (tipoId && rowData.fk_tipo_novedad != parseInt(tipoId)) show = false;
 
-        // Filtrar por mes (fecha_inicio)
         if (filterMonth && rowData.fecha_inicio) {
             const fecha = new Date(rowData.fecha_inicio);
             const year = fecha.getFullYear();
@@ -275,62 +280,42 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("filterEmployee").value = "";
         document.getElementById("filterTipoNovedad").value = "";
         document.getElementById("filterMonth").value = "";
-        table.draw();
+            table.search("").columns().search("").draw();
     });
-
-    // Función para cargar selects dinámicos con búsqueda
-    async function loadSelect(url, selectId, placeholder){
-        const select = document.getElementById(selectId);
-        select.innerHTML = `<option value="">Cargando...</option>`;
-        try{
-            const res = await fetch(url);
-            const data = await res.json();
-            select.innerHTML = `<option value="">${placeholder}</option>`;
-            data.forEach(item=>{
-                const text = item.nombre_completo ?? item.tipo ?? item.tipo;
-                select.innerHTML += `<option value="${item.id}">${text.toUpperCase()}</option>`;
-            });
-        }catch{
-            select.innerHTML = `<option value="">Error cargando datos</option>`;
-        }
-    }
-
-    // Cargar selects de crear y editar
-    loadSelect("/api/empleados/","createEmpleado","Selecciona un empleado");
-    loadSelect("/api/empleados/","editEmpleado","Selecciona un empleado");
-    loadSelect("/api/tipos-novedad/","createTipoNovedad","Selecciona un tipo de novedad");
-    loadSelect("/api/tipos-novedad/","editTipoNovedad","Selecciona un tipo de novedad");
 
     //  Crear
     const createForm = document.getElementById("formCreate");
     const createBtn = createForm.querySelector("button[type=submit]");
     const originalTextCreate = createBtn.innerHTML;
-    createForm.addEventListener("submit", async e=>{
+
+    createForm.addEventListener("submit", async e => {
         e.preventDefault();
-        disableButtonWithSpinner(createBtn,"Guardando...");
-        try{
-            const res = await fetch("/api/novedades-asistencia/",{
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json",
-                    "X-CSRFToken":"{{ csrf_token }}"
+        disableButtonWithSpinner(createBtn, "Guardando...");
+        try {
+            const res = await fetch("/api/novedades-asistencia/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
                 },
                 body: JSON.stringify(Object.fromEntries(new FormData(createForm).entries()))
             });
-            if(res.ok){
-                showAlert("Novedad creada correctamente","success");
+            if (res.ok) {
+                showAlert("Novedad creada correctamente", "success");
                 bootstrap.Modal.getInstance(document.getElementById("modalCreate")).hide();
                 createForm.reset();
-                table.ajax.reload(null,false);
-            } else showAlert("Error al crear la novedad","danger");
-        }catch{
-            showAlert("Error inesperado","danger");
-        }finally{
-            enableButton(createBtn,originalTextCreate);
+                table.ajax.reload(null, false);
+            } else showAlert("Error al crear la novedad", "danger");
+        } catch {
+            showAlert("Error inesperado", "danger");
+        } finally {
+            enableButton(createBtn, originalTextCreate);
         }
     });
 
-    resetModalForm("modalCreate","formCreate",["createEmpleado","createTipoNovedad","createFechaInicio","createFechaFin","createObservacion"]);
+    resetModalForm("modalCreate", "formCreate", [
+        "createEmpleado", "createTipoNovedad", "createFechaInicio", "createFechaFin", "createObservacion"
+    ]);
 
     //  Editar
     const editForm = document.getElementById("formEdit");
@@ -346,67 +331,69 @@ document.addEventListener("DOMContentLoaded", async () => {
         editForm.querySelector("[name=fk_tipo_novedad]").value = btn.dataset.tipoId;
         editForm.querySelector("[name=fecha_inicio]").value = btn.dataset.fechaInicio;
         editForm.querySelector("[name=fecha_fin]").value = btn.dataset.fechaFin;
-
         editForm.querySelector("[name=observacion]").value = btn.dataset.observacion || "";
 
         bootstrap.Modal.getOrCreateInstance(document.getElementById("modalEdit")).show();
     });
 
-    editForm.addEventListener("submit", async e=>{
+    editForm.addEventListener("submit", async e => {
         e.preventDefault();
-        disableButtonWithSpinner(editBtn,"Actualizando...");
+        disableButtonWithSpinner(editBtn, "Actualizando...");
         const idNovedad = editForm.querySelector("[name=id]").value;
-        try{
-            const res = await fetch(`/api/novedades-asistencia/${idNovedad}/`,{
-                method:"PATCH",
-                headers:{
-                    "Content-Type":"application/json",
+        try {
+            const res = await fetch(`/api/novedades-asistencia/${idNovedad}/`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
                     "X-CSRFToken": "{{ csrf_token }}"
                 },
                 body: JSON.stringify(Object.fromEntries(new FormData(editForm).entries()))
             });
-            if(res.ok){
-                showAlert("Novedad actualizada correctamente","success");
+            if (res.ok) {
+                showAlert("Novedad actualizada correctamente", "success");
                 bootstrap.Modal.getInstance(document.getElementById("modalEdit")).hide();
-                table.ajax.reload(null,false);
-            } else showAlert("Error al actualizar la novedad","danger");
-        }catch{
-            showAlert("Error inesperado","danger");
-        }finally{
-            enableButton(editBtn,originalTextEdit);
+                table.ajax.reload(null, false);
+            } else showAlert("Error al actualizar la novedad", "danger");
+        } catch {
+            showAlert("Error inesperado", "danger");
+        } finally {
+            enableButton(editBtn, originalTextEdit);
         }
     });
 
-    resetModalForm("modalEdit","formEdit",["editEmpleado","editTipoNovedad","editFechaInicio","editFechaFin","editObservacion"]);
+    resetModalForm("modalEdit", "formEdit", [
+        "editEmpleado", "editTipoNovedad", "editFechaInicio", "editFechaFin", "editObservacion"
+    ]);
 
     //  Eliminar
     let deleteId = null;
     const deleteBtn = document.getElementById("confirmDelete");
-    document.getElementById("NovedadesTable").addEventListener("click", e=>{
+
+    document.getElementById("NovedadesTable").addEventListener("click", e => {
         const btn = e.target.closest(".delete-btn");
-        if(!btn) return;
+        if (!btn) return;
         deleteId = btn.dataset.id;
         bootstrap.Modal.getOrCreateInstance(document.getElementById("modalDelete")).show();
     });
 
-    deleteBtn.addEventListener("click", async ()=>{
-        if(!deleteId) return;
-        disableButtonWithSpinner(deleteBtn,"Eliminando...");
-        try{
-            const res = await fetch(`/api/novedades-asistencia/${deleteId}/`,{
-                method:"DELETE",
-                headers:{"X-CSRFToken":"{{ csrf_token }}"}
+    deleteBtn.addEventListener("click", async () => {
+        if (!deleteId) return;
+        disableButtonWithSpinner(deleteBtn, "Eliminando...");
+        try {
+            const res = await fetch(`/api/novedades-asistencia/${deleteId}/`, {
+                method: "DELETE",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
             });
-            if(res.ok){
-                showAlert("Novedad eliminada correctamente","success");
+            if (res.ok) {
+                showAlert("Novedad eliminada correctamente", "success");
                 bootstrap.Modal.getInstance(document.getElementById("modalDelete")).hide();
-                table.ajax.reload(null,false);
-            } else showAlert("Error al eliminar la novedad","danger");
-        }catch{
-            showAlert("Error inesperado","danger");
-        }finally{
+                table.ajax.reload(null, false);
+            } else showAlert("Error al eliminar la novedad", "danger");
+        } catch {
+            showAlert("Error inesperado", "danger");
+        } finally {
             deleteId = null;
-            enableButton(deleteBtn,"Eliminar");
+            enableButton(deleteBtn, "Eliminar");
         }
     });
 });

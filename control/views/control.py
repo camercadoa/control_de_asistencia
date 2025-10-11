@@ -228,7 +228,7 @@ def _save_asistencia(empleado, sede_id):
 
         # Info: Validar diferencia mínima de 30 min entre Entrada y Salida
         diferencia = ahora - ultimo_registro.fecha_hora_registro
-        if diferencia < timedelta(minutes=1):  # ajustar minutos según política
+        if diferencia < timedelta(minutes=30):  # ajustar minutos según política
             return None, _info(
                 user_message="Tiempo mínimo entre Entrada y Salida no cumplido",
                 code=200,

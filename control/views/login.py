@@ -79,7 +79,7 @@ def _authenticate_user(request, username, password):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         # Info: Validar que el usuario pertenezca a grupos autorizados
-        groups = ["Secretaria Talento Humano", "Director Talento Humano"]
+        groups = ["Secretaria Talento Humano", "Director Talento Humano", "Presidente", "Rector"]
         in_groups = any(
             user.groups.filter(name=grupo).exists() for grupo in groups
         )

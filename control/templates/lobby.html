@@ -54,17 +54,20 @@
                             </button>
                         </form>
 
-                        <!-- Separador -->
-                        <div class="d-flex align-items-center my-3">
-                            <hr class="flex-grow-1 border-secondary">
-                            <span class="px-2 text-secondary small">o</span>
-                            <hr class="flex-grow-1 border-secondary">
-                        </div>
+                        <!-- Separador y botón visibles solo en pantallas grandes -->
+                        <div class="d-none d-lg-block">
+                            <!-- Separador -->
+                            <div class="d-flex align-items-center my-3">
+                                <hr class="flex-grow-1 border-secondary">
+                                <span class="px-2 text-secondary small">o</span>
+                                <hr class="flex-grow-1 border-secondary">
+                            </div>
 
-                        <!-- Ingresar como sede -->
-                        <a href="{% url 'appQrReaderRender' %}" class="btn btn-sm btn-outline-secondary w-100 py-2 rounded-3">
-                            Ingresar como sede
-                        </a>
+                            <!-- Ingresar como sede -->
+                            <a href="{% url 'appQrReaderRender' %}" class="btn btn-sm btn-outline-secondary w-100 py-2 rounded-3">
+                                Ingresar como sede
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
