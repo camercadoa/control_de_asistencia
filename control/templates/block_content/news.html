@@ -16,35 +16,47 @@
 </div>
 
 <!-- Filtros -->
-<div class="row mb-3 g-2 align-items-center">
-    <!-- Filtro de Empleado -->
-    <div class="form-floating col-md-3">
-        <select id="filterEmployee" class="form-select">
-            <option value="">Todos</option>
-        </select>
-        <label for="filterEmployee" class="form-label">Empleado</label>
-    </div>
-    <!-- Filtro por Mes -->
-    <div class="form-floating col-md-2">
-        <input type="month" id="filterMonth" class="form-control">
-        <label for="filterMonth" class="form-label">Mes</label>
-    </div>
-    <!-- Filtro de Tipo de Novedad -->
-    <div class="form-floating col-md-3">
-        <select id="filterTipoNovedad" class="form-select">
-            <option value="">Todas</option>
-        </select>
-        <label for="filterTipoNovedad" class="form-label">Tipo de Novedad</label>
-    </div>
-    <!-- Botón Limpiar -->
-    <div class="col-12 col-md-auto text-center">
-        <button id="clearFilters"
-                class="btn btn-outline-secondary w-100 w-md-auto py-2 d-flex align-items-center justify-content-center gap-2">
-            <i class="bi bi-x-circle fs-5"></i>
-            <span class="d-md-none">Limpiar</span>
-        </button>
+<div class="accordion mb-3" id="accordionFilters">
+    <div class="accordion-item border-0 shadow-sm rounded-3">
+        <h2 class="accordion-header" id="headingFilters">
+            <button class="accordion-button collapsed fw-semibold text-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
+                <i class="bi bi-funnel-fill me-2 text-primary"></i> Filtros de búsqueda
+            </button>
+        </h2>
+        <div id="collapseFilters" class="accordion-collapse collapse" aria-labelledby="headingFilters" data-bs-parent="#accordionFilters">
+            <div class="accordion-body pt-3">
+                <div class="row g-3 align-items-center">
+                    <!-- Filtro de Empleado -->
+                    <div class="form-floating col-md-3">
+                        <select id="filterEmployee" class="form-select">
+                            <option value="">Todos</option>
+                        </select>
+                        <label for="filterEmployee" class="form-label">Empleado</label>
+                    </div>
+                    <!-- Filtro por Mes -->
+                    <div class="form-floating col-md-2">
+                        <input type="month" id="filterMonth" class="form-control">
+                        <label for="filterMonth" class="form-label">Mes</label>
+                    </div>
+                    <!-- Filtro de Tipo de Novedad -->
+                    <div class="form-floating col-md-3">
+                        <select id="filterTipoNovedad" class="form-select">
+                            <option value="">Todas</option>
+                        </select>
+                        <label for="filterTipoNovedad" class="form-label">Tipo de Novedad</label>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+<!-- Limpiar Filtros -->
+<div class="d-flex justify-content-end mb-3">
+    <button id="clearFilters" class="btn btn-link text-decoration-none text-secondary p-0 fw-semibold" disabled>
+        Limpiar filtros
+    </button>
+</div>
+
 
 <!-- Tabla -->
 <div class="card shadow-sm border-0 rounded-3">
@@ -173,6 +185,11 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
+    const filterInputs = [
+        "filterEmployee",
+        "filterTipoNovedad",
+        "filterMonth"
+    ].map(id => document.getElementById(id));
 
     // Inicializar DataTable
     const table = initDataTable("#NovedadesTable", {
@@ -238,16 +255,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         showAlert("Error cargando empleados o tipos de novedad", "danger");
     }
 
-    // Función auxiliar para llenar selects
-    function fillSelect(selectId, data, placeholder, labelKey) {
-        const select = document.getElementById(selectId);
-        select.innerHTML = `<option value="">${placeholder}</option>`;
-        data.forEach(item => {
-            const text = item[labelKey] || "—";
-            select.innerHTML += `<option value="${item.id}">${text.toUpperCase()}</option>`;
-        });
-    }
-
     // Filtro automático con DataTables API
     $.fn.dataTable.ext.search.push((settings, data, dataIndex, rowData) => {
         const empId = document.getElementById("filterEmployee").value;
@@ -275,13 +282,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("filterTipoNovedad").addEventListener("change", () => table.draw());
     document.getElementById("filterMonth").addEventListener("change", () => table.draw());
 
-    // Botón Limpiar Filtros
-    document.getElementById("clearFilters").addEventListener("click", () => {
-        document.getElementById("filterEmployee").value = "";
-        document.getElementById("filterTipoNovedad").value = "";
-        document.getElementById("filterMonth").value = "";
-            table.search("").columns().search("").draw();
+    // Limpiar Filtros
+    const clearBtn = document.getElementById("clearFilters");
+    const checkFilters = () => {
+        const hasFilters = filterInputs.some(input => input.value && input.value.trim() !== "");
+        clearBtn.disabled = !hasFilters;
+        clearBtn.classList.toggle("text-secondary", !hasFilters);
+        clearBtn.classList.toggle("text-primary", hasFilters);
+    };
+
+    // Escucha cambios en todos los filtros
+    filterInputs.forEach(input => {
+        input.addEventListener("change", checkFilters);
+        input.addEventListener("input", checkFilters);
     });
+
+    // botón para limpiar filtros
+    clearBtn.addEventListener("click", () => {
+        filterInputs.forEach(input => input.value = "");
+        table.search("").columns().search("").draw();
+        checkFilters();
+        // Cerrar acordeón al limpiar
+        const collapse = bootstrap.Collapse.getOrCreateInstance(document.getElementById("collapseFilters"));
+        collapse.hide();
+    });
+
+    // Inicializar estado del botón
+    checkFilters();
 
     //  Crear
     const createForm = document.getElementById("formCreate");

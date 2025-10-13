@@ -502,3 +502,26 @@ function addSearchToMultipleSelect(selectId, placeholder = "Buscar...") {
         input.focus();
     });
 }
+
+// ============================================================================
+// SELECTS (Llenar opciones desde un array de objetos)
+// ============================================================================
+
+/**
+ * Llena un <select> con opciones desde un array de objetos.
+ * @param {string} selectId - ID del <select>.
+ * @param {Object[]} data - Array de objetos con datos.
+ * @param {string} placeholder - Texto del placeholder.
+ * @param {string} labelKey - Nombre de la propiedad del objeto a mostrar como texto.
+ * @param {Function} [formatter] - Función opcional que recibe (item) y retorna el texto a mostrar.
+ */
+function fillSelect(selectId, data, placeholder, labelKey, formatter) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    data.forEach(item => {
+        const text = formatter
+            ? formatter(item)
+            : (item[labelKey] || "—").toUpperCase();
+        select.innerHTML += `<option value="${item.id}">${text}</option>`;
+    });
+}

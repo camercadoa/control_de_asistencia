@@ -40,3 +40,10 @@ button:disabled {
 /* Dashboard */
 .rotate {transition: transform 0.2s ease;}
 .rotate.open {transform: rotate(180deg);}
+/* Botones Modal Miembros */
+@media screen and (max-width: 767px) {
+    #membersContent #btnAdd,
+    #membersContent #btnRemove {
+        transform: rotate(90deg);
+    }
+}

@@ -7,54 +7,67 @@
 <h5 class="mb-4 d-flex justify-content-center align-items-center fw-bold">Registros de Asistencia</h5>
 
 <!-- Filtros -->
-<div class="row mb-3 g-2 align-items-center">
-    <!-- Filtro de Empleado -->
-    <div class="form-floating col-md-2">
-        <select id="filterEmployee" class="form-select">
-            <option value="">Todos</option>
-        </select>
-        <label for="filterEmployee" class="form-label">Empleado</label>
+<div class="accordion mb-1" id="accordionFilters">
+    <div class="accordion-item border-0 shadow-sm rounded-3">
+        <h2 class="accordion-header" id="headingFilters">
+            <button class="accordion-button collapsed fw-semibold text-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
+                <i class="bi bi-funnel-fill me-2 text-primary"></i> Filtros de búsqueda
+            </button>
+        </h2>
+
+        <div id="collapseFilters" class="accordion-collapse collapse" aria-labelledby="headingFilters" data-bs-parent="#accordionFilters">
+            <div class="accordion-body pt-3">
+                <div class="row g-3 align-items-center">
+                    <!-- Filtro de Empleado -->
+                    <div class="form-floating col-md-2">
+                        <select id="filterEmployee" class="form-select">
+                            <option value="">Todos</option>
+                        </select>
+                        <label for="filterEmployee" class="form-label">Empleado</label>
+                    </div>
+                    <!-- Filtro Fecha inicio -->
+                    <div class="form-floating col-md-2">
+                        <input type="date" id="filterStartDate" class="form-control">
+                        <label for="filterStartDate" class="form-label">Fecha inicio</label>
+                    </div>
+                    <!-- Filtro Fecha fin -->
+                    <div class="form-floating col-md-2">
+                        <input type="date" id="filterEndDate" class="form-control">
+                        <label for="filterEndDate" class="form-label">Fecha fin</label>
+                    </div>
+                    <!-- Filtro de Descripción -->
+                    <div class="form-floating col-md-2">
+                        <select id="filterDescription" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Entrada">Entrada</option>
+                            <option value="Salida">Salida</option>
+                        </select>
+                        <label for="filterDescription" class="form-label">Descripción</label>
+                    </div>
+                    <!-- Filtro de Área de Trabajo -->
+                    <div class="form-floating col-md-2">
+                        <select id="filterWorkArea" class="form-select">
+                            <option value="">Todas</option>
+                        </select>
+                        <label for="filterWorkArea" class="form-label">Área de Trabajo</label>
+                    </div>
+                    <!-- Filtro de Sede -->
+                    <div class="form-floating col-md-2">
+                        <select id="filterSede" class="form-select">
+                            <option value="">Todas</option>
+                        </select>
+                        <label for="filterSede" class="form-label">Sede</label>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- Filtros de Fecha -->
-    <div class="form-floating col-md-2">
-        <input type="date" id="filterStartDate" class="form-control">
-        <label for="filterStartDate" class="form-label">Fecha inicio</label>
-    </div>
-    <div class="form-floating col-md-2">
-        <input type="date" id="filterEndDate" class="form-control">
-        <label for="filterEndDate" class="form-label">Fecha fin</label>
-    </div>
-    <!-- Filtro de Descripción -->
-    <div class="form-floating col-md-1">
-        <select id="filterDescription" class="form-select">
-            <option value="">Todos</option>
-            <option value="Entrada">Entrada</option>
-            <option value="Salida">Salida</option>
-        </select>
-        <label for="filterDescription" class="form-label">Descripción</label>
-    </div>
-    <!-- Filtro de Áreas de Trabajo -->
-    <div class="form-floating col-md-2">
-        <select id="filterWorkArea" class="form-select">
-            <option value="">Todas</option>
-        </select>
-        <label for="filterWorkArea" class="form-label">Área de Trabajo</label>
-    </div>
-    <!-- Filtro de Sede -->
-    <div class="form-floating col-md-2">
-        <select id="filterSede" class="form-select">
-            <option value="">Todas</option>
-        </select>
-        <label for="filterSede" class="form-label">Sede</label>
-    </div>
-    <!-- Botón Limpiar -->
-    <div class="col-12 col-md-auto text-center">
-        <button id="clearFilters"
-                class="btn btn-outline-secondary w-100 w-md-auto py-2 d-flex align-items-center justify-content-center gap-2">
-            <i class="bi bi-x-circle fs-5"></i>
-            <span class="d-md-none">Limpiar</span>
-        </button>
-    </div>
+</div>
+<!-- Limpiar Filtros -->
+<div class="d-flex justify-content-end mb-3">
+    <button id="clearFilters" class="btn btn-link text-decoration-none text-secondary p-0 fw-semibold" disabled>
+        Limpiar filtros
+    </button>
 </div>
 
 <!-- Tabla -->
@@ -83,6 +96,14 @@
     document.addEventListener("DOMContentLoaded", async () => {
         let empleados = [];
         let table = null;
+        const filterInputs = [
+            "filterEmployee",
+            "filterStartDate",
+            "filterEndDate",
+            "filterDescription",
+            "filterWorkArea",
+            "filterSede"
+        ].map(id => document.getElementById(id));
 
         // Inicializar DataTable
         table = initDataTable("#AttendanceTable", {
@@ -102,7 +123,7 @@
             ]
         });
 
-        // Cargar empleados, áreas de trabajo y sedes para los filtros
+        // Cargar Empleados, Áreas de Trabajo y Sedes
         try {
             const [resEmp, resAreas, resSedes] = await Promise.all([
                 fetch("/api/empleados/"),
@@ -110,43 +131,23 @@
                 fetch("/api/sedes/")
             ]);
 
-            const [empleadosData, areasData, sedesData] = await Promise.all([
-                resEmp.json(),
-                resAreas.json(),
-                resSedes.json()
-            ]);
-            // Llenar select de empleados
-            const selectEmp = document.getElementById("filterEmployee");
-            empleadosData.forEach(emp => {
-                const option = document.createElement("option");
-                option.value = emp.id;
-                option.textContent = emp.nombre_completo.toUpperCase();
-                selectEmp.appendChild(option);
-            });
+            empleados = await resEmp.json();
+            areas = await resAreas.json();
+            sedes = await resSedes.json();
 
-            // Llenar select de áreas
-            const selectArea = document.getElementById("filterWorkArea");
-            areasData.forEach(area => {
-                const option = document.createElement("option");
-                option.value = area.id;
-                option.textContent = area.area.toUpperCase();
-                selectArea.appendChild(option);
-            });
-
-            // Llenar select de sedes
-            const selectSede = document.getElementById("filterSede");
-            sedesData.forEach(sede => {
-                const option = document.createElement("option");
-                option.value = sede.id;
-                option.textContent = `${sede.ubicacion.toUpperCase()} - ${sede.ciudad.toUpperCase()}`;
-                selectSede.appendChild(option);
-            });
+            // Filtros
+            fillSelect("filterEmployee", empleados, "Todos", "nombre_completo");
+            fillSelect("filterWorkArea", areas, "Todas", "area");
+            fillSelect("filterSede", sedes, "Todas", "ubicacion",
+                sede => {
+                    return `${sede.ubicacion.toUpperCase()} - ${sede.ciudad.toUpperCase()}`;
+                }
+            );
 
         } catch (error) {
             console.log(error)
             showAlert("Error cargando empleados, áreas de trabajo o sede", "danger");
         }
-
 
         // Filtro automático con DataTables API
         $.fn.dataTable.ext.search.push((settings, data, dataIndex, rowData) => {
@@ -195,23 +196,40 @@
         });
 
         // Eventos de filtros
-        document.getElementById("filterEmployee").addEventListener("change", () => table.draw());
-        document.getElementById("filterStartDate").addEventListener("change", () => table.draw());
-        document.getElementById("filterEndDate").addEventListener("change", () => table.draw());
-        document.getElementById("filterDescription").addEventListener("input", () => table.draw());
-        document.getElementById("filterWorkArea").addEventListener("change", () => table.draw());
-        document.getElementById("filterSede").addEventListener("change", () => table.draw());
+        filterInputs[0].addEventListener("change", () => table.draw());
+        filterInputs[1].addEventListener("change", () => table.draw());
+        filterInputs[2].addEventListener("change", () => table.draw());
+        filterInputs[3].addEventListener("input", () => table.draw());
+        filterInputs[4].addEventListener("change", () => table.draw());
+        filterInputs[5].addEventListener("change", () => table.draw());
 
-        // Botón Limpiar Filtros
-        document.getElementById("clearFilters").addEventListener("click", () => {
-            document.getElementById("filterEmployee").value = "";
-            document.getElementById("filterStartDate").value = "";
-            document.getElementById("filterEndDate").value = "";
-            document.getElementById("filterDescription").value = "";
-            document.getElementById("filterWorkArea").value = "";
-            document.getElementById("filterSede").value = "";
-            table.search("").columns().search("").draw();
+        // Limpiar Filtros
+        const clearBtn = document.getElementById("clearFilters");
+        const checkFilters = () => {
+            const hasFilters = filterInputs.some(input => input.value && input.value.trim() !== "");
+            clearBtn.disabled = !hasFilters;
+            clearBtn.classList.toggle("text-secondary", !hasFilters);
+            clearBtn.classList.toggle("text-primary", hasFilters);
+        };
+
+        // Escucha cambios en todos los filtros
+        filterInputs.forEach(input => {
+            input.addEventListener("change", checkFilters);
+            input.addEventListener("input", checkFilters);
         });
+
+        // botón para limpiar filtros
+        clearBtn.addEventListener("click", () => {
+            filterInputs.forEach(input => input.value = "");
+            table.search("").columns().search("").draw();
+            checkFilters();
+            // Cerrar acordeón al limpiar
+            const collapse = bootstrap.Collapse.getOrCreateInstance(document.getElementById("collapseFilters"));
+            collapse.hide();
+        });
+
+        // Inicializar estado del botón
+        checkFilters();
     });
 </script>
 {% endblock %}
