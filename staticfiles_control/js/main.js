@@ -321,9 +321,6 @@ function initDataTable(selector, options = {}) {
                 text: '<i class="bi bi-file-earmark-excel-fill me-1 text-success"></i><span class="text-dark">Excel</span>',
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Exportar a Excel',
-                exportOptions: {
-                    columns: ':not(:last-child)'
-                }
             },
             {
                 extend: 'pdfHtml5',
@@ -332,18 +329,12 @@ function initDataTable(selector, options = {}) {
                 titleAttr: 'Exportar a PDF',
                 orientation: 'landscape',
                 pageSize: 'A4',
-                exportOptions: {
-                    columns: ':not(:last-child)'
-                }
             },
             {
                 extend: 'print',
                 text: '<i class="bi bi-printer-fill me-1 text-secondary"></i><span class="text-dark">Imprimir</span>',
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Imprimir',
-                exportOptions: {
-                    columns: ':not(:last-child)'
-                }
             }
         ],
 
@@ -500,5 +491,28 @@ function addSearchToMultipleSelect(selectId, placeholder = "Buscar...") {
         select.innerHTML = "";
         originalOptions.forEach(opt => select.appendChild(opt));
         input.focus();
+    });
+}
+
+// ============================================================================
+// SELECTS (Llenar opciones desde un array de objetos)
+// ============================================================================
+
+/**
+ * Llena un <select> con opciones desde un array de objetos.
+ * @param {string} selectId - ID del <select>.
+ * @param {Object[]} data - Array de objetos con datos.
+ * @param {string} placeholder - Texto del placeholder.
+ * @param {string} labelKey - Nombre de la propiedad del objeto a mostrar como texto.
+ * @param {Function} [formatter] - Función opcional que recibe (item) y retorna el texto a mostrar.
+ */
+function fillSelect(selectId, data, placeholder, labelKey, formatter) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    data.forEach(item => {
+        const text = formatter
+            ? formatter(item)
+            : (item[labelKey] || "—").toUpperCase();
+        select.innerHTML += `<option value="${item.id}">${text}</option>`;
     });
 }

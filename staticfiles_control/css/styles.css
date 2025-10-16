@@ -40,3 +40,30 @@ button:disabled {
 /* Dashboard */
 .rotate {transition: transform 0.2s ease;}
 .rotate.open {transform: rotate(180deg);}
+/* Botones Modal Miembros */
+@media screen and (max-width: 767px) {
+    #membersContent #btnAdd,
+    #membersContent #btnRemove {
+        transform: rotate(90deg);
+    }
+}
+/* Gráficos */
+.legend-scroll ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+.legend-scroll li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin: 2px 0;
+}
+.legend-scroll li span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}

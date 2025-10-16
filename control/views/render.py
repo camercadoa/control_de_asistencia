@@ -76,8 +76,15 @@ def appDashboardHomeRender(request):
     if is_sede:
         return is_sede
 
+    # Info: Diccionario de tipos de novedades
+    tipos = {
+        'entradas': 'Entradas',
+        'salidas': 'Salidas',
+        'sedes': 'Sedes'
+    }
+
     # Return: render() de 'block_content/home.html'
-    return render(request, 'block_content/home.html')
+    return render(request, 'block_content/home.html', {'tipos': tipos})
 
 
 @login_required
