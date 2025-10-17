@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.core.exceptions import ObjectDoesNotExist
 from control.models import Empleado, Sede, RegistroAsistencia
 from .helpers import _success, _error, _warning, _info, _parse_request_body
 from control.api import RegistroAsistenciaSerializer
@@ -115,7 +116,8 @@ def saveRecord(request):
             return response
 
         # Info: Guardar registro considerando Entrada/Salida y diferencia mínima de 30 min
-        registro, empleado_info_or_response = _save_asistencia(empleado, sede_id)
+        registro, empleado_info_or_response = _save_asistencia(
+            empleado, sede_id)
 
         if not registro:
             # Return: Puede ser un _info si la diferencia mínima no se cumple
@@ -168,7 +170,7 @@ def _validate_codigo(codigo):
         # Return: Respuesta JSON de advertencia con código 400
         return _warning(
             user_message=f"El código ingresado no es válido, debe ser numérico <br><br>"
-                        f"<strong class='fs-5'>Código recibido:</strong> {codigo}",
+            f"<strong class='fs-5'>Código recibido:</strong> {codigo}",
             code=400,
             log_message=f"Código no numérico recibido en saveRecord: {codigo}"
         )
@@ -184,7 +186,7 @@ def _get_empleado(codigo):
         # Return: Respuesta JSON de error con código 404
         return None, _error(
             user_message=f"No se ha encontrado un empleado vinculado <br><br>"
-                        f"<strong class='fs-5'>Código recibido:</strong> {codigo}",
+            f"<strong class='fs-5'>Código recibido:</strong> {codigo}",
             code=404,
             log_message=f"Empleado no encontrado con código {codigo}"
         )
@@ -204,39 +206,62 @@ def _validate_empleado_activo(empleado):
 
 
 def _save_asistencia(empleado, sede_id):
-    # Info: Determina si el registro será Entrada o Salida, valida diferencia mínima de 30 min, y crea el registro
+    """
+    # Info:
+    Registra una Entrada o Salida según el último registro histórico del empleado.
+    Soporta turnos que cruzan medianoche y maneja casos en los que un trabajador olvida registrar la Salida.
+
+    # Warn:
+    Si el último registro fue una Entrada y han pasado más de 12 horas,
+    se crea automáticamente una Salida intermedia antes de registrar la nueva Entrada.
+
     # Params:
-    #   - empleado (Empleado) -> Objeto del empleado
-    #   - sede_id (int) -> ID de la sede donde se registrará
+        - empleado (Empleado) -> Objeto del empleado que realiza el registro.
+        - sede_id (int) -> ID de la sede donde se registra la asistencia.
 
-    # Info: Obtener fecha y hora actual aware
+    # Return:
+        tuple:
+            - (registro, empleado_info) si se guarda correctamente.
+            - (None, response) si se detecta una condición informativa (ej. tiempo mínimo no cumplido).
+    """
+
+    # Info: Obtener fecha y hora actual
     ahora = timezone.now()
-    hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
-    hoy_fin = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-    # Info: Buscar último registro del día
-    ultimo_registro = RegistroAsistencia.objects.filter(
-        fk_empleado=empleado,
-        fecha_hora_registro__range=(hoy_inicio, hoy_fin)
-    ).order_by('-fecha_hora_registro').first()
+    # Info: Obtener último registro histórico (no solo del día actual)
+    ultimo_registro = (
+        RegistroAsistencia.objects.filter(fk_empleado=empleado)
+        .order_by('-fecha_hora_registro')
+        .first()
+    )
 
     # Info: Determinar tipo de registro
-    if not ultimo_registro or ultimo_registro.descripcion_registro == "Salida":
-        tipo_registro = "Entrada"
-    else:
-        tipo_registro = "Salida"
+    tipo_registro = _determinar_tipo_registro(ultimo_registro)
 
-        # Info: Validar diferencia mínima de 30 min entre Entrada y Salida
+    # Warn: Si hay una Entrada sin Salida y ya pasaron más de 12h, crear Salida automática
+    if ultimo_registro and ultimo_registro.descripcion_registro == "Entrada":
         diferencia = ahora - ultimo_registro.fecha_hora_registro
-        if diferencia < timedelta(minutes=30):  # ajustar minutos según política
-            return None, _info(
-                user_message="Tiempo mínimo entre Entrada y Salida no cumplido",
-                code=200,
-                log_message=f"Intento de salida para empleado {empleado.numero_documento} antes del tiempo mínimo (diferencia: {diferencia})"
-            )
+        diferencia_minima = timedelta(hours=12)
+        if diferencia > diferencia_minima:
+            _crear_salida_automatica(empleado, ultimo_registro, sede_id)
+            tipo_registro = "Entrada"  # Nueva entrada tras cierre automático
 
-    # Info: Guardar registro
-    sede = Sede.objects.get(id=sede_id)
+    # Warn: Validar diferencia mínima solo si es una Salida normal
+    if tipo_registro == "Salida" and ultimo_registro:
+        response = _validate_diferencia_minima(ultimo_registro, ahora, empleado)
+        if response:
+            return None, response  # Return: No cumple el tiempo mínimo
+
+    # Info: Crear registro de asistencia
+    try:
+        sede = Sede.objects.get(id=sede_id)
+    except ObjectDoesNotExist:
+        return None, _error(
+            user_message="La sede seleccionada no existe",
+            code=404,
+            log_message=f"Sede no encontrada con ID {sede_id}"
+        )
+
     registro = RegistroAsistencia.objects.create(
         fk_empleado=empleado,
         descripcion_registro=tipo_registro,
@@ -244,59 +269,182 @@ def _save_asistencia(empleado, sede_id):
         lugar_registro=sede
     )
 
-    # Info: Calcular puntualidad si es Entrada o Salida
+    # Info: Evaluar puntualidad
+    _evaluate_puntualidad(empleado, registro, tipo_registro)
+
+    # Return: Registro creado exitosamente
+    return _build_registro_response(empleado, registro, tipo_registro)
+
+
+def _determinar_tipo_registro(ultimo_registro):
+    """
+    # Info:
+    Determina si el próximo registro será de tipo Entrada o Salida,
+    según el último registro histórico existente.
+    """
+    if not ultimo_registro or ultimo_registro.descripcion_registro == "Salida":
+        return "Entrada"
+    return "Salida"
+
+
+def _crear_salida_automatica(empleado, ultimo_registro, sede_id):
+    """
+    # Info:
+    Genera un registro de Salida automática cuando el empleado olvidó marcarla
+    y han pasado más de 12 horas desde su última Entrada.
+
+    # Params:
+        - empleado (Empleado) -> Objeto del empleado.
+        - ultimo_registro (RegistroAsistencia) -> Último registro tipo Entrada.
+        - sede_id (int) -> ID de la sede para asociar el registro automático.
+    """
+    try:
+        sede = Sede.objects.get(id=sede_id)
+    except ObjectDoesNotExist:
+        return
+
+    salida_automatica = ultimo_registro.fecha_hora_registro + timedelta(hours=8)
+    RegistroAsistencia.objects.create(
+        fk_empleado=empleado,
+        descripcion_registro="Salida",
+        fecha_hora_registro=salida_automatica,
+        lugar_registro=sede,
+        estado_registro="Automática"
+    )
+
+
+def _validate_diferencia_minima(ultimo_registro, ahora, empleado):
+    """
+    # Info:
+    Verifica que hayan pasado al menos 30 minutos entre Entrada y Salida consecutivas.
+
+    # Params:
+        - ultimo_registro (RegistroAsistencia) -> Último registro previo.
+        - ahora (datetime) -> Momento actual.
+        - empleado (Empleado) -> Objeto del empleado.
+
+    # Return:
+        JsonResponse informativo si no cumple el tiempo mínimo, o None si es válido.
+    """
+    diferencia = ahora - ultimo_registro.fecha_hora_registro
+    diferencia_minima = timedelta(minutes=30)
+
+    if diferencia < diferencia_minima:
+        return _info(
+            user_message="Tiempo mínimo entre Entrada y Salida no cumplido",
+            code=200,
+            log_message=f"Intento de salida anticipada para empleado {empleado.numero_documento} ({diferencia})."
+        )
+    return None
+
+
+def _evaluate_puntualidad(empleado, registro, tipo_registro):
+    """
+    # Info:
+    Evalúa si un registro fue puntual, con retraso o anticipación,
+    comparándolo con los horarios asignados al empleado.
+
+    # Params:
+        - empleado (Empleado) -> Objeto del empleado.
+        - registro (RegistroAsistencia) -> Registro recién creado.
+        - tipo_registro (str) -> "Entrada" o "Salida".
+    """
     horarios = empleado.horarios.all()
-    gabela = timedelta(minutes=10)  # tolerancia de 10 min
+    if not horarios.exists():
+        return
 
-    if horarios.exists():
-        registro_datetime = ahora
-        tz = timezone.get_current_timezone()  # Obtener la zona horaria actual una sola vez
+    gabela = timedelta(minutes=10)
+    tz = timezone.get_current_timezone()
+    registro_datetime = registro.fecha_hora_registro
 
-        # Info: Buscar el horario más cercano
-        mejor_horario = None
-        menor_diferencia = None
+    mejor_horario = _get_horario_mas_cercano(
+        horarios, registro_datetime, tipo_registro, tz
+    )
+    if not mejor_horario:
+        return
 
-        for horario in horarios:
-            # Info: Convertir horario programado a aware
-            hora_programada_naive = horario.hora_entrada if tipo_registro == "Entrada" else horario.hora_salida
-            hora_programada = timezone.make_aware(
-                datetime.combine(registro_datetime.date(), hora_programada_naive),
-                tz
-            )
+    hora_programada_naive = (
+        mejor_horario.hora_entrada if tipo_registro == "Entrada" else mejor_horario.hora_salida
+    )
+    hora_programada = timezone.make_aware(
+        datetime.combine(registro_datetime.date(), hora_programada_naive), tz
+    )
 
-            delta = abs(registro_datetime - hora_programada)
+    delta = (
+        registro_datetime - hora_programada
+        if tipo_registro == "Entrada"
+        else hora_programada - registro_datetime
+    )
 
-            if menor_diferencia is None or delta < menor_diferencia:
-                menor_diferencia = delta
-                mejor_horario = horario
+    cambios = False
+    if delta > gabela:
+        registro.minutos = int(delta.total_seconds() // 60)
+        registro.estado_registro = (
+            "Con retraso" if tipo_registro == "Entrada" else "Con anticipación"
+        )
+        cambios = True
 
-        if mejor_horario:
-            # Info: Reutilizar la misma conversión aware para la comparación final
-            hora_final_naive = mejor_horario.hora_entrada if tipo_registro == "Entrada" else mejor_horario.hora_salida
-            hora_final = timezone.make_aware(datetime.combine(registro_datetime.date(), hora_final_naive), tz)
+    if cambios:
+        registro.save()
 
-            if tipo_registro == "Entrada":
-                delta = registro_datetime - hora_final
-                if delta > gabela:
-                    registro.minutos = int(delta.total_seconds() // 60)
-                    registro.estado_registro = "Con retraso"
-            else:
-                delta = hora_final - registro_datetime
-                if delta > gabela:
-                    registro.minutos = int(delta.total_seconds() // 60)
-                    registro.estado_registro = "Con anticipación"
 
-            registro.save()
+def _get_horario_mas_cercano(horarios, registro_datetime, tipo_registro, tz):
+    """
+    # Info:
+    Busca el horario asignado cuya hora programada esté más cercana a la hora del registro.
 
-    # Info: Serializar registro guardado
+    # Params:
+        - horarios (QuerySet[Horario]) -> Conjunto de horarios del empleado.
+        - registro_datetime (datetime) -> Hora del registro actual.
+        - tipo_registro (str) -> "Entrada" o "Salida".
+        - tz (timezone) -> Zona horaria activa.
+
+    # Return:
+        Horario más cercano (objeto Horario) o None si no hay coincidencias.
+    """
+    mejor_horario = None
+    menor_diferencia = None
+
+    for horario in horarios:
+        hora_naive = horario.hora_entrada if tipo_registro == "Entrada" else horario.hora_salida
+        hora_aware = timezone.make_aware(datetime.combine(registro_datetime.date(), hora_naive), tz)
+        delta = abs(registro_datetime - hora_aware)
+
+        if menor_diferencia is None or delta < menor_diferencia:
+            menor_diferencia = delta
+            mejor_horario = horario
+
+    return mejor_horario
+
+
+def _build_registro_response(empleado, registro, tipo_registro):
+    """
+    # Info:
+    Serializa el registro de asistencia y construye un payload
+    con los datos más relevantes del empleado.
+
+    # Params:
+        - empleado (Empleado) -> Objeto del empleado.
+        - registro (RegistroAsistencia) -> Registro creado.
+        - tipo_registro (str) -> "Entrada" o "Salida".
+
+    # Return:
+        tuple:
+            - registro (RegistroAsistencia)
+            - empleado_info (dict) -> Datos resumidos del empleado.
+    """
     serializer = RegistroAsistenciaSerializer(registro)
     payload = serializer.data
 
+    nombre_completo = " ".join(filter(None, [
+        empleado.primer_nombre,
+        empleado.segundo_nombre,
+        empleado.primer_apellido,
+        empleado.segundo_apellido
+    ])).upper()
+
     empleado_info = {
-        "nombre_completo": f"{empleado.primer_nombre.upper()} "
-                        f"{empleado.segundo_nombre.upper() or ''} "
-                        f"{empleado.primer_apellido.upper()} "
-                        f"{empleado.segundo_apellido.upper() or ''}",
+        "nombre_completo": nombre_completo,
         "cargo": empleado.cargo.upper(),
         "fecha_registro": payload["fecha"],
         "hora_registro": payload["hora"],

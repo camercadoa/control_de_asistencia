@@ -210,8 +210,12 @@
                 const empleadoInfoContainer = document.getElementById('empleadoInfo');
                 let buffer = "";
                 let lastTime = Date.now();
+                let lecturaHabilitada = true;
 
                 document.addEventListener("keydown", (e) => {
+                    // Si la lectura no está habilitada, ignorar
+                    if (!lecturaHabilitada) return;
+
                     const now = Date.now();
                     if (now - lastTime > 100) {
                         buffer = "";
@@ -230,6 +234,9 @@
                 });
 
                 function enviarCodigo(codigo) {
+                    // Deshabilitar nuevas lecturas hasta recibir respuesta
+                    lecturaHabilitada = false;
+
                     fetch("{% url 'saveRecord' %}", {
                         method: 'POST',
                         headers: {
@@ -278,6 +285,12 @@
                         console.error("Error:", error);
                         const contenido = `<p class="mb-0">Error de conexión</p>`;
                         empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
+                    })
+                    .finally(() => {
+                        // Bloquear nuevas lecturas por 3 segundos para evitar duplicados
+                        setTimeout(() => {
+                            lecturaHabilitada = true;
+                        }, 3000);
                     });
                 }
             });
