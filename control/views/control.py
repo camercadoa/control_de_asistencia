@@ -238,13 +238,13 @@ def _save_asistencia(empleado, sede_id):
     # Info: Determinar tipo de registro
     tipo_registro = _determinar_tipo_registro(ultimo_registro)
 
-    # Warn: Si hay una Entrada sin Salida y ya pasaron más de 12h, crear Salida automática
+    # Warn: Si hay una Entrada sin Salida y ya pasaron más de 18h, crear Salida automática
     if ultimo_registro and ultimo_registro.descripcion_registro == "Entrada":
         diferencia = ahora - ultimo_registro.fecha_hora_registro
-        diferencia_minima = timedelta(hours=12)
+        diferencia_minima = timedelta(hours=18)
         if diferencia > diferencia_minima:
             _crear_salida_automatica(empleado, ultimo_registro, sede_id)
-            tipo_registro = "Entrada"  # Nueva entrada tras cierre automático
+            tipo_registro = "Entrada"  # Nueva entrada tras cierre automática
 
     # Warn: Validar diferencia mínima solo si es una Salida normal
     if tipo_registro == "Salida" and ultimo_registro:
@@ -287,11 +287,17 @@ def _determinar_tipo_registro(ultimo_registro):
     return "Salida"
 
 
+from datetime import time
+
 def _crear_salida_automatica(empleado, ultimo_registro, sede_id):
     """
     # Info:
     Genera un registro de Salida automática cuando el empleado olvidó marcarla
     y han pasado más de 12 horas desde su última Entrada.
+
+    # Reglas adicionales:
+    - Si la entrada fue entre 5:30 am y 1:30 pm, la salida es 8 horas después de la entrada.
+    - Si la entrada fue entre 1:30 pm y 10:00 pm, la salida es a las 9:30 pm.
 
     # Params:
         - empleado (Empleado) -> Objeto del empleado.
@@ -303,7 +309,33 @@ def _crear_salida_automatica(empleado, ultimo_registro, sede_id):
     except ObjectDoesNotExist:
         return
 
-    salida_automatica = ultimo_registro.fecha_hora_registro + timedelta(hours=8)
+    # Obtener la hora de la entrada
+    hora_entrada = ultimo_registro.fecha_hora_registro.time()
+
+    # Definir los rangos horarios para las reglas
+    inicio_rango_1 = time(5, 30)  # 5:30 am
+    fin_rango_1 = time(13, 30)    # 1:30 pm
+    inicio_rango_2 = time(13, 30) # 1:30 pm
+    fin_rango_2 = time(21, 0)     # 9:00 pm
+    hora_salida_fija = time(21, 30)  # 9:30 pm
+
+    # Calcular la hora de salida automática según las reglas
+    if inicio_rango_1 <= hora_entrada < fin_rango_1:
+        # Regla 1: Salida 9 horas después de la entrada
+        salida_automatica = ultimo_registro.fecha_hora_registro + timedelta(hours=9)
+    elif inicio_rango_2 <= hora_entrada < fin_rango_2:
+        # Regla 2: Salida fija a las 9:30 pm
+        salida_automatica = ultimo_registro.fecha_hora_registro.replace(
+            hour=hora_salida_fija.hour,
+            minute=hora_salida_fija.minute,
+            second=0,
+            microsecond=0
+        )
+    else:
+        # Caso no cubierto por las reglas (opcional: manejar con una salida predeterminada)
+        salida_automatica = ultimo_registro.fecha_hora_registro + timedelta(hours=9)
+
+    # Crear el registro de salida automática
     RegistroAsistencia.objects.create(
         fk_empleado=empleado,
         descripcion_registro="Salida",
@@ -349,6 +381,7 @@ def _evaluate_puntualidad(empleado, registro, tipo_registro):
         - registro (RegistroAsistencia) -> Registro recién creado.
         - tipo_registro (str) -> "Entrada" o "Salida".
     """
+
     horarios = empleado.horarios.all()
     if not horarios.exists():
         return
@@ -357,46 +390,80 @@ def _evaluate_puntualidad(empleado, registro, tipo_registro):
     tz = timezone.get_current_timezone()
     registro_datetime = registro.fecha_hora_registro
 
-    mejor_horario = _get_horario_mas_cercano(
-        horarios, registro_datetime, tipo_registro, tz
-    )
-    if not mejor_horario:
+    # ------------------------------------------------------------
+    # ENTRADA → Usa _get_horario_entrada_mas_reciente para encontrar el horario más cercano
+    # ------------------------------------------------------------
+    if tipo_registro == "Entrada":
+        mejor_horario = _get_horario_entrada_mas_reciente(horarios, registro_datetime, tz)
+        if not mejor_horario:
+            return
+
+        hora_programada = timezone.make_aware(
+            datetime.combine(registro_datetime.date(), mejor_horario.hora_entrada), tz
+        )
+
+        delta = registro_datetime - hora_programada
+        if delta > gabela:
+            registro.minutos = int(delta.total_seconds() // 60)
+            registro.estado_registro = "Con retraso"
+            registro.save()
         return
 
-    hora_programada_naive = (
-        mejor_horario.hora_entrada if tipo_registro == "Entrada" else mejor_horario.hora_salida
-    )
-    hora_programada = timezone.make_aware(
-        datetime.combine(registro_datetime.date(), hora_programada_naive), tz
-    )
-
-    delta = (
-        registro_datetime - hora_programada
-        if tipo_registro == "Entrada"
-        else hora_programada - registro_datetime
-    )
-
-    cambios = False
-    if delta > gabela:
-        registro.minutos = int(delta.total_seconds() // 60)
-        registro.estado_registro = (
-            "Con retraso" if tipo_registro == "Entrada" else "Con anticipación"
+    # ------------------------------------------------------------
+    # SALIDA → Usa el horario de la ENTRADA previa para evaluar la salida
+    # ------------------------------------------------------------
+    if tipo_registro == "Salida":
+        # Buscar la última ENTRADA registrada
+        ultima_entrada = (
+            RegistroAsistencia.objects.filter(
+                fk_empleado=empleado,
+                descripcion_registro="Entrada"
+            )
+            .order_by('-fecha_hora_registro')
+            .first()
         )
-        cambios = True
+        if not ultima_entrada:
+            return  # No hay entrada previa
 
-    if cambios:
-        registro.save()
+        # Determinar el horario usado para la entrada
+        mejor_horario_entrada = _get_horario_entrada_mas_reciente(
+            horarios, ultima_entrada.fecha_hora_registro, tz
+        )
+        if not mejor_horario_entrada:
+            return
+
+        # Hora programada de salida según ese horario
+        hora_salida_naive = mejor_horario_entrada.hora_salida
+        hora_programada_salida = timezone.make_aware(
+            datetime.combine(ultima_entrada.fecha_hora_registro.date(), hora_salida_naive), tz
+        )
+
+        # Caso: turno cruza medianoche (salida < entrada)
+        if mejor_horario_entrada.hora_salida < mejor_horario_entrada.hora_entrada:
+            hora_programada_salida = timezone.make_aware(
+                datetime.combine(
+                    ultima_entrada.fecha_hora_registro.date() + timedelta(days=1),
+                    mejor_horario_entrada.hora_salida
+                ), tz
+            )
+
+        # Calcular diferencia
+        delta = registro_datetime - hora_programada_salida
+
+        if delta < -gabela:
+            registro.minutos = int(-delta.total_seconds() // 60)
+            registro.estado_registro = "Con anticipación"
+            registro.save()
 
 
-def _get_horario_mas_cercano(horarios, registro_datetime, tipo_registro, tz):
+def _get_horario_entrada_mas_reciente(horarios, registro_datetime, tz):
     """
     # Info:
-    Busca el horario asignado cuya hora programada esté más cercana a la hora del registro.
+    Busca el horario asignado cuya hora de ENTRADA programada esté más cercana a la hora del registro.
 
     # Params:
         - horarios (QuerySet[Horario]) -> Conjunto de horarios del empleado.
         - registro_datetime (datetime) -> Hora del registro actual.
-        - tipo_registro (str) -> "Entrada" o "Salida".
         - tz (timezone) -> Zona horaria activa.
 
     # Return:
@@ -406,10 +473,14 @@ def _get_horario_mas_cercano(horarios, registro_datetime, tipo_registro, tz):
     menor_diferencia = None
 
     for horario in horarios:
-        hora_naive = horario.hora_entrada if tipo_registro == "Entrada" else horario.hora_salida
+        # Convertir la hora de entrada programada a un datetime consciente de la zona horaria
+        hora_naive = horario.hora_entrada
         hora_aware = timezone.make_aware(datetime.combine(registro_datetime.date(), hora_naive), tz)
+
+        # Calcular la diferencia absoluta entre la hora del registro y la hora de entrada programada
         delta = abs(registro_datetime - hora_aware)
 
+        # Actualizar el mejor horario si encontramos una diferencia menor
         if menor_diferencia is None or delta < menor_diferencia:
             menor_diferencia = delta
             mejor_horario = horario

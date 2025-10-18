@@ -1,24 +1,25 @@
-# def function_name(param1: type, param2: type = default, ...):
-#     """
-#     # Info:
-#     Breve descripción de la función. Explica su propósito principal en una línea o dos.
+# def nombre_funcion(param1: tipo, param2: tipo = None) -> tipo_retorno:
+#     '''
+#     Info:
+#         Breve descripción funcional de lo que hace la función.
+#         (Debe explicar su propósito, contexto y comportamiento general.)
 
-#     # Warn (opcional):
-#     Describe precauciones, efectos colaterales o comportamientos condicionales importantes.
+#     Params:
+#         param1 (tipo): Descripción clara del primer parámetro.
+#         param2 (tipo, opcional): Descripción del segundo parámetro (si aplica).
+#         ...
 
-#     # Params:
-#         - param1 (type) -> Descripción del parámetro 1.
-#         - param2 (type) -> Descripción del parámetro 2. (default=valor)
-#         - ... (type) -> Otros parámetros, opcionales o requeridos.
+#     Example (opcional):
+#         nombre_funcion(valor1, valor2)
+#         >>> {"status": "success", "message": "Operación completada"}
 
-#     # Return:
-#     Tipo de valor devuelto (por ejemplo: JsonResponse, dict, None, tuple).
-#     Explica brevemente qué contiene o representa el valor de retorno.
+#     Return:
+#         tipo_retorno: Descripción del valor devuelto o efecto principal.
+#         (Ejemplo: JsonResponse con estructura {"status", "message", "data?")}
+#     '''
 
-#     # Example (opcional):
-#         >>> function_name(value1, value2)
-#         <Resultado esperado o estructura de salida>
+#     # Info: Comentario breve que indique el propósito del bloque.
+#     #        (Los comentarios Info deben ser cortos y directos.)
 
-#     # Raises (opcional):
-#     Lista de excepciones que puede lanzar, con breve descripción.
-#     """
+#     # Warn: Comentario corto para decisiones críticas o condicionales.
+#     #        (Ejemplo: Si el usuario no está autenticado, se detiene el flujo.)
