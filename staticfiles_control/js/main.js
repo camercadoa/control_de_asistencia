@@ -296,9 +296,10 @@ function attachClearOnInput(inputs) {
  * Inicializa un DataTable con configuración estándar (exportación, responsive, tooltips).
  * @param {string} selector - Selector del elemento <table>.
  * @param {Object} [options={}] - Configuración personalizada.
+ * @param {boolean} [includeLastColumnInExport=false] - Si es true, no se excluirá la última columna en exportaciones.
  * @returns {DataTable} - Instancia de DataTable.
  */
-function initDataTable(selector, options = {}) {
+function initDataTable(selector, options = {}, includeLastColumnInExport = false) {
     const defaultConfig = {
         processing: true,
         serverSide: false,
@@ -321,6 +322,11 @@ function initDataTable(selector, options = {}) {
                 text: '<i class="bi bi-file-earmark-excel-fill me-1 text-success"></i><span class="text-dark">Excel</span>',
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Exportar a Excel',
+                exportOptions: {
+                    columns: includeLastColumnInExport
+                        ? ':visible'
+                        : ':visible:not(:last-child)'
+                }
             },
             {
                 extend: 'pdfHtml5',
@@ -329,15 +335,24 @@ function initDataTable(selector, options = {}) {
                 titleAttr: 'Exportar a PDF',
                 orientation: 'landscape',
                 pageSize: 'A4',
+                exportOptions: {
+                    columns: includeLastColumnInExport
+                        ? ':visible'
+                        : ':visible:not(:last-child)'
+                }
             },
             {
                 extend: 'print',
                 text: '<i class="bi bi-printer-fill me-1 text-secondary"></i><span class="text-dark">Imprimir</span>',
                 className: 'btn btn-sm bg-white border-0',
                 titleAttr: 'Imprimir',
+                exportOptions: {
+                    columns: includeLastColumnInExport
+                        ? ':visible'
+                        : ':visible:not(:last-child)'
+                }
             }
         ],
-
         columns: []
     };
 
