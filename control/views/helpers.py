@@ -1,8 +1,11 @@
 import json
 import logging
-from django.http import JsonResponse
+from typing import Optional, Tuple, Union
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect
 
+
+# Configuración del logger
 logger = logging.getLogger(__name__)
 
 
@@ -10,29 +13,36 @@ logger = logging.getLogger(__name__)
 # Helpers de Respuesta JSON
 # ---------------------
 
-def _build_response(status: str, user_message: str, data: dict = None, code: int = 200, log_message: str = None, exc: Exception = None):
-    # Info: Función auxiliar para estandarizar todas las respuestas JSON
-    # Params:
-    #   - status (str) -> Estado de la respuesta: "info" | "success" | "warning" | "error"
-    #   - user_message (str) -> Mensaje claro para el usuario final
-    #   - data (dict | None) -> Información adicional para incluir en la respuesta
-    #   - code (int) -> Código de estado HTTP (default=200)
-    #   - log_message (str | None) -> Mensaje técnico para logs (si no se pasa, usa user_message)
-    #   - exc (Exception | None) -> Excepción capturada (si existe, imprime stacktrace)
 
-    # Info: Logging según el tipo de status recibido
-    if log_message and status == 'info':
-        logger.info(f"INFO -> {log_message}")
-    elif log_message and status == 'success':
-        logger.info(f"SUCCESS -> {log_message}")
-    elif log_message and status == 'warning':
-        logger.warning(f"WARNING -> {log_message}")
-    elif log_message and status == 'error':
-        logger.error(f"ERROR -> {log_message}")
-        if exc:
+def _build_response(status: str, user_message: str, data: dict = None, code: int = 200, log_message: str = None, exc: Exception = None) -> JsonResponse:
+    '''
+    Info:
+        Función auxiliar para estandarizar todas las respuestas JSON de la aplicación.
+
+    Params:
+        status (str): Estado de la respuesta: "info" | "success" | "warning" | "error".
+        user_message (str): Mensaje claro y comprensible para el usuario final.
+        data (dict): Información adicional opcional para incluir en la respuesta.
+        code (int): Código de estado HTTP para la respuesta (default=200).
+        log_message (str): Mensaje técnico opcional para registro en logs.
+        exc (Exception): Excepción capturada opcional para registro de stacktrace.
+
+    Return:
+        JsonResponse: Respuesta HTTP estandarizada con estructura {"status", "message", "data?"}.
+    '''
+
+    # Info: Logging automático según el tipo de estado
+    if log_message and (log_level := {
+        'info': logger.info,
+        'success': logger.info,
+        'warning': logger.warning,
+        'error': logger.error
+    }.get(status)):
+        log_level(f"{status.upper()} -> {log_message}")
+        if status == 'error' and exc:
             logger.exception(f'EXCEPTION -> {str(exc)}')
 
-    # Info: Construcción del cuerpo de la respuesta
+    # Info: Construcción del cuerpo de respuesta estandarizado
     response = {
         "status": status,
         "message": user_message
@@ -40,19 +50,25 @@ def _build_response(status: str, user_message: str, data: dict = None, code: int
     if data is not None:
         response["data"] = data
 
-    # Return: JsonResponse con la estructura {"status", "message", "data?"}
     return JsonResponse(response, status=code)
 
 
-def _success(user_message: str, data: dict = None, log_message: str = None, code: int = 200):
-    # Info: Helper para respuestas exitosas
-    # Params:
-    #   - user_message (str) -> Mensaje claro para el usuario
-    #   - data (dict | None) -> Información adicional opcional
-    #   - log_message (str | None) -> Mensaje técnico para logs
-    #   - code (int) -> Código HTTP (default=200)
+def _success(user_message: str, data: dict = None, log_message: str = None, code: int = 200) -> JsonResponse:
+    '''
+    Info:
+        Función helper especializada para generar respuestas exitosas estandarizadas.
 
-    # Return: JsonResponse con status="success"
+    Params:
+        user_message (str): Mensaje claro y comprensible para el usuario final.
+        data (dict): Información adicional opcional para incluir en la respuesta.
+        log_message (str): Mensaje técnico opcional para registro en logs del sistema.
+        code (int): Código de estado HTTP para la respuesta (default=200).
+
+    Return:
+        JsonResponse: Respuesta HTTP estandarizada con status="success" y estructura definida.
+    '''
+
+    # Info: Construir la respuesta delegando al método principal
     return _build_response(
         status="success",
         user_message=user_message,
@@ -62,15 +78,22 @@ def _success(user_message: str, data: dict = None, log_message: str = None, code
     )
 
 
-def _error(user_message: str, code: int = 500, log_message: str = None, exc: Exception = None):
-    # Info: Helper para respuestas de error
-    # Params:
-    #   - user_message (str) -> Mensaje de error para el usuario
-    #   - code (int) -> Código HTTP (default=500)
-    #   - log_message (str | None) -> Mensaje técnico para logs
-    #   - exc (Exception | None) -> Excepción capturada para logging detallado
+def _error(user_message: str, code: int = 500, log_message: str = None, exc: Exception = None) -> JsonResponse:
+    '''
+    Info:
+        Función helper especializada para generar respuestas de error estandarizadas.
 
-    # Return: JsonResponse con status="error"
+    Params:
+        user_message (str): Mensaje de error claro y comprensible para el usuario final.
+        code (int): Código de estado HTTP para la respuesta de error (default=500).
+        log_message (str): Mensaje técnico opcional para registro en logs del sistema.
+        exc (Exception): Excepción capturada opcional para registro de stacktrace detallado.
+
+    Return:
+        JsonResponse: Respuesta HTTP estandarizada con status="error" y estructura definida.
+    '''
+
+    # Info: Construir la respuesta delegando al método principal
     return _build_response(
         status="error",
         user_message=user_message,
@@ -80,14 +103,21 @@ def _error(user_message: str, code: int = 500, log_message: str = None, exc: Exc
     )
 
 
-def _warning(user_message: str, code: int = 400, log_message: str = None):
-    # Info: Helper para advertencias
-    # Params:
-    #   - user_message (str) -> Mensaje de advertencia
-    #   - code (int) -> Código HTTP (default=400)
-    #   - log_message (str | None) -> Mensaje técnico para logs
+def _warning(user_message: str, code: int = 400, log_message: str = None) -> JsonResponse:
+    '''
+    Info:
+        Función helper especializada para generar respuestas de advertencia estandarizadas.
 
-    # Return: JsonResponse con status="warning"
+    Params:
+        user_message (str): Mensaje de advertencia claro para el usuario final.
+        code (int): Código de estado HTTP para la respuesta (default=400).
+        log_message (str): Mensaje técnico opcional para registro en logs del sistema.
+
+    Return:
+        JsonResponse: Respuesta HTTP estandarizada con status="warning" y estructura definida.
+    '''
+
+    # Info: Construir la respuesta delegando al método principal
     return _build_response(
         status="warning",
         user_message=user_message,
@@ -96,15 +126,22 @@ def _warning(user_message: str, code: int = 400, log_message: str = None):
     )
 
 
-def _info(user_message: str, data: dict = None, code: int = 200, log_message: str = None):
-    # Info: Helper para mensajes informativos
-    # Params:
-    #   - user_message (str) -> Mensaje de información
-    #   - data (dict | None) -> Información adicional opcional
-    #   - code (int) -> Código HTTP (default=200)
-    #   - log_message (str | None) -> Mensaje técnico para logs
+def _info(user_message: str, data: dict = None, code: int = 200, log_message: str = None) -> JsonResponse:
+    '''
+    Info:
+        Función helper especializada para generar respuestas informativas estandarizadas.
 
-    # Return: JsonResponse con status="info"
+    Params:
+        user_message (str): Mensaje informativo claro para el usuario final.
+        data (dict): Información adicional opcional para incluir en la respuesta.
+        code (int): Código de estado HTTP para la respuesta (default=200).
+        log_message (str): Mensaje técnico opcional para registro en logs del sistema.
+
+    Return:
+        JsonResponse: Respuesta HTTP estandarizada con status="info" y estructura definida.
+    '''
+
+    # Info: Construir la respuesta delegando al método principal
     return _build_response(
         status="info",
         user_message=user_message,
@@ -118,28 +155,37 @@ def _info(user_message: str, data: dict = None, code: int = 200, log_message: st
 # Helpers de Redirección
 # ---------------------
 
-def _redirect_if_authenticated(request):
-    # Info: Redirección condicional según autenticación
-    # Warn: Si el usuario está autenticado, lo redirige directamente al Dashboard
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
 
-    # Return: redirect() o None si no aplica
-    if request.user.is_authenticated:
-        return redirect('appDashboardHomeRender')
-    return None
+def _redirect_if_authenticated(request: HttpRequest) -> Union[HttpResponseRedirect, None]:
+    '''
+    Info:
+        Función de utilidad para manejar redirecciones condicionales basadas en autenticación.
+
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponseRedirect | None: Redirección al dashboard si está autenticado, None en caso contrario.
+    '''
+
+    # Warn: Redirige inmediatamente si el usuario ya está autenticado
+    return redirect('appDashboardHomeRender') if request.user.is_authenticated else None
 
 
-def _redirect_if_sede(request):
-    # Info: Redirección condicional según sesión
-    # Warn: Si existe "sede_id" en la sesión, lo redirige al QR Reader
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def _redirect_if_sede(request: HttpRequest) -> Union[HttpResponseRedirect, None]:
+    '''
+    Info:
+        Función de utilidad para manejar redirecciones condicionales basadas en sesión.
 
-    # Return: redirect() o None si no aplica
-    if 'sede_id' in request.session:
-        return redirect('appQrReaderRender')
-    return None
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponseRedirect | None: Redirección al lector QR si existe sede en sesión, None en caso contrario.
+    '''
+
+    # Warn: Redirige inmediatamente si existe sede_id en la sesión
+    return redirect('appQrReaderRender') if 'sede_id' in request.session else None
 
 
 # ---------------------
@@ -147,17 +193,24 @@ def _redirect_if_sede(request):
 # ---------------------
 
 
-def _parse_request_body(request, context):
-    # Info: Convierte el body de la solicitud en JSON
-    # Params:
-    #   - request (HttpRequest)
-    #   - context (str) -> Nombre de la función para log
+def _parse_request_body(request: HttpRequest, context: str) -> Tuple[Optional[dict], Optional[JsonResponse]]:
+    '''
+    Info:
+        Función de utilidad para parsear el cuerpo de solicitudes HTTP en formato JSON.
 
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+        context (str): Nombre del contexto o función para identificar en logs de error.
+
+    Return:
+        tuple: Tupla (data, error) donde data es el JSON parseado o None, y error es JsonResponse o None.
+    '''
+
+    # Info: Intento de parseo seguro del cuerpo JSON
     try:
         return json.loads(request.body), None
     except json.JSONDecodeError as e:
-        # Warn: Error al parsear el JSON
-        # Return: Respuesta JSON de error con código 400
+        # Warn: Error crítico en formato JSON - retorna respuesta de error estandarizada
         return None, _error(
             user_message="La información enviada no es válida",
             code=400,

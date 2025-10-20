@@ -83,7 +83,7 @@
                         <th>HORA</th>
                         <th>DESCRIPCIÓN</th>
                         <th>ESTADO</th>
-                        <th>MINUTOS</th>
+                        <th>TIEMPO</th>
                         <th>LUGAR</th>
                     </tr>
                 </thead>
@@ -118,10 +118,19 @@
                 { data: "hora", render: hora => hora || "-" },
                 { data: "descripcion_registro", render: descripcion_registro => descripcion_registro.toUpperCase() || "-" },
                 { data: "estado_registro", render: estado_registro => estado_registro ? estado_registro.toUpperCase() : "-" },
-                { data: "minutos", render: minutos => minutos !== null ? `${minutos} min` : "-" },
+                {
+                    data: "minutos",
+                    render: minutos => {
+                        if (minutos === null) return "-";
+                        if (minutos < 60) return `${minutos} min`;
+                        const horas = Math.floor(minutos / 60);
+                        const mins = minutos % 60;
+                        return mins > 0 ? `${horas} h ${mins} min` : `${horas} h`;
+                    }
+                },
                 { data: "lugar_registro", render: lugar_registro => lugar_registro ? lugar_registro.toUpperCase() : "-" }
             ]
-        });
+        }, true);
 
         // Cargar Empleados, Áreas de Trabajo y Sedes
         try {

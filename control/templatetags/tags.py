@@ -3,18 +3,28 @@ from django import template
 register = template.Library()
 
 
-# Info: Template tag que retorna una clase CSS según si la URL actual coincide con `url_name`
 @register.simple_tag(takes_context=True)
-def active_link(context, url_name, active_class="active bg-primary text-white fw-semibold", inactive_class="text-light text-opacity-75"):
-    # Params:
-    #   url_name (str) -> Nombre de la ruta a evaluar
-    #   active_class (str) -> Clases CSS para el link activo (default: "active bg-primary text-white fw-semibold")
-    #   inactive_class (str) -> Clases CSS para el link inactivo (default: "text-light text-opacity-75")
+def active_link(context: dict, url_name: str, active_class: str = "active bg-primary text-white fw-semibold", inactive_class: str = "text-light text-opacity-75") -> str:
+    '''
+    Info:
+        Retorna clases CSS condicionales basadas en la URL actual para resaltar enlaces activos.
+
+    Params:
+        context (dict): Contexto de template que contiene el objeto request.
+        url_name (str): Nombre de la ruta a evaluar contra la URL actual.
+        active_class (str): Clases CSS para el enlace activo.
+        inactive_class (str): Clases CSS para el enlace inactivo.
+
+    Return:
+        str: Clases CSS correspondientes al estado activo o inactivo del enlace.
+    '''
+
+    # Info: Obtener objeto request desde el contexto
     request = context["request"]
 
-    # Warn: Si la URL actual coincide con `url_name`, retorna la clase activa
+    # Warn: Retornar clase activa si la URL actual coincide con el nombre de ruta
     if request.resolver_match and request.resolver_match.url_name == url_name:
         return active_class
 
-    # Info: Si no coincide, retorna la clase inactiva
+    # Info: Retornar clase inactiva por defecto
     return inactive_class

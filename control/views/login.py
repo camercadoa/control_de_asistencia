@@ -1,8 +1,7 @@
-import traceback
+from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import Group
-from .helpers import _success, _error, _warning, _info, _parse_request_body
+from .helpers import _success, _error, _warning, _parse_request_body
 from django.views.decorators.http import require_POST
 
 
@@ -10,39 +9,32 @@ from django.views.decorators.http import require_POST
 # Autenticación
 # ---------------------
 
+
 @csrf_exempt
 @require_POST
-def validateAuthentication(request):
-    # Info: Endpoint para validar autenticación de usuario
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def validateAuthentication(request: HttpRequest) -> JsonResponse:
+    '''
+    Info:
+        Procesa los datos de usuario y contraseña, verifica su validez y autentica al usuario.
 
-    try:
-        # Info: Parsear body de la solicitud
-        data, response = _parse_request_body(request, "validateAuthentication")
-        if response:
-            return response
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
 
-        # Info: Validar credenciales
-        username, password, response = _validate_credentials(data)
-        if response:
-            return response
+    Return:
+        JsonResponse: Respuesta JSON con el resultado de la autenticación o error.
+    '''
 
-        # Info: Autenticar usuario y devolver respuesta correspondiente
-        # Return: Respuesta JSON de éxito, advertencia o error
-        return _authenticate_user(request, username, password)
+    # Info: Procesa y valida el cuerpo de la solicitud
+    data, response = _parse_request_body(request, "validateAuthentication")
+    if response:
+        return response
 
-    except Exception as e:
-        # Warn: Captura cualquier excepción inesperada en el servidor
-        # Debug: Stacktrace de la excepción (eliminar en producción)
-        traceback.print_exc()
-        # Return: Respuesta JSON de error con código 500
-        return _error(
-            user_message="Ocurrió un error inesperado en el servidor",
-            code=500,
-            log_message="Excepción en validateAuthentication",
-            exc=e
-        )
+    # Info: Valida las credenciales del usuario
+    username, password, response = _validate_credentials(data)
+    if response:
+        return response
+
+    return _authenticate_user(request, username, password)
 
 
 # ---------------------
@@ -50,61 +42,73 @@ def validateAuthentication(request):
 # ---------------------
 
 
-def _validate_credentials(data):
-    # Info: Valida que el diccionario contenga usuario y contraseña
-    # Params:
-    #   - data (dict) -> Diccionario que contiene los datos enviados en el request
+def _validate_credentials(data: dict) -> tuple[str, str, JsonResponse | None]:
+    '''
+    Info:
+        Valida que las credenciales de usuario estén presentes y completas.
 
+    Params:
+        data (dict): Diccionario con los datos de la solicitud que contiene las credenciales.
+
+    Return:
+        tuple: Tupla con (username, password, None) si son válidos, o (None, None, JsonResponse) si hay errores de validación.
+    '''
+
+    # Info: Extrae username y password del diccionario de datos
     username = data.get("username")
     password = data.get("password")
 
-    # Warn: Usuario o contraseña no proporcionados
+    # Warn: Valida que ambas credenciales estén presentes
     if not username or not password:
-        # Return: Respuesta JSON de advertencia con código 400
         return None, None, _warning(
             user_message="Debes ingresar usuario y contraseña",
             code=400,
             log_message="Credenciales incompletas"
         )
+
     return username, password, None
 
 
-def _authenticate_user(request, username, password):
-    # Info: Usa `authenticate` de Django para verificar credenciales
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
-    #   - username (str) -> Nombre de usuario
-    #   - password (str) -> Contraseña
+def _authenticate_user(request: HttpRequest, username: str, password: str) -> JsonResponse:
+    '''
+    Info:
+        Autentica un usuario verificando credenciales y permisos de grupo.
 
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+        username (str): Nombre de usuario para autenticar.
+        password (str): Contraseña del usuario.
+
+    Return:
+        JsonResponse: Respuesta JSON indicando éxito o fallo en la autenticación.
+        (Estructura: {"status", "message", "data"?})
+    '''
+
+    # Info: Autentica al usuario con las credenciales proporcionadas
     user = authenticate(request, username=username, password=password)
-    if user is not None:
-        # Info: Validar que el usuario pertenezca a grupos autorizados
-        groups = ["Secretaria Talento Humano", "Director Talento Humano", "Presidente", "Rector"]
-        in_groups = any(
-            user.groups.filter(name=grupo).exists() for grupo in groups
+
+    # Warn: Verifica que el usuario exista y esté activo
+    if user is None:
+        return _warning(
+            user_message="Usuario o contraseña incorrectos",
+            code=401,
+            log_message=f"Intento fallido de login con usuario {username}"
         )
 
-        # Warn: Usuario no autorizado
-        if not in_groups:
-            # Return: Respuesta JSON de error con código 403
-            return _error(
-                user_message="Usuario no autorizado",
-                code=403,
-                log_message=f"Usuario {username} intentó acceder sin pertenecer a los grupos requeridos"
-            )
+    # Info: Define los grupos autorizados para el sistema
+    groups = ["Secretaria Talento Humano", "Director Talento Humano", "Presidente", "Rector"]
 
-        # Info: Inicia sesión si el usuario está autorizado
-        login(request, user)
-        # Return: Respuesta JSON de éxito
-        return _success(
-            user_message="Inicio de sesión exitoso",
-            log_message=f"Usuario {username} inició sesión"
+    # Warn: Verifica si el usuario pertenece a al menos uno de los grupos requeridos
+    if not any(user.groups.filter(name=grupo).exists() for grupo in groups):
+        return _error(
+            user_message="Usuario no autorizado",
+            code=403,
+            log_message=f"Usuario {username} intentó acceder sin pertenecer a los grupos requeridos"
         )
 
-    # Warn: Usuario o contraseña incorrectos
-    # Return: Respuesta JSON de advertencia con código 401
-    return _warning(
-        user_message="Usuario o contraseña incorrectos",
-        code=401,
-        log_message=f"Intento fallido de login con usuario {username}"
+    # Info: Ejecuta el login del usuario en la sesión actual
+    login(request, user)
+    return _success(
+        user_message="Inicio de sesión exitoso",
+        log_message=f"Usuario {username} inició sesión"
     )

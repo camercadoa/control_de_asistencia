@@ -287,10 +287,10 @@
                         empleadoInfoContainer.innerHTML = cardInfo("error", contenido);
                     })
                     .finally(() => {
-                        // Bloquear nuevas lecturas por 3 segundos para evitar duplicados
+                        // Bloquear nuevas lecturas por 5 segundos para evitar duplicados
                         setTimeout(() => {
                             lecturaHabilitada = true;
-                        }, 3000);
+                        }, 5000);
                     });
                 }
             });

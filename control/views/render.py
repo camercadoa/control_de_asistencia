@@ -1,3 +1,4 @@
+from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from control.models import Sede
@@ -8,22 +9,26 @@ from .helpers import _redirect_if_authenticated, _redirect_if_sede
 # Lobby
 # ---------------------
 
-def appLobbyRender(request):
-    # Info: Renderiza la página principal (Lobby) del aplicativo
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appLobbyRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza el lobby de la aplicación después de validar autenticación y tipo de sede.
 
-    # Warn: Si el usuario ya está autenticado, será redirigido
-    is_authenticated = _redirect_if_authenticated(request)
-    if is_authenticated:
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página lobby o redirección según las validaciones.
+    '''
+
+    # Info: Verifica si el usuario está autenticado y redirige si es necesario
+    if is_authenticated := _redirect_if_authenticated(request):
         return is_authenticated
 
-    # Warn: Si existe "sede_id" en sesión, será redirigido
-    is_sede = _redirect_if_sede(request)
-    if is_sede:
+    # Info: Verifica si es una sede y redirige si es necesario
+    if is_sede := _redirect_if_sede(request):
         return is_sede
 
-    # Return: render() de 'lobby.html'
     return render(request, 'lobby.html')
 
 
@@ -31,20 +36,29 @@ def appLobbyRender(request):
 # QR Reader
 # ---------------------
 
-def appQrReaderRender(request):
-    # Info: Renderiza la página del lector de QR
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
 
-    # Warn: Si el usuario ya está autenticado, será redirigido
-    is_authenticated = _redirect_if_authenticated(request)
-    if is_authenticated:
+def appQrReaderRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza el lector de QR después de validar autenticación y recuperar información de sede.
+        Proporciona datos de la sede actual si existe en la sesión.
+
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página QR reader con información de sede o redirección.
+    '''
+
+    # Info: Verifica si el usuario está autenticado y redirige si es necesario
+    if is_authenticated := _redirect_if_authenticated(request):
         return is_authenticated
 
+    # Info: Obtiene el ID de sede de la sesión y recupera información
     sede_id = request.session.get("sede_id")
     sede_info = None
 
-    # Info: Se envía la sede si existe en el request.session
+    # Info: Si existe sede_id, busca y construye información de la sede
     if sede_id:
         try:
             sede = Sede.objects.get(id=sede_id)
@@ -52,11 +66,10 @@ def appQrReaderRender(request):
                 "id": sede.id,
                 "location": f"{sede.ubicacion} - {sede.ciudad}"
             }
-        # Warn: Si "sede_id" en sesión no corresponde a una sede válida, se elimina de la sesión
         except Sede.DoesNotExist:
+            # Warn: Si la sede no existe, elimina el ID de la sesión
             request.session.pop("sede_id", None)
 
-    # Return: render() de 'qr_reader.html' con información de la sede si existe
     return render(request, 'qr_reader.html', {'sede_info': sede_info})
 
 
@@ -64,59 +77,79 @@ def appQrReaderRender(request):
 # Dashboard
 # ---------------------
 
-@login_required
-def appDashboardHomeRender(request):
-    # Info: Renderiza el bloque principal del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
 
-    # Warn: Si existe "sede_id" en sesión, será redirigido
-    is_sede = _redirect_if_sede(request)
-    if is_sede:
+@login_required
+def appDashboardHomeRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la página principal del Dashboard para usuarios autenticados y proporciona tipos de novedades para la interfaz.
+
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página home del dashboard con tipos de novedades.
+    '''
+
+    # Info: Verifica si es una sede y redirige si es necesario
+    if is_sede := _redirect_if_sede(request):
         return is_sede
 
-    # Info: Diccionario de tipos de novedades
+    # Info: Define diccionario de tipos de novedades para la interfaz
     tipos = {
         'entradas': 'Entradas',
         'salidas': 'Salidas',
         'sedes': 'Sedes'
     }
 
-    # Return: render() de 'block_content/home.html'
     return render(request, 'block_content/home.html', {'tipos': tipos})
 
 
 @login_required
-def appDashboardActiveEmployeesRender(request):
-    # Info: Renderiza el bloque de empleados activos dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appDashboardActiveEmployeesRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para visualizar empleados actualmente activos en el sistema.
 
-    # Return: render() de 'block_content/active_employees.html'
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de empleados activos del dashboard.
+    '''
+
     return render(request, 'block_content/active_employees.html')
 
 
 @login_required
-def appDashboardAssistanceRecordRender(request):
-    # Info: Renderiza el bloque de registros de asistencia dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appDashboardAssistanceRecordRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para visualizar los registros de asistencia del personal.
 
-    # Return: render() de 'block_content/assistance_records.html'
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de registros de asistencia del dashboard.
+    '''
+
     return render(request, 'block_content/assistance_records.html')
 
 
 @login_required
-def appDashboardNewsRender(request):
-    # Info: Renderiza el bloque de novedades dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appDashboardNewsRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para visualizar y gestionar las novedades del sistema.
 
-    # Return: render() de 'block_content/news.html'
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de novedades del dashboard.
+    '''
+
     return render(request, 'block_content/news.html')
 
 
@@ -124,45 +157,67 @@ def appDashboardNewsRender(request):
 # Dashboard Settings
 # ---------------------
 
-@login_required
-def appDashboardLocationSettingsRender(request):
-    # Info: Renderiza el bloque de configuración de sedes dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
 
-    # Return: render() de 'block_content/settings/locations.html'
+@login_required
+def appDashboardLocationSettingsRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para gestionar y configurar las sedes del sistema.
+
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de configuración de ubicaciones del dashboard.
+    '''
+
     return render(request, 'block_content/settings/locations.html')
 
 
 @login_required
-def appDashboardWorkAreaSettingsRender(request):
-    # Info: Renderiza el bloque de configuración de áreas de trabajo dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appDashboardWorkAreaSettingsRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para gestionar y configurar las áreas de trabajo del sistema.
 
-    # Return: render() de 'block_content/settings/work_areas.html'
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de configuración de áreas de trabajo del dashboard.
+    '''
+
+    # Info: Renderiza la página de configuración de áreas de trabajo
     return render(request, 'block_content/settings/work_areas.html')
 
 
 @login_required
-def appDashboardSchedulesSettingsRender(request):
-    # Info: Renderiza el bloque de configuración de horarios dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appDashboardSchedulesSettingsRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para gestionar y configurar los horarios del sistema.
 
-    # Return: render() de 'block_content/settings/schedules.html'
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de configuración de horarios del dashboard.
+    '''
+
     return render(request, 'block_content/settings/schedules.html')
 
 
 @login_required
-def appDashboardTypeNewsSettingsRender(request):
-    # Info: Renderiza el bloque de configuración de tipos de novedades dentro del Dashboard
-    # Warn: Requiere que el usuario esté autenticado (login_required)
-    # Params:
-    #   - request (HttpRequest) -> Objeto de solicitud HTTP
+def appDashboardTypeNewsSettingsRender(request: HttpRequest) -> HttpResponse:
+    '''
+    Info:
+        Renderiza la interfaz para gestionar y configurar los tipos de novedades del sistema.
 
-    # Return: render() de 'block_content/settings/type_news.html'
+    Params:
+        request (HttpRequest): Objeto de solicitud HTTP para obtener información de la URL.
+
+    Return:
+        HttpResponse: Renderizado de la página de configuración de tipos de novedades del dashboard.
+    '''
+
     return render(request, 'block_content/settings/type_news.html')
