@@ -1,9 +1,11 @@
+from datetime import datetime
 import qrcode
 from io import BytesIO
 from email.mime.image import MIMEImage
 from django.http import HttpResponse
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+from django.db.models import Q
 from django.template.loader import render_to_string
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -60,8 +62,101 @@ class EmpleadoDetailView(RetrieveAPIView):
 # ---------------------
 
 class RegistroAsistenciaListCreateView(ListCreateAPIView):
-    queryset = RegistroAsistencia.objects.all().order_by('-fecha_hora_registro')
     serializer_class = RegistroAsistenciaSerializer
+
+    def get(self, request):
+        # Parámetros estándar de DataTables
+        draw = int(request.GET.get("draw", 1))
+        start = int(request.GET.get("start", 0))
+        length = int(request.GET.get("length", 15))
+        search_value = request.GET.get("search[value]", "").strip()
+
+        # Parámetros de filtro personalizados
+        emp_id = request.GET.get("employee", "")
+        start_date = request.GET.get("start_date", "")
+        end_date = request.GET.get("end_date", "")
+        description = request.GET.get("description", "")
+        work_area = request.GET.get("work_area", "")
+        sede = request.GET.get("sede", "")
+
+        # Query base
+        queryset = (
+            RegistroAsistencia.objects
+            .select_related("fk_empleado", "lugar_registro")
+            .prefetch_related("fk_empleado__grupos")
+            .order_by("-fecha_hora_registro")
+        )
+
+        # Filtros personalizados
+        if emp_id:
+            queryset = queryset.filter(fk_empleado_id=emp_id)
+
+        if start_date:
+            try:
+                fecha_inicio = datetime.strptime(start_date, "%Y-%m-%d")
+                queryset = queryset.filter(fecha_hora_registro__date__gte=fecha_inicio)
+            except ValueError:
+                pass
+
+        if end_date:
+            try:
+                fecha_fin = datetime.strptime(end_date, "%Y-%m-%d")
+                queryset = queryset.filter(fecha_hora_registro__date__lte=fecha_fin)
+            except ValueError:
+                pass
+
+        if description:
+            queryset = queryset.filter(descripcion_registro__iexact=description)
+
+        if work_area:
+            queryset = queryset.filter(fk_empleado__grupos__id=work_area)
+
+        if sede:
+            queryset = queryset.filter(lugar_registro_id=sede)
+
+
+        # Filtro de búsqueda global
+        if search_value:
+            queryset = queryset.filter(
+                Q(fk_empleado__primer_nombre__icontains=search_value)
+                | Q(fk_empleado__primer_apellido__icontains=search_value)
+                | Q(descripcion_registro__icontains=search_value)
+                | Q(lugar_registro__ubicacion__icontains=search_value)
+            )
+
+        total_records = RegistroAsistencia.objects.count()
+        filtered_records = queryset.count()
+
+        # Paginación
+        queryset = queryset[start:start + length]
+        serializer = self.serializer_class(queryset, many=True)
+
+        return Response({
+            "draw": draw,
+            "recordsTotal": total_records,
+            "recordsFiltered": filtered_records,
+            "data": serializer.data
+        })
+
+
+class RegistroAsistenciaPorDiaView(ListAPIView):
+    serializer_class = RegistroAsistenciaSerializer
+
+    def get_queryset(self):
+        fecha_param = self.request.query_params.get('fecha')
+        if fecha_param:
+            try:
+                fecha = datetime.strptime(fecha_param, '%Y-%m-%d').date()
+            except ValueError:
+                return RegistroAsistencia.objects.none()
+        else:
+            fecha = datetime.now().date()  # Por defecto, el día actual
+
+        return (
+            RegistroAsistencia.objects
+            .filter(fecha_hora_registro__date=fecha)
+            .order_by('-fecha_hora_registro')
+        )
 
 
 class RegistroAsistenciaDetailView(RetrieveUpdateDestroyAPIView):

@@ -368,6 +368,10 @@ def _evaluate_punctuality(employee: Empleado, record: RegistroAsistencia, record
     timezone_obj = timezone.get_current_timezone()
     record_datetime = record.fecha_hora_registro
 
+    # Info: Omitir evaluación los fines de semana
+    if record_datetime.weekday() in (5, 6):
+        return
+
     # Info: Evaluar puntualidad para registro de entrada
     if record_type == "Entrada":
         if best_schedule := _get_most_recent_entry_schedule(schedules, record_datetime, timezone_obj):
@@ -394,8 +398,8 @@ def _evaluate_punctuality(employee: Empleado, record: RegistroAsistencia, record
         if best_entry_schedule := _get_most_recent_entry_schedule(schedules, last_entry.fecha_hora_registro, timezone_obj):
             # Info: Calcular hora programada de salida
             scheduled_exit_time = timezone.make_aware(
-                datetime.combine(last_entry.fecha_hora_registro.date(
-                ), best_entry_schedule.hora_salida), timezone_obj
+                datetime.combine(last_entry.fecha_hora_registro.date(), best_entry_schedule.hora_salida),
+                timezone_obj
             )
 
             # Warn: Ajustar para turnos que cruzan medianoche

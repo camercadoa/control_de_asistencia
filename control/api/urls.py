@@ -10,6 +10,7 @@ urlpatterns = [
     path('empleados/<int:empleado_id>/qr/', QRGeneratorView.as_view(), name='ApiEmpleadoQR'),
     path('empleados/<int:empleado_id>/qr/email/', QREmailView.as_view(), name='ApiEmpleadoEmailQR'),
     path('registros-asistencias/', RegistroAsistenciaListCreateView.as_view(), name='ApiRegistrosAsistencias'),
+    path('registros-asistencias-dia/', RegistroAsistenciaPorDiaView.as_view(), name='ApiRegistrosAsistenciasPorDia'),
     path('registros-asistencias/<int:pk>/', RegistroAsistenciaDetailView.as_view(), name='ApiRegistroAsistenciaDetail'),
     path('correos-institucionales/', CorreoInstitucionalListCreateView.as_view(), name='ApiCorreosInstitucionales'),
     path('correos-institucionales/<int:pk>/', CorreoInstitucionalDetailView.as_view(), name='ApiCorreoInstitucionalDetail'),

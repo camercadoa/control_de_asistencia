@@ -70,14 +70,19 @@ document.addEventListener("DOMContentLoaded", function () {
     let minFechaISO = null;
     let maxFechaISO = null;
 
+    // Formato DD/MM/YYYY → YYYY-MM-DD
     function formatearFechaInput(fecha) {
         const [d, m, y] = fecha.split("/");
         return `${y}-${m.padStart(2,"0")}-${d.padStart(2,"0")}`;
     }
+
+    // Formato YYYY-MM-DD → DD/MM/YYYY
     function formatearFechaMostrar(valorInput) {
         const [y, m, d] = valorInput.split("-");
         return `${d.padStart(2,"0")}/${m.padStart(2,"0")}/${y}`;
     }
+
+    // Suma o resta días
     function moverDias(fechaISO, dias) {
         const fecha = new Date(fechaISO);
         fecha.setDate(fecha.getDate() + dias);
@@ -88,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
     selectDate.value = formatearFechaInput(hoy);
     let fechaSeleccionada = hoy;
 
-    // --- DataTable ---
+    // Inicializa DataTable
     const tablaRegistros = $("#AttendanceTable").DataTable({
         responsive: true,
         lengthChange: false,
@@ -101,40 +106,41 @@ document.addEventListener("DOMContentLoaded", function () {
             url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
         },
         ajax: {
-            url: "/api/registros-asistencias/",
-            dataSrc: function(json) {
-                return json.filter(r => r.fecha === fechaSeleccionada);
-            }
+            url: "/api/registros-asistencias-dia/",
+            data: function () {
+                return { fecha: selectDate.value }; // formato YYYY-MM-DD
+            },
+            dataSrc: ""
         },
         dom: 'Bfrtip',
         buttons: [
             {
                 text: '<i class="bi bi-arrow-clockwise me-1 text-primary"></i><span class="text-dark">Recargar</span>',
                 className: 'btn btn-sm bg-white border-0',
-                action: function (e, dt, node, config) {
-                    dt.ajax.reload(null, false);
-                }
+                action: (e, dt) => dt.ajax.reload(null, false)
             }
         ],
         columns: [
             { data: "nombre_empleado", render: nombre => nombre.toUpperCase() || "-" },
             { data: "fecha", render: fecha => fecha || "-" },
             { data: "hora", render: hora => hora || "-" },
-            { data: "descripcion_registro", render: desc => desc.toUpperCase() || "-" },
+            { data: "descripcion_registro", render: descripcion => descripcion.toUpperCase() || "-" },
             { data: "lugar_registro", render: lugar => lugar ? lugar.toUpperCase() : "-" }
         ]
     });
 
-    tablaRegistros.on("xhr.dt", function (e, settings, json, xhr) {
+    // Actualiza gráficos al cargar la tabla
+    tablaRegistros.on("xhr.dt", function (e, settings, json) {
         const filtrados = json.filter(r => r.fecha === fechaSeleccionada);
         createGraphics(filtrados);
     });
 
+    // Habilita o deshabilita los botones de día
     function actualizarBotones(nuevaFechaISO) {
-        btnPreviousDay.disabled = (minFechaISO && nuevaFechaISO <= minFechaISO);
         btnNextDay.disabled = (maxFechaISO && nuevaFechaISO >= maxFechaISO);
     }
 
+    // Refresca tabla y gráficos al cambiar de fecha
     function actualizarVista(nuevaFechaISO) {
         fechaSeleccionada = formatearFechaMostrar(nuevaFechaISO);
         selectDate.value = nuevaFechaISO;
@@ -142,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tablaRegistros.ajax.reload();
         actualizarBotones(nuevaFechaISO);
 
-        fetch("/api/registros-asistencias/")
+        fetch(`/api/registros-asistencias-dia/?fecha=${selectDate.value}`)
             .then(res => res.json())
             .then(data => {
                 const filtrados = data.filter(r => r.fecha === fechaSeleccionada);
@@ -150,6 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // Controles de fecha
     selectDate.addEventListener("change", function () {
         actualizarVista(this.value);
     });
@@ -163,48 +170,58 @@ document.addEventListener("DOMContentLoaded", function () {
         actualizarVista(moverDias(selectDate.value, 1));
     });
 
-    // --- Funciones de gráficos ---
+    // Agrupa registros en bloques de 2h
     function agruparPorRango(data) {
-        const rangos = [
-            "05:00 a. m. - 06:00 a. m.","06:00 a. m. - 07:00 a. m.","07:00 a. m. - 08:00 a. m.","08:00 a. m. - 09:00 a. m.",
-            "09:00 a. m. - 10:00 a. m.","10:00 a. m. - 11:00 a. m.","11:00 a. m. - 12:00 p. m.","12:00 p. m. - 01:00 p. m.",
-            "01:00 p. m. - 02:00 p. m.","02:00 p. m. - 03:00 p. m.","03:00 p. m. - 04:00 p. m.","04:00 p. m. - 05:00 p. m.",
-            "05:00 p. m. - 06:00 p. m.","06:00 p. m. - 07:00 p. m.","07:00 p. m. - 08:00 p. m."
-        ];
+        const horaInicio = 5, horaFin = 23, paso = 2;
+        const rangos = [];
+        for (let h = horaInicio; h < horaFin; h += paso) {
+            const hIni12 = h % 12 === 0 ? 12 : h % 12;
+            const hFin = h + paso;
+            const hFin12 = hFin % 12 === 0 ? 12 : hFin % 12;
+            const ampmIni = h < 12 ? "a. m." : "p. m.";
+            const ampmFin = hFin < 12 ? "a. m." : "p. m.";
+            rangos.push(`${hIni12.toString().padStart(2,"0")}:00 ${ampmIni} - ${hFin12.toString().padStart(2,"0")}:00 ${ampmFin}`);
+        }
+
         const entradas = {}, salidas = {};
-        const contarRango = (horaStr, rangos) => {
-            let hora = parseInt(horaStr.split(":")[0]);
-            const ampm = horaStr.split(" ")[1];
-            if (hora === 0) hora = 12;
-            for (const rango of rangos) {
-                const [ini, fin] = rango.split("-");
-                const horaIni = parseInt(ini.split(":")[0]);
-                const horaFin = parseInt(fin.split(":")[0]);
-                const ampmIni = ini.split(" ")[1];
-                const ampmFin = fin.split(" ")[1];
-                let cmp = hora;
-                if (ampm === "p. m." && hora < 12) cmp += 12;
-                let cmpIni = horaIni;
-                if (ampmIni === "p. m." && horaIni < 12) cmpIni += 12;
-                let cmpFin = horaFin;
-                if (ampmFin === "p. m." && horaFin < 12) cmpFin += 12;
-                if (cmp >= cmpIni && cmp < cmpFin) return rango;
-            }
-            return "Otros";
+
+        // Convierte hora a formato 24h (ej: "07:30 a. m." → 7.5)
+        const convertirHora = (horaStr) => {
+            if (!horaStr) return null;
+            const [hm, ampm] = horaStr.split(" ");
+            const [h, m] = hm.split(":").map(Number);
+            let hora24 = h % 12 + (ampm.toLowerCase().includes("p") ? 12 : 0);
+            return hora24 + (m / 60);
         };
+
+        // Cuenta por rango
         data.forEach(r => {
             if (!r.hora) return;
-            const desc = r.descripcion_registro.toLowerCase();
-            const rango = contarRango(r.hora, rangos);
-            if (desc.includes("entrada")) entradas[rango] = (entradas[rango]||0)+1;
-            else if (desc.includes("salida")) salidas[rango] = (salidas[rango]||0)+1;
+            const hora = convertirHora(r.hora);
+            if (hora === null) return;
+            const desc = r.descripcion_registro?.toLowerCase() || "";
+            let rangoEncontrado = "Otros";
+            for (let i = 0; i < rangos.length; i++) {
+                const hIni = horaInicio + i * paso;
+                const hFin = hIni + paso;
+                if (hora >= hIni && hora < hFin) {
+                    rangoEncontrado = rangos[i];
+                    break;
+                }
+            }
+            if (desc.includes("entrada")) entradas[rangoEncontrado] = (entradas[rangoEncontrado] || 0) + 1;
+            else if (desc.includes("salida")) salidas[rangoEncontrado] = (salidas[rangoEncontrado] || 0) + 1;
         });
+
         return {
-            entradas, salidas,
-            rangosEntrada: Object.keys(entradas).filter(r => entradas[r]>0),
-            rangosSalida: Object.keys(salidas).filter(r => salidas[r]>0)
+            entradas,
+            salidas,
+            rangosEntrada: rangos.filter(r => entradas[r] > 0),
+            rangosSalida: rangos.filter(r => salidas[r] > 0)
         };
     }
+
+    // Agrupa por lugar de registro
     function agruparPorSede(data) {
         const sedes = {};
         data.forEach(r => {
@@ -214,6 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return sedes;
     }
 
+    // Crea gráficos de tipo doughnut
     function createGraphics(data) {
         if (!data || data.length === 0) {
             ["entradas", "salidas", "sedes"].forEach(tipo => {
@@ -228,6 +246,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("no-data-" + tipo).classList.add("d-none");
         });
 
+        // Reinicia gráficos previos
         ["graphic-entradas", "graphic-salidas", "graphic-sedes"].forEach(id => {
             const canvas = document.getElementById(id);
             if (canvas.chart) canvas.chart.destroy();
@@ -241,6 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
             '#F5A623', '#7BDCB5', '#C879FF', '#FF9F80', '#E8E288', '#A1C45A'
         ];
 
+        // Configura gráfico
         const crearGrafico = (id, etiquetas, valores, titulo) => {
             if (valores.every(v => v === 0)) {
                 document.getElementById(id).classList.add("d-none");
@@ -260,9 +280,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 options: {
                     maintainAspectRatio: false,
                     responsive: true,
-                    layout: {
-                        padding: { top: 10, bottom: 10 }
-                    },
                     plugins: {
                         title: {
                             display: true,
@@ -274,11 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             display: true,
                             position: 'bottom',
                             align: 'center',
-                            labels: {
-                                boxWidth: 12,
-                                font: { size: 10 },
-                                padding: 8
-                            }
+                            labels: { boxWidth: 12, font: { size: 10 }, padding: 8 }
                         }
                     }
                 }
@@ -291,7 +304,8 @@ document.addEventListener("DOMContentLoaded", function () {
         crearGrafico("graphic-sedes", Object.keys(sedes), Object.values(sedes), "Sedes");
     }
 
-    fetch("/api/registros-asistencias/")
+    // Carga inicial
+    fetch(`/api/registros-asistencias-dia/?fecha=${formatearFechaInput(hoy)}`)
         .then(res=>res.json())
         .then(data => {
             const fechas = data.map(r => r.fecha).sort((a,b)=>{

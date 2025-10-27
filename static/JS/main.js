@@ -287,6 +287,50 @@ function attachClearOnInput(inputs) {
     });
 }
 
+/**
+ * Habilita el botón submit de un formulario solo cuando haya cambios en los inputs.
+ * @param {string} formId - ID del formulario a observar.
+ */
+function enableSubmitOnFormChange(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (!submitBtn) return;
+
+    // Tomar el estado inicial de los campos
+    const initialData = new FormData(form);
+    const initialValues = Object.fromEntries(initialData.entries());
+
+    // Función que compara el estado actual con el inicial
+    const checkChanges = () => {
+        const currentData = new FormData(form);
+        const currentValues = Object.fromEntries(currentData.entries());
+
+        // Verificar si hay alguna diferencia
+        const hasChanges = Object.keys(currentValues).some(key => currentValues[key] !== (initialValues[key] ?? ""));
+        submitBtn.disabled = !hasChanges;
+    };
+
+    // Escuchar todos los inputs/select/textarea dentro del formulario
+    form.querySelectorAll("input, select, textarea").forEach(input => {
+        input.addEventListener("input", checkChanges);
+        input.addEventListener("change", checkChanges);
+    });
+
+    // Deshabilitar el botón inicialmente
+    submitBtn.disabled = true;
+
+    // Si el modal se cierra, se restaura el estado inicial
+    const modal = form.closest(".modal");
+    if (modal) {
+        modal.addEventListener("hidden.bs.modal", () => {
+            form.reset();
+            submitBtn.disabled = true;
+        });
+    }
+}
+
 
 // ============================================================================
 // TABLAS (DataTables con configuración por defecto)

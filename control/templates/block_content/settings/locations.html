@@ -199,6 +199,7 @@
         });
 
         resetModalForm("modalCreate", "formCreate", ["createUbicacion", "createCiudad"]);
+        enableSubmitOnFormChange("formCreate");
 
         // Editar sede
         const editForm = document.getElementById("formEdit");
@@ -266,6 +267,7 @@
         });
 
         resetModalForm("modalEdit", "formEdit", ["editUbicacion", "editCiudad"]);
+        enableSubmitOnFormChange("formEdit");
 
         // Eliminar sede
         let deleteId = null;

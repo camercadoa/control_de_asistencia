@@ -343,6 +343,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     resetModalForm("modalCreate", "formCreate", [
         "createEmpleado", "createTipoNovedad", "createFechaInicio", "createFechaFin", "createObservacion"
     ]);
+    enableSubmitOnFormChange("formCreate");
 
     //  Editar
     const editForm = document.getElementById("formEdit");
@@ -391,6 +392,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     resetModalForm("modalEdit", "formEdit", [
         "editEmpleado", "editTipoNovedad", "editFechaInicio", "editFechaFin", "editObservacion"
     ]);
+    enableSubmitOnFormChange("formEdit");
 
     //  Eliminar
     let deleteId = null;
