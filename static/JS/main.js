@@ -1,5 +1,5 @@
 // ============================================================================
-// TOOLTIPS BOOTSTRAP
+// Tooltips
 // ============================================================================
 
 /**
@@ -13,7 +13,7 @@ function initTooltips(container = document) {
 
 
 // ============================================================================
-// MAPEO DE ESTADOS Y RESPUESTAS DEL BACKEND
+// Manejo de respuestas del backend
 // ============================================================================
 
 /**
@@ -65,7 +65,7 @@ function handleBackendResponse(data, { onSuccess = null, onWarning = null, onErr
 
 
 // ============================================================================
-// ALERTAS Y NOTIFICACIONES
+// Alertas y notificaciones visuales
 // ============================================================================
 
 /**
@@ -159,7 +159,7 @@ function cardInfo(tipo, contenido, icono) {
 
 
 // ============================================================================
-// UTILIDADES DE RELOJ (FECHA Y HORA)
+// Utilidades de fecha y hora
 // ============================================================================
 
 /**
@@ -209,9 +209,42 @@ function iniciarReloj(fechaId, horaId) {
     tick();
 }
 
+/** * Formatea horas en formato 12 horas con a. m./p. m.
+ * @param {string} timeStr - Hora en formato "HH:MM:SS".
+ * @returns {string} - Hora formateada en "hh:mm a. m." o "hh:mm p. m.".
+ */
+function formatTime12Hour(timeStr) {
+    const [hours, minutes] = timeStr.split(":");
+    const period = hours >= 12 ? "p. m." : "a. m.";
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours < 10 ? '0' : ''}${formattedHours}:${minutes} ${period}`;
+}
+
+/**
+ * Formatea fechas en formato "DD/MM/YYYY".
+ * @param {string} dateStr - Fecha en formato "YYYY-MM-DD".
+ * @returns {string} - Fecha formateada en "DD/MM/YYYY".
+ */
+function formatDateDDMMYYYY(dateStr) {
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year}`;
+}
+
+
+/** * Obtiene la fecha actual en formato "DD/MM/YYYY".
+ * @returns {string} - Fecha de hoy en formato "DD/MM/YYYY".
+ */
+function fechaHoyFormato() {
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const yyyy = hoy.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+}
+
 
 // ============================================================================
-// BOTONES (Loading Spinner y Restaurar)
+// Botones
 // ============================================================================
 
 /**
@@ -239,7 +272,7 @@ function enableButton(button, originalText) {
 
 
 // ============================================================================
-// VALIDACIÓN DE FORMULARIOS
+// Validación y control de formularios
 // ============================================================================
 
 /**
@@ -253,7 +286,6 @@ function markInvalid(inputs, message = null) {
         if (!input) return;
         input.classList.add("is-invalid");
 
-        // Si existe feedback, actualizar texto
         if (message) {
             let feedback = input.parentElement.querySelector(".invalid-feedback");
             if (!feedback) {
@@ -298,30 +330,24 @@ function enableSubmitOnFormChange(formId) {
     const submitBtn = form.querySelector('button[type="submit"]');
     if (!submitBtn) return;
 
-    // Tomar el estado inicial de los campos
     const initialData = new FormData(form);
     const initialValues = Object.fromEntries(initialData.entries());
 
-    // Función que compara el estado actual con el inicial
     const checkChanges = () => {
         const currentData = new FormData(form);
         const currentValues = Object.fromEntries(currentData.entries());
 
-        // Verificar si hay alguna diferencia
         const hasChanges = Object.keys(currentValues).some(key => currentValues[key] !== (initialValues[key] ?? ""));
         submitBtn.disabled = !hasChanges;
     };
 
-    // Escuchar todos los inputs/select/textarea dentro del formulario
     form.querySelectorAll("input, select, textarea").forEach(input => {
         input.addEventListener("input", checkChanges);
         input.addEventListener("change", checkChanges);
     });
 
-    // Deshabilitar el botón inicialmente
     submitBtn.disabled = true;
 
-    // Si el modal se cierra, se restaura el estado inicial
     const modal = form.closest(".modal");
     if (modal) {
         modal.addEventListener("hidden.bs.modal", () => {
@@ -331,9 +357,31 @@ function enableSubmitOnFormChange(formId) {
     }
 }
 
+/**
+ * Resetea un formulario dentro de un modal y limpia errores de validación.
+ * @param {string} modalId - ID del modal.
+ * @param {string} formId - ID del formulario.
+ * @param {string[]} [inputIds=[]] - IDs de inputs a limpiar.
+ */
+function resetModalForm(modalId, formId, inputIds = []) {
+    const modal = document.getElementById(modalId);
+    const form = document.getElementById(formId);
+
+    if (!modal || !form) return;
+
+    modal.addEventListener("hidden.bs.modal", () => {
+        form.reset();
+
+        const inputs = inputIds.map(id => document.getElementById(id)).filter(Boolean);
+        if (inputs.length) {
+            clearInvalid(inputs);
+        }
+    });
+}
+
 
 // ============================================================================
-// TABLAS (DataTables con configuración por defecto)
+// Tablas
 // ============================================================================
 
 /**
@@ -403,10 +451,8 @@ function initDataTable(selector, options = {}, includeLastColumnInExport = false
     const config = $.extend(true, {}, defaultConfig, options);
     const dt = $(selector).DataTable(config);
 
-    // Envuelve la tabla con la clase 'table-responsive'
     $(selector).wrap('<div class="table-responsive"></div>');
 
-    // ⚡ Inicializar tooltips cada vez que se dibujen filas
     dt.on("draw", function () {
         initTooltips(document);
     });
@@ -416,145 +462,7 @@ function initDataTable(selector, options = {}, includeLastColumnInExport = false
 
 
 // ============================================================================
-// MODALES Y FORMULARIOS
-// ============================================================================
-
-/**
- * Resetea un formulario dentro de un modal y limpia errores de validación.
- * @param {string} modalId - ID del modal.
- * @param {string} formId - ID del formulario.
- * @param {string[]} [inputIds=[]] - IDs de inputs a limpiar.
- */
-function resetModalForm(modalId, formId, inputIds = []) {
-    const modal = document.getElementById(modalId);
-    const form = document.getElementById(formId);
-
-    if (!modal || !form) return;
-
-    modal.addEventListener("hidden.bs.modal", () => {
-        form.reset();
-
-        // limpiar estados inválidos
-        const inputs = inputIds.map(id => document.getElementById(id)).filter(Boolean);
-        if (inputs.length) {
-            clearInvalid(inputs);
-        }
-    });
-}
-
-// ============================================================================
-// FORMATOS DE FECHAS Y HORAS (Django REST Framework)
-// ============================================================================
-
-/** * Formatea horas en formato 12 horas con a. m./p. m.
- * @param {string} timeStr - Hora en formato "HH:MM:SS".
- * @returns {string} - Hora formateada en "hh:mm a. m." o "hh:mm p. m.".
- */
-function formatTime12Hour(timeStr) {
-    const [hours, minutes] = timeStr.split(":");
-    const period = hours >= 12 ? "p. m." : "a. m.";
-    const formattedHours = hours % 12 || 12;
-    return `${formattedHours < 10 ? '0' : ''}${formattedHours}:${minutes} ${period}`;
-}
-
-/**
- * Formatea fechas en formato "DD/MM/YYYY".
- * @param {string} dateStr - Fecha en formato "YYYY-MM-DD".
- * @returns {string} - Fecha formateada en "DD/MM/YYYY".
- */
-function formatDateDDMMYYYY(dateStr) {
-    const [year, month, day] = dateStr.split("-");
-    return `${day}/${month}/${year}`;
-}
-
-
-/** * Obtiene la fecha actual en formato "DD/MM/YYYY".
- * @returns {string} - Fecha de hoy en formato "DD/MM/YYYY".
- */
-function fechaHoyFormato() {
-    const hoy = new Date();
-    const dd = String(hoy.getDate()).padStart(2, '0');
-    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-    const yyyy = hoy.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-}
-
-// ============================================================================
-// SELECT MULTIPLE CON BÚSQUEDA
-// ============================================================================
-
-/**
- * Agrega un campo de búsqueda a un <select multiple>
- * @param {string} selectId - ID del <select>
- * @param {string} placeholder - Texto opcional para el campo de búsqueda
- */
-function addSearchToMultipleSelect(selectId, placeholder = "Buscar...") {
-    const select = document.getElementById(selectId);
-    if (!select) return;
-
-    // Evitar duplicar el buscador
-    if (select.parentElement.querySelector(".select-search-input")) return;
-
-    // Crear contenedor general
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("mb-2");
-
-    const inputGroup = document.createElement("div");
-    inputGroup.classList.add("input-group", "input-group-sm", "mb-2");
-
-    // Icono de búsqueda
-    const spanIcon = document.createElement("span");
-    spanIcon.classList.add("input-group-text");
-    spanIcon.innerHTML = '<i class="bi bi-search"></i>';
-
-    // Campo de texto
-    const input = document.createElement("input");
-    input.type = "text";
-    input.classList.add("form-control", "select-search-input");
-    input.placeholder = placeholder;
-
-    // Botón de limpiar
-    const clearBtn = document.createElement("button");
-    clearBtn.classList.add("btn", "btn-outline-secondary");
-    clearBtn.type = "button";
-    clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
-
-    // Armar estructura del input-group
-    inputGroup.appendChild(spanIcon);
-    inputGroup.appendChild(input);
-    inputGroup.appendChild(clearBtn);
-
-    // Insertar el input-group antes del select
-    select.parentNode.insertBefore(wrapper, select);
-    wrapper.appendChild(inputGroup);
-    wrapper.appendChild(select);
-
-    // Guardar las opciones originales (para restaurar)
-    const originalOptions = Array.from(select.options);
-
-    // Filtrar opciones al escribir
-    input.addEventListener("input", () => {
-        const term = input.value.trim().toLowerCase();
-        select.innerHTML = "";
-
-        const filtered = originalOptions.filter(opt =>
-            opt.textContent.toLowerCase().includes(term)
-        );
-
-        filtered.forEach(opt => select.appendChild(opt));
-    });
-
-    // Limpiar búsqueda
-    clearBtn.addEventListener("click", () => {
-        input.value = "";
-        select.innerHTML = "";
-        originalOptions.forEach(opt => select.appendChild(opt));
-        input.focus();
-    });
-}
-
-// ============================================================================
-// SELECTS (Llenar opciones desde un array de objetos)
+// Selects
 // ============================================================================
 
 /**
@@ -573,5 +481,54 @@ function fillSelect(selectId, data, placeholder, labelKey, formatter) {
             ? formatter(item)
             : (item[labelKey] || "—").toUpperCase();
         select.innerHTML += `<option value="${item.id}">${text}</option>`;
+    });
+}
+
+/**
+ * Agrega un campo de búsqueda a un <select multiple>.
+ * @param {string} selectId - ID del <select>
+ * @param {string} placeholder - Texto opcional para el campo de búsqueda
+ */
+function addSearchToMultipleSelect(selectId, placeholder = "Buscar...") {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    if (select.parentElement.querySelector(".select-search-input")) return;
+
+    // Crear input de búsqueda
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("mb-2");
+
+    const inputGroup = document.createElement("div");
+    inputGroup.classList.add("input-group", "input-group-sm", "mb-2");
+
+    const spanIcon = document.createElement("span");
+    spanIcon.classList.add("input-group-text");
+    spanIcon.innerHTML = '<i class="bi bi-search"></i>';
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.classList.add("form-control", "select-search-input");
+    input.placeholder = placeholder;
+
+    const clearBtn = document.createElement("button");
+    clearBtn.classList.add("btn", "btn-outline-secondary");
+    clearBtn.type = "button";
+    clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+    inputGroup.append(spanIcon, input, clearBtn);
+    wrapper.appendChild(inputGroup);
+    select.parentNode.insertBefore(wrapper, select);
+
+    input.addEventListener("input", () => {
+        const term = input.value.trim().toLowerCase();
+        Array.from(select.options).forEach(opt => {
+            opt.hidden = term && !opt.textContent.toLowerCase().includes(term);
+        });
+    });
+
+    clearBtn.addEventListener("click", () => {
+        input.value = "";
+        Array.from(select.options).forEach(opt => (opt.hidden = false));
+        input.focus();
     });
 }

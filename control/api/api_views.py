@@ -15,9 +15,12 @@ from control.models import (
     Sede, Empleado, RegistroAsistencia, CorreoInstitucional, TipoDocumento, AreaTrabajo, TipoNovedad, NovedadAsistencia, Horario
 )
 from .serializers import *
+from email.mime.image import MIMEImage
+
 # ---------------------
 # Sedes API
 # ---------------------
+
 
 class SedeListCreateView(ListCreateAPIView):
     # Info: Lista todas las sedes (excepto id=5) o permite crear una nueva sede
@@ -29,6 +32,7 @@ class SedeDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina una sede específica (excepto id=5)
     queryset = Sede.objects.exclude(id=5).order_by('id')
     serializer_class = SedeSerializer
+
 
 class SedeRegistroCountView(APIView):
     def get(self, request, pk):
@@ -47,7 +51,8 @@ class SedeRegistroCountView(APIView):
 
 class EmpleadoListCreateView(ListAPIView):
     # Info: Lista todos los empleados o permite crear uno nuevo
-    queryset = Empleado.objects.all().order_by('primer_apellido', 'segundo_apellido', 'primer_nombre', 'segundo_nombre')
+    queryset = Empleado.objects.all().order_by(
+        'primer_apellido', 'segundo_apellido', 'primer_nombre', 'segundo_nombre')
     serializer_class = EmpleadoSerializer
 
 
@@ -101,19 +106,20 @@ class RegistroAsistenciaListCreateView(ListCreateAPIView):
         if end_date:
             try:
                 fecha_fin = datetime.strptime(end_date, "%Y-%m-%d")
-                queryset = queryset.filter(fecha_hora_registro__date__lte=fecha_fin)
+                queryset = queryset.filter(
+                    fecha_hora_registro__date__lte=fecha_fin)
             except ValueError:
                 pass
 
         if description:
-            queryset = queryset.filter(descripcion_registro__iexact=description)
+            queryset = queryset.filter(
+                descripcion_registro__iexact=description)
 
         if work_area:
             queryset = queryset.filter(fk_empleado__grupos__id=work_area)
 
         if sede:
             queryset = queryset.filter(lugar_registro_id=sede)
-
 
         # Filtro de búsqueda global
         if search_value:
@@ -203,13 +209,13 @@ class TipoDocumentoDetailView(RetrieveUpdateDestroyAPIView):
 
 class AreaTrabajoListCreateView(ListCreateAPIView):
     # Info: Lista todas las áreas de trabajo o permite crear una nueva
-    queryset = AreaTrabajo.objects.all()
+    queryset = AreaTrabajo.objects.all().order_by('area')
     serializer_class = AreaTrabajoSerializer
 
 
 class AreaTrabajoDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina un área de trabajo específica
-    queryset = AreaTrabajo.objects.all()
+    queryset = AreaTrabajo.objects.all().order_by('area')
     serializer_class = AreaTrabajoSerializer
 
 
@@ -236,7 +242,8 @@ class TipoNovedadRegistroCountView(APIView):
         except TipoNovedad.DoesNotExist:
             return Response({"error": "Tipo de novedad no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-        count = NovedadAsistencia.objects.filter(fk_tipo_novedad=tipo_novedad).count()
+        count = NovedadAsistencia.objects.filter(
+            fk_tipo_novedad=tipo_novedad).count()
         return Response({"conteo": count})
 
 
@@ -262,13 +269,13 @@ class NovedadAsistenciaDetailView(RetrieveUpdateDestroyAPIView):
 
 class HorarioListCreateView(ListCreateAPIView):
     # Info: Lista todos los horarios o permite crear uno nuevo
-    queryset = Horario.objects.all()
+    queryset = Horario.objects.all().order_by('hora_entrada')
     serializer_class = HorarioSerializer
 
 
 class HorarioDetailView(RetrieveUpdateDestroyAPIView):
     # Info: Obtiene, actualiza o elimina un horario específico
-    queryset = Horario.objects.all()
+    queryset = Horario.objects.all().order_by('hora_entrada')
     serializer_class = HorarioSerializer
 
 
@@ -299,8 +306,6 @@ class QRGeneratorView(APIView):
         except Empleado.DoesNotExist:
             return Response({"error": "Empleado no encontrado"}, status=404)
 
-
-from email.mime.image import MIMEImage
 
 class QREmailView(APIView):
     def post(self, request, empleado_id):

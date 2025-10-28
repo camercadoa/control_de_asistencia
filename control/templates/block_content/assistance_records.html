@@ -92,162 +92,162 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        let empleados = [];
-        let table = null;
-        const filterInputs = [
-            "filterEmployee",
-            "filterStartDate",
-            "filterEndDate",
-            "filterDescription",
-            "filterWorkArea",
-            "filterSede"
-        ].map(id => document.getElementById(id));
+document.addEventListener("DOMContentLoaded", async () => {
+    let empleados = [];
+    let table = null;
+    const filterInputs = [
+        "filterEmployee",
+        "filterStartDate",
+        "filterEndDate",
+        "filterDescription",
+        "filterWorkArea",
+        "filterSede"
+    ].map(id => document.getElementById(id));
 
-        // Inicializar DataTable
-        table = initDataTable("#AttendanceTable", {
-            serverSide: true,
-            processing: true,
-            ajax: {
-                url: "/api/registros-asistencias/",
-                type: "GET",
-                data: function (d) {
-                    d.employee = document.getElementById("filterEmployee").value;
-                    d.start_date = document.getElementById("filterStartDate").value;
-                    d.end_date = document.getElementById("filterEndDate").value;
-                    d.description = document.getElementById("filterDescription").value;
-                    d.work_area = document.getElementById("filterWorkArea").value;
-                    d.sede = document.getElementById("filterSede").value;
-                },
-                dataSrc: "data"
+    // Inicializar DataTable
+    table = initDataTable("#AttendanceTable", {
+        serverSide: true,
+        processing: true,
+        ajax: {
+            url: "/api/registros-asistencias/",
+            type: "GET",
+            data: function (d) {
+                d.employee = document.getElementById("filterEmployee").value;
+                d.start_date = document.getElementById("filterStartDate").value;
+                d.end_date = document.getElementById("filterEndDate").value;
+                d.description = document.getElementById("filterDescription").value;
+                d.work_area = document.getElementById("filterWorkArea").value;
+                d.sede = document.getElementById("filterSede").value;
             },
-            columns: [
-                { data: "nombre_empleado", render: nombre_empleado => nombre_empleado ? nombre_empleado.toUpperCase() : "-" },
-                { data: "fecha", render: fecha => fecha || "-" },
-                { data: "hora", render: hora => hora || "-" },
-                { data: "descripcion_registro", render: descripcion_registro => descripcion_registro.toUpperCase() || "-" },
-                { data: "estado_registro", render: estado_registro => estado_registro ? estado_registro.toUpperCase() : "-" },
-                {
-                    data: "minutos",
-                    render: minutos => {
-                        if (minutos === null) return "-";
-                        if (minutos < 60) return `${minutos} min`;
-                        const horas = Math.floor(minutos / 60);
-                        const mins = minutos % 60;
-                        return mins > 0 ? `${horas} h ${mins} min` : `${horas} h`;
-                    }
-                },
-                { data: "lugar_registro", render: lugar_registro => lugar_registro ? lugar_registro.toUpperCase() : "-" }
-            ]
-        }, true);
-
-        // Cargar Empleados, Áreas de Trabajo y Sedes
-        try {
-            const [resEmp, resAreas, resSedes] = await Promise.all([
-                fetch("/api/empleados/"),
-                fetch("/api/areas-trabajo/"),
-                fetch("/api/sedes/")
-            ]);
-
-                empleados = await resEmp.json();
-                areas = await resAreas.json();
-            sedes = await resSedes.json();
-
-            // Filtros
-            fillSelect("filterEmployee", empleados, "Todos", "nombre_completo");
-            fillSelect("filterWorkArea", areas, "Todas", "area");
-            fillSelect("filterSede", sedes, "Todas", "ubicacion",
-                sede => {
-                    return `${sede.ubicacion.toUpperCase()} - ${sede.ciudad.toUpperCase()}`;
+            dataSrc: "data"
+        },
+        columns: [
+            { data: "nombre_empleado", render: nombre_empleado => nombre_empleado ? nombre_empleado.toUpperCase() : "-" },
+            { data: "fecha", render: fecha => fecha || "-" },
+            { data: "hora", render: hora => hora || "-" },
+            { data: "descripcion_registro", render: descripcion_registro => descripcion_registro.toUpperCase() || "-" },
+            { data: "estado_registro", render: estado_registro => estado_registro ? estado_registro.toUpperCase() : "-" },
+            {
+                data: "minutos",
+                render: minutos => {
+                    if (minutos === null) return "-";
+                    if (minutos < 60) return `${minutos} min`;
+                    const horas = Math.floor(minutos / 60);
+                    const mins = minutos % 60;
+                    return mins > 0 ? `${horas} h ${mins} min` : `${horas} h`;
                 }
-            );
+            },
+            { data: "lugar_registro", render: lugar_registro => lugar_registro ? lugar_registro.toUpperCase() : "-" }
+        ]
+    }, true);
 
-        } catch (error) {
-            console.log(error)
-            showAlert("Error cargando empleados, áreas de trabajo o sede", "danger");
+    // Cargar Empleados, Áreas de Trabajo y Sedes
+    try {
+        const [resEmp, resAreas, resSedes] = await Promise.all([
+            fetch("/api/empleados/"),
+            fetch("/api/areas-trabajo/"),
+            fetch("/api/sedes/")
+        ]);
+
+            empleados = await resEmp.json();
+            areas = await resAreas.json();
+        sedes = await resSedes.json();
+
+        // Filtros
+        fillSelect("filterEmployee", empleados, "Todos", "nombre_completo");
+        fillSelect("filterWorkArea", areas, "Todas", "area");
+        fillSelect("filterSede", sedes, "Todas", "ubicacion",
+            sede => {
+                return `${sede.ubicacion.toUpperCase()} - ${sede.ciudad.toUpperCase()}`;
+            }
+        );
+
+    } catch (error) {
+        console.log(error)
+        showAlert("Error cargando empleados, áreas de trabajo o sede", "danger");
+    }
+
+    // Filtro automático con DataTables API
+    $.fn.dataTable.ext.search.push((settings, data, dataIndex, rowData) => {
+        const empId = document.getElementById("filterEmployee").value;
+        const startDate = document.getElementById("filterStartDate").value;
+        const endDate = document.getElementById("filterEndDate").value;
+        const description = document.getElementById("filterDescription").value;
+        const workAreaId = document.getElementById("filterWorkArea").value;
+        const sedeId = document.getElementById("filterSede").value;
+
+        let show = true;
+
+        // Filtrar por empleado
+        if (empId && rowData.fk_empleado != parseInt(empId)) {
+            show = false;
         }
 
-        // Filtro automático con DataTables API
-        $.fn.dataTable.ext.search.push((settings, data, dataIndex, rowData) => {
-            const empId = document.getElementById("filterEmployee").value;
-            const startDate = document.getElementById("filterStartDate").value;
-            const endDate = document.getElementById("filterEndDate").value;
-            const description = document.getElementById("filterDescription").value;
-            const workAreaId = document.getElementById("filterWorkArea").value;
-            const sedeId = document.getElementById("filterSede").value;
+        // Filtrar por fecha inicio
+        if (startDate) {
+            const regDate = new Date(rowData.fecha.split("/").reverse().join("-"));
+            if (regDate < new Date(startDate)) show = false;
+        }
 
-            let show = true;
+        // Filtrar por fecha fin
+        if (endDate) {
+            const regDate = new Date(rowData.fecha.split("/").reverse().join("-"));
+            if (regDate > new Date(endDate)) show = false;
+        }
 
-            // Filtrar por empleado
-            if (empId && rowData.fk_empleado != parseInt(empId)) {
-                show = false;
-            }
+        // Filtrar por descripción
+        if (description && rowData.descripcion_registro.toLowerCase() !== description.toLowerCase()) {
+            show = false;
+        }
 
-            // Filtrar por fecha inicio
-            if (startDate) {
-                const regDate = new Date(rowData.fecha.split("/").reverse().join("-"));
-                if (regDate < new Date(startDate)) show = false;
-            }
+        // Filtrar por área de trabajo
+        if (workAreaId && !rowData.fk_areas_trabajo.includes(parseInt(workAreaId))) {
+            show = false;
+        }
 
-            // Filtrar por fecha fin
-            if (endDate) {
-                const regDate = new Date(rowData.fecha.split("/").reverse().join("-"));
-                if (regDate > new Date(endDate)) show = false;
-            }
+        // Filtrar por sede
+        if (sedeId && rowData.fk_sede != parseInt(sedeId)) {
+            show = false;
+        }
 
-            // Filtrar por descripción
-            if (description && rowData.descripcion_registro.toLowerCase() !== description.toLowerCase()) {
-                show = false;
-            }
-
-            // Filtrar por área de trabajo
-            if (workAreaId && !rowData.fk_areas_trabajo.includes(parseInt(workAreaId))) {
-                show = false;
-            }
-
-            // Filtrar por sede
-            if (sedeId && rowData.fk_sede != parseInt(sedeId)) {
-                show = false;
-            }
-
-            return show;
-        });
-
-        // Eventos de filtros
-        filterInputs[0].addEventListener("change", () => table.ajax.reload());
-        filterInputs[1].addEventListener("change", () => table.ajax.reload());
-        filterInputs[2].addEventListener("change", () => table.ajax.reload());
-        filterInputs[3].addEventListener("input", () => table.ajax.reload());
-        filterInputs[4].addEventListener("change", () => table.ajax.reload());
-        filterInputs[5].addEventListener("change", () => table.ajax.reload());
-
-        // Limpiar Filtros
-        const clearBtn = document.getElementById("clearFilters");
-        const checkFilters = () => {
-            const hasFilters = filterInputs.some(input => input.value && input.value.trim() !== "");
-            clearBtn.disabled = !hasFilters;
-            clearBtn.classList.toggle("text-secondary", !hasFilters);
-            clearBtn.classList.toggle("text-primary", hasFilters);
-        };
-
-        // Escucha cambios en todos los filtros
-        filterInputs.forEach(input => {
-            input.addEventListener("change", checkFilters);
-            input.addEventListener("input", checkFilters);
-        });
-
-        // botón para limpiar filtros
-        clearBtn.addEventListener("click", () => {
-            filterInputs.forEach(input => input.value = "");
-            table.ajax.reload();
-            checkFilters();
-            // Cerrar acordeón al limpiar
-            const collapse = bootstrap.Collapse.getOrCreateInstance(document.getElementById("collapseFilters"));
-            collapse.hide();
-        });
-
-        // Inicializar estado del botón
-        checkFilters();
+        return show;
     });
+
+    // Eventos de filtros
+    filterInputs[0].addEventListener("change", () => table.ajax.reload());
+    filterInputs[1].addEventListener("change", () => table.ajax.reload());
+    filterInputs[2].addEventListener("change", () => table.ajax.reload());
+    filterInputs[3].addEventListener("input", () => table.ajax.reload());
+    filterInputs[4].addEventListener("change", () => table.ajax.reload());
+    filterInputs[5].addEventListener("change", () => table.ajax.reload());
+
+    // Limpiar Filtros
+    const clearBtn = document.getElementById("clearFilters");
+    const checkFilters = () => {
+        const hasFilters = filterInputs.some(input => input.value && input.value.trim() !== "");
+        clearBtn.disabled = !hasFilters;
+        clearBtn.classList.toggle("text-secondary", !hasFilters);
+        clearBtn.classList.toggle("text-primary", hasFilters);
+    };
+
+    // Escucha cambios en todos los filtros
+    filterInputs.forEach(input => {
+        input.addEventListener("change", checkFilters);
+        input.addEventListener("input", checkFilters);
+    });
+
+    // botón para limpiar filtros
+    clearBtn.addEventListener("click", () => {
+        filterInputs.forEach(input => input.value = "");
+        table.ajax.reload();
+        checkFilters();
+        // Cerrar acordeón al limpiar
+        const collapse = bootstrap.Collapse.getOrCreateInstance(document.getElementById("collapseFilters"));
+        collapse.hide();
+    });
+
+    // Inicializar estado del botón
+    checkFilters();
+});
 </script>
 {% endblock %}
