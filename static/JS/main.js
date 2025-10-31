@@ -320,44 +320,6 @@ function attachClearOnInput(inputs) {
 }
 
 /**
- * Habilita el botón submit de un formulario solo cuando haya cambios en los inputs.
- * @param {string} formId - ID del formulario a observar.
- */
-function enableSubmitOnFormChange(formId) {
-    const form = document.getElementById(formId);
-    if (!form) return;
-
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (!submitBtn) return;
-
-    const initialData = new FormData(form);
-    const initialValues = Object.fromEntries(initialData.entries());
-
-    const checkChanges = () => {
-        const currentData = new FormData(form);
-        const currentValues = Object.fromEntries(currentData.entries());
-
-        const hasChanges = Object.keys(currentValues).some(key => currentValues[key] !== (initialValues[key] ?? ""));
-        submitBtn.disabled = !hasChanges;
-    };
-
-    form.querySelectorAll("input, select, textarea").forEach(input => {
-        input.addEventListener("input", checkChanges);
-        input.addEventListener("change", checkChanges);
-    });
-
-    submitBtn.disabled = true;
-
-    const modal = form.closest(".modal");
-    if (modal) {
-        modal.addEventListener("hidden.bs.modal", () => {
-            form.reset();
-            submitBtn.disabled = true;
-        });
-    }
-}
-
-/**
  * Resetea un formulario dentro de un modal y limpia errores de validación.
  * @param {string} modalId - ID del modal.
  * @param {string} formId - ID del formulario.
